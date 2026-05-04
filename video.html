@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XENOM Bad Boars Edition — Motion Graphics Video</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&family=Oswald:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐗</text></svg>">
+
+  <!-- ============ ALL STYLES INLINE ============ -->
+  <style>
+    /* ---- Reset & Base ---- */
+    :root {
+      --bg-primary: #0A0A0A;
+      --bg-secondary: #141414;
+      --bg-tertiary: #1E1E1E;
+      --accent-primary: #FF3C00;
+      --accent-secondary: #FF6B35;
+      --accent-gold: #D4A843;
+      --accent-glow: rgba(255, 60, 0, 0.3);
+      --text-primary: #FFFFFF;
+      --text-secondary: #B0B0B0;
+      --text-muted: #666666;
+      --cat-forza: #FF3C00;
+      --cat-ginnastica: #7C4DFF;
+      --cat-cardio: #00E676;
+      --cat-metcon: #FF6B35;
+      --cat-mystery: #666666;
+      --font-display: 'Bebas Neue', 'Impact', sans-serif;
+      --font-heading: 'Oswald', 'Arial Narrow', sans-serif;
+      --font-body: 'Inter', 'Segoe UI', sans-serif;
+      --font-mono: 'Space Mono', 'Courier New', monospace;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #000;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* ---- Viewport ---- */
+    .video-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px 0 0;
+      flex: 1;
+    }
+
+    .video-viewport {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-primary);
+      flex-shrink: 0;
+      border: 1px solid #222;
+    }
+
+    /* ---- Scene Base ---- */
+    .scene {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      overflow: hidden;
+    }
+
+    /* ---- Noise Overlay ---- */
+    .noise-overlay {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='6' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0.6;
+      mix-blend-mode: overlay;
+    }
+
+    /* ---- Scanlines ---- */
+    .scanlines {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    /* ---- Grid Background ---- */
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,60,0,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,60,0,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* ---- Particles ---- */
+    .particle {
+      position: absolute;
+      border: 1px solid rgba(255, 60, 0, 0.25);
+      pointer-events: none;
+      opacity: 0;
+    }
+    .particle--square { width: 18px; height: 18px; }
+    .particle--diamond { width: 14px; height: 14px; transform: rotate(45deg); }
+    .particle--line { width: 50px; height: 1px; background: rgba(255, 60, 0, 0.2); border: none; }
+    .particle--dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent-primary); border: none; opacity: 0; }
+    .particle--circle { width: 30px; height: 30px; border-radius: 50%; }
+    .particle--cross {
+      width: 16px; height: 16px; border: none; position: absolute;
+    }
+    .particle--cross::before, .particle--cross::after {
+      content: ''; position: absolute; background: rgba(255,60,0,0.25);
+    }
+    .particle--cross::before { width: 16px; height: 1px; top: 50%; left: 0; transform: translateY(-50%); }
+    .particle--cross::after { width: 1px; height: 16px; left: 50%; top: 0; transform: translateX(-50%); }
+
+    /* ---- Wipe Overlay ---- */
+    .wipe-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: var(--accent-primary);
+      z-index: 200;
+      transform: translateX(-100%);
+      pointer-events: none;
+    }
+
+    /* ============ SCENE 1: INTRO ============ */
+    #scene-intro { background: #000; }
+    #scene-intro .grid-bg { opacity: 0; }
+
+    .intro-xenom {
+      font-family: var(--font-display);
+      font-size: 240px;
+      letter-spacing: 40px;
+      color: var(--text-primary);
+      position: relative;
+      line-height: 1;
+      opacity: 0;
+      text-shadow: 0 0 60px rgba(255,60,0,0.15);
+    }
+    .intro-xenom::before,
+    .intro-xenom::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      opacity: 0.7;
+    }
+    .intro-xenom::before {
+      color: var(--accent-primary);
+      clip-path: inset(0 0 65% 0);
+      animation: glitch-top 0.25s infinite linear alternate-reverse;
+    }
+    .intro-xenom::after {
+      color: var(--cat-cardio);
+      clip-path: inset(65% 0 0 0);
+      animation: glitch-bottom 0.35s infinite linear alternate-reverse;
+    }
+    @keyframes glitch-top {
+      0%   { transform: translate(0); }
+      20%  { transform: translate(-4px, 3px); }
+      40%  { transform: translate(3px, -2px); }
+      60%  { transform: translate(-2px, 1px); }
+      80%  { transform: translate(2px, -4px); }
+      100% { transform: translate(4px, 2px); }
+    }
+    @keyframes glitch-bottom {
+      0%   { transform: translate(0); }
+      20%  { transform: translate(5px, -1px); }
+      40%  { transform: translate(-3px, 3px); }
+      60%  { transform: translate(1px, -2px); }
+      80%  { transform: translate(-4px, 2px); }
+      100% { transform: translate(2px, -3px); }
+    }
+
+    .intro-badboars {
+      font-family: var(--font-display);
+      font-size: 110px;
+      letter-spacing: 22px;
+      color: var(--accent-primary);
+      opacity: 0;
+      line-height: 1;
+      margin-top: 5px;
+      text-shadow: 0 0 40px rgba(255,60,0,0.3);
+    }
+    .intro-subtitle {
+      font-family: var(--font-heading);
+      font-size: 30px;
+      color: var(--text-secondary);
+      letter-spacing: 10px;
+      text-transform: uppercase;
+      opacity: 0;
+      margin-top: 35px;
+    }
+    .intro-line {
+      width: 0;
+      height: 2px;
+      background: var(--accent-primary);
+      margin-top: 25px;
+    }
+
+    /* ============ SCENE 2: WHAT IS XENOM ============ */
+    #scene-what { background: var(--bg-primary); }
+
+    .what-kinetic {
+      font-family: var(--font-display);
+      font-size: 120px;
+      letter-spacing: 12px;
+      text-align: center;
+      line-height: 1.15;
+      perspective: 600px;
+    }
+    .what-kinetic .word {
+      display: inline-block;
+      opacity: 0;
+      margin: 0 12px;
+    }
+    .what-kinetic .word.accent { color: var(--accent-primary); }
+
+    .what-counters {
+      display: flex;
+      gap: 120px;
+      margin-top: 70px;
+    }
+    .what-counter { text-align: center; opacity: 0; }
+    .what-counter__number {
+      font-family: var(--font-mono);
+      font-size: 100px;
+      font-weight: 700;
+      color: var(--accent-primary);
+      line-height: 1;
+    }
+    .what-counter__label {
+      font-family: var(--font-heading);
+      font-size: 26px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 7px;
+      margin-top: 10px;
+    }
+
+    .what-icons {
+      display: flex;
+      gap: 140px;
+      margin-top: 60px;
+    }
+    .what-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+    }
+    .what-icon__circle {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .what-icon__circle svg { width: 44px; height: 44px; }
+    .what-icon__label {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      color: var(--text-secondary);
+    }
+
+    /* ============ EVENT SCENES ============ */
+    .event-scene {
+      background: var(--bg-primary);
+      padding: 0 120px;
+    }
+    .event-number {
+      font-family: var(--font-mono);
+      font-size: 500px;
+      font-weight: 700;
+      position: absolute;
+      right: 60px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0;
+      color: var(--text-primary);
+      line-height: 1;
+      z-index: 0;
+      -webkit-text-stroke: 1px rgba(255,255,255,0.03);
+      color: transparent;
+    }
+    .event-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100%;
+      max-width: 1400px;
+    }
+    .event-num-display {
+      font-family: var(--font-mono);
+      font-size: 180px;
+      font-weight: 700;
+      color: var(--accent-primary);
+      line-height: 1;
+      opacity: 0;
+      transform: scale(2);
+      text-shadow: 0 0 60px rgba(255,60,0,0.4);
+    }
+    .event-name {
+      font-family: var(--font-display);
+      font-size: 110px;
+      letter-spacing: 6px;
+      line-height: 1;
+      color: var(--text-primary);
+      opacity: 0;
+      margin-top: -15px;
+    }
+    .event-name-it {
+      font-family: var(--font-heading);
+      font-size: 36px;
+      color: var(--accent-secondary);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      opacity: 0;
+      margin-top: 8px;
+    }
+    .event-details {
+      display: flex;
+      gap: 50px;
+      margin-top: 45px;
+    }
+    .event-detail { display: flex; flex-direction: column; opacity: 0; }
+    .event-detail__label {
+      font-family: var(--font-body);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .event-detail__value {
+      font-family: var(--font-mono);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .event-category-badge {
+      position: absolute;
+      right: 100px;
+      top: 80px;
+      padding: 14px 32px;
+      border: 2px solid;
+      font-family: var(--font-heading);
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 6px;
+      opacity: 0;
+    }
+    .event-category-badge[data-cat="forza"] { border-color: var(--cat-forza); color: var(--cat-forza); }
+    .event-category-badge[data-cat="ginnastica"] { border-color: var(--cat-ginnastica); color: var(--cat-ginnastica); }
+    .event-category-badge[data-cat="cardio"] { border-color: var(--cat-cardio); color: var(--cat-cardio); }
+    .event-category-badge[data-cat="metcon"] { border-color: var(--cat-metcon); color: var(--cat-metcon); }
+    .event-category-badge[data-cat="mystery"] { border-color: var(--cat-mystery); color: var(--cat-mystery); }
+
+    .event-accent-line {
+      position: absolute;
+      left: 0; top: 0;
+      width: 6px; height: 100%;
+      opacity: 0;
+      transform-origin: top;
+    }
+    .event-accent-line[data-cat="forza"]      { background: var(--cat-forza); }
+    .event-accent-line[data-cat="ginnastica"] { background: var(--cat-ginnastica); }
+    .event-accent-line[data-cat="cardio"]     { background: var(--cat-cardio); }
+    .event-accent-line[data-cat="metcon"]     { background: var(--cat-metcon); }
+    .event-accent-line[data-cat="mystery"]    { background: var(--cat-mystery); }
+
+    /* ---- Event bottom decor line ---- */
+    .event-bottom-line {
+      position: absolute;
+      bottom: 80px;
+      left: 120px;
+      right: 120px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    }
+
+    /* ---- Mystery Event 6 ---- */
+    .mystery-static {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      z-index: 50;
+    }
+    .mystery-static canvas { width: 100%; height: 100%; display: block; }
+
+    .mystery-coming-soon {
+      font-family: var(--font-display);
+      font-size: 150px;
+      letter-spacing: 14px;
+      color: var(--text-primary);
+      opacity: 0;
+      position: relative;
+      z-index: 60;
+    }
+    .mystery-coming-soon::before,
+    .mystery-coming-soon::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+    .mystery-coming-soon::before {
+      color: var(--accent-primary);
+      clip-path: inset(0 0 55% 0);
+      animation: glitch-top 0.12s infinite linear alternate-reverse;
+    }
+    .mystery-coming-soon::after {
+      color: var(--cat-ginnastica);
+      clip-path: inset(55% 0 0 0);
+      animation: glitch-bottom 0.18s infinite linear alternate-reverse;
+    }
+
+    .mystery-question {
+      font-family: var(--font-mono);
+      font-size: 280px;
+      color: rgba(255,255,255,0.05);
+      opacity: 0;
+      position: absolute;
+      z-index: 55;
+      user-select: none;
+    }
+    .mystery-question:nth-child(2) { top: 5%; left: 10%; }
+    .mystery-question:nth-child(3) { bottom: 5%; right: 10%; }
+
+    /* ============ SCENE 13: EPI ============ */
+    #scene-epi { background: var(--bg-primary); }
+
+    .epi-title {
+      font-family: var(--font-display);
+      font-size: 90px;
+      letter-spacing: 10px;
+      opacity: 0;
+      text-align: center;
+    }
+    .epi-subtitle {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      color: var(--accent-gold);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      opacity: 0;
+      margin-top: 8px;
+    }
+    .epi-circle-container {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      margin-top: 40px;
+      opacity: 0;
+    }
+    .epi-circle-container svg { width: 100%; height: 100%; }
+    .epi-circle-bg { fill: none; stroke: var(--bg-tertiary); stroke-width: 10; }
+    .epi-circle-fill {
+      fill: none;
+      stroke: url(#epiGradient);
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke-dasharray: 816;
+      stroke-dashoffset: 816;
+      transform: rotate(-90deg);
+      transform-origin: center;
+      filter: drop-shadow(0 0 16px var(--accent-glow));
+    }
+    .epi-score {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .epi-score__number {
+      font-family: var(--font-mono);
+      font-size: 64px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+    .epi-score__label {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      color: var(--text-muted);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .epi-bars {
+      display: flex;
+      gap: 24px;
+      margin-top: 50px;
+      align-items: flex-end;
+      height: 180px;
+    }
+    .epi-bar {
+      width: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .epi-bar__fill {
+      width: 100%;
+      height: 0;
+      border-radius: 4px 4px 0 0;
+      opacity: 0;
+    }
+    .epi-bar__label {
+      font-family: var(--font-body);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-align: center;
+      opacity: 0;
+    }
+
+    .epi-description {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      color: var(--text-secondary);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      opacity: 0;
+      margin-top: 40px;
+    }
+
+    /* ============ SCENE 14: ATHLETES ============ */
+    #scene-athletes { background: var(--bg-primary); }
+
+    .athletes-title {
+      font-family: var(--font-display);
+      font-size: 160px;
+      letter-spacing: 18px;
+      opacity: 0;
+      text-shadow: 0 0 60px rgba(255,60,0,0.1);
+    }
+    .athletes-subtitle {
+      font-family: var(--font-heading);
+      font-size: 30px;
+      color: var(--text-secondary);
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      opacity: 0;
+      margin-top: 0;
+    }
+    .athletes-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 50px;
+      max-width: 950px;
+    }
+    .athlete-circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      opacity: 0;
+      transform: scale(0);
+      border: 2px solid rgba(255,255,255,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .athlete-circle::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+    }
+
+    .athletes-scroll-names {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      color: var(--text-muted);
+      letter-spacing: 5px;
+      margin-top: 45px;
+      opacity: 0;
+      text-transform: uppercase;
+      max-width: 1200px;
+      text-align: center;
+      line-height: 2.2;
+    }
+
+    /* ============ SCENE 15: CLOSING ============ */
+    #scene-closing { background: #000; }
+
+    .closing-logo {
+      font-family: var(--font-display);
+      font-size: 130px;
+      letter-spacing: 14px;
+      opacity: 0;
+      text-align: center;
+      line-height: 1.05;
+    }
+    .closing-logo .accent { color: var(--accent-primary); }
+    .closing-logo .outline {
+      -webkit-text-stroke: 2px var(--text-primary);
+      color: transparent;
+    }
+
+    .closing-divider {
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+      opacity: 0;
+      margin-top: 25px;
+    }
+    .closing-location {
+      font-family: var(--font-heading);
+      font-size: 34px;
+      letter-spacing: 14px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      opacity: 0;
+      margin-top: 25px;
+    }
+    .closing-date {
+      font-family: var(--font-mono);
+      font-size: 26px;
+      color: var(--accent-gold);
+      letter-spacing: 6px;
+      opacity: 0;
+      margin-top: 12px;
+    }
+    .closing-social {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      color: var(--accent-primary);
+      letter-spacing: 4px;
+      opacity: 0;
+      margin-top: 35px;
+    }
+    .closing-disclaimer {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--text-muted);
+      opacity: 0;
+      margin-top: 25px;
+      max-width: 600px;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    /* ============ PLAYER CONTROLS ============ */
+    .player-controls {
+      width: 100%;
+      max-width: 1920px;
+      background: #0d0d0d;
+      padding: 18px 40px 22px;
+      border-top: 1px solid #222;
+      flex-shrink: 0;
+    }
+    .player-controls__instructions {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--accent-gold);
+      text-align: center;
+      margin-bottom: 14px;
+      letter-spacing: 1px;
+    }
+    .player-controls__progress-wrap {
+      width: 100%;
+      height: 5px;
+      background: #222;
+      border-radius: 3px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .player-controls__progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      border-radius: 3px;
+      width: 0%;
+      transition: none;
+    }
+    .player-controls__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .player-controls__buttons { display: flex; gap: 8px; }
+    .player-controls__btn {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: #ccc;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 8px 22px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+    .player-controls__btn:hover {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: #fff;
+    }
+    .player-controls__btn--active {
+      background: var(--accent-primary) !important;
+      border-color: var(--accent-primary) !important;
+      color: #fff !important;
+    }
+    .player-controls__info {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+    .player-controls__time {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      color: var(--text-secondary);
+    }
+    .player-controls__scene-indicator {
+      font-family: var(--font-heading);
+      font-size: 13px;
+      color: var(--accent-secondary);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    /* Fullscreen styles */
+    .video-viewport:fullscreen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+    .video-viewport:-webkit-full-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============ VIDEO VIEWPORT ============ -->
+  <div class="video-wrapper">
+    <div class="video-viewport" id="video-viewport">
+
+      <!-- Global overlays -->
+      <div class="noise-overlay"></div>
+      <div class="scanlines"></div>
+      <div class="wipe-overlay"></div>
+
+      <!-- ======== SCENE 1: INTRO ======== -->
+      <div class="scene" id="scene-intro">
+        <div class="grid-bg"></div>
+
+        <!-- Particles -->
+        <div class="particle particle--square" style="top:12%;left:8%;"></div>
+        <div class="particle particle--diamond" style="top:25%;left:85%;"></div>
+        <div class="particle particle--line" style="top:70%;left:15%;"></div>
+        <div class="particle particle--dot" style="top:18%;left:45%;"></div>
+        <div class="particle particle--circle" style="top:75%;left:78%;"></div>
+        <div class="particle particle--cross" style="top:60%;left:25%;"></div>
+        <div class="particle particle--square" style="top:35%;left:72%;"></div>
+        <div class="particle particle--diamond" style="top:80%;left:50%;"></div>
+        <div class="particle particle--line" style="top:15%;left:65%;"></div>
+        <div class="particle particle--dot" style="top:55%;left:90%;"></div>
+        <div class="particle particle--circle" style="top:40%;left:12%;"></div>
+        <div class="particle particle--cross" style="top:88%;left:35%;"></div>
+        <div class="particle particle--dot" style="top:30%;left:30%;"></div>
+        <div class="particle particle--square" style="top:65%;left:60%;"></div>
+        <div class="particle particle--line" style="top:45%;left:5%;"></div>
+        <div class="particle particle--diamond" style="top:10%;left:50%;"></div>
+        <div class="particle particle--dot" style="top:50%;left:42%;"></div>
+        <div class="particle particle--circle" style="top:22%;left:92%;"></div>
+        <div class="particle particle--cross" style="top:78%;left:70%;"></div>
+        <div class="particle particle--line" style="top:90%;left:82%;"></div>
+
+        <div class="intro-xenom" data-text="XENOM">XENOM</div>
+        <div class="intro-badboars">BAD BOARS EDITION</div>
+        <div class="intro-line"></div>
+        <div class="intro-subtitle">Il Decathlon del Fitness &mdash; Sassari, Sardegna</div>
+      </div>
+
+      <!-- ======== SCENE 2: WHAT IS XENOM ======== -->
+      <div class="scene" id="scene-what">
+        <div class="grid-bg"></div>
+
+        <div class="what-kinetic">
+          <span class="word">IL</span>
+          <span class="word accent">DECATHLON</span>
+          <span class="word">DEL</span>
+          <span class="word accent">FITNESS</span>
+        </div>
+
+        <div class="what-counters">
+          <div class="what-counter">
+            <div class="what-counter__number" data-target="10">0</div>
+            <div class="what-counter__label">Eventi</div>
+          </div>
+          <div class="what-counter">
+            <div class="what-counter__number" data-target="1">0</div>
+            <div class="what-counter__label">Giorno</div>
+          </div>
+          <div class="what-counter">
+            <div class="what-counter__number" data-target="15">0</div>
+            <div class="what-counter__label">Atleti</div>
+          </div>
+        </div>
+
+        <div class="what-icons">
+          <!-- Barbell (Forza) -->
+          <div class="what-icon">
+            <div class="what-icon__circle" style="border-color: var(--cat-forza);">
+              <svg viewBox="0 0 64 64" fill="none" stroke="var(--cat-forza)" stroke-width="2.5" stroke-linecap="round">
+                <line x1="8" y1="32" x2="56" y2="32"/>
+                <rect x="14" y="22" width="6" height="20" rx="1"/>
+                <rect x="44" y="22" width="6" height="20" rx="1"/>
+                <rect x="6" y="26" width="4" height="12" rx="1"/>
+                <rect x="54" y="26" width="4" height="12" rx="1"/>
+              </svg>
+            </div>
+            <div class="what-icon__label">Forza</div>
+          </div>
+          <!-- Rings (Ginnastica) -->
+          <div class="what-icon">
+            <div class="what-icon__circle" style="border-color: var(--cat-ginnastica);">
+              <svg viewBox="0 0 64 64" fill="none" stroke="var(--cat-ginnastica)" stroke-width="2.5" stroke-linecap="round">
+                <line x1="22" y1="8" x2="22" y2="22"/>
+                <line x1="42" y1="8" x2="42" y2="22"/>
+                <circle cx="22" cy="34" r="12"/>
+                <circle cx="42" cy="34" r="12"/>
+              </svg>
+            </div>
+            <div class="what-icon__label">Ginnastica</div>
+          </div>
+          <!-- Heart (Cardio) -->
+          <div class="what-icon">
+            <div class="what-icon__circle" style="border-color: var(--cat-cardio);">
+              <svg viewBox="0 0 64 64" fill="none" stroke="var(--cat-cardio)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M32 52 C18 40 8 30 8 22 C8 14 14 8 22 8 C26.5 8 30.5 10.5 32 14 C33.5 10.5 37.5 8 42 8 C50 8 56 14 56 22 C56 30 46 40 32 52Z"/>
+              </svg>
+            </div>
+            <div class="what-icon__label">Cardio</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======== SCENE 3: EVENT 1 ======== -->
+      <div class="scene event-scene" id="scene-event-1">
+        <div class="grid-bg"></div>
+        <div class="event-accent-line" data-cat="forza"></div>
+        <div class="event-number">01</div>
+        <div class="event-content">
+          <div class="event-num-display">01</div>
+          <div class="event-name">1RM SNATCH</div>
+          <div class="event-name-it">Strappo Massimale</div>
+          <div class="event-details">
+            <div class="event-detail">
+              <div class="event-detail__label">Tempo</div>
+              <div class="event-detail__value">9 min</div>
+            </div>
+            <div class="event-detail">
+              <div class="event-detail__label">Formato</div>
+              <div class="event-detail__value">4 tentativi</div>
+            </div>
+          </div>
+        </div>
+        <div class="event-category-badge" data-cat="forza">FORZA</div>
+        <div class="event-bottom-line"></div>
+      </div>
+
+      <!-- ======== SCENE 4: EVENT 2 ======== -->
+      <div class="scene event-scene" id="scene-event-2">
+        <div class="grid-bg"></div>
+        <div class="event-accent-line" data-cat="ginnastica"></div>
+        <div class="event-number">02</div>
+        <div class="event-content">
+          <div class="event-num-display">02</div>
+          <div class="event-name">WALL WALK &amp; ROPE CLIMB</div>
+          <div class="event-name-it">Scalata &amp; Corda</div>
+          <div class="event-details">
+            <div class="event-detail">
+              <div class="event-detail__label">Formato</div>
+              <div class="event-detail__value">AMRAP</div>
+            </div>
+            <div class="event-detail">
+              <div class="event-detail__label">Tempo</div>
+              <div class="event-detail__value">8 min</div>
+            </div>
+          </div>
+        </div>
+        <div class="event-category-badge" data-cat="ginnastica">GINNASTICA</div>
+        <div class="event-bottom-line"></div>
+      </div>
+
+      <!-- ======== SCENE 5: EVENT 3 ======== -->
+      <div class="scene event-scene" id="scene-event-3">
+        <div class="grid-bg"></div>
+        <div class="event-accent-line" data-cat="cardio"></div>
+        <div class="event-number">03</div>
+        <div class="event-content">
+          <div class="event-num-display">03</div>
+          <div class="event-name">MAX CAL ECHO BIKE</div>
+          <div class="event-name-it">Sprint Calorie</div>
+          <div class="event-details">
+            <div class="event-detail">
+              <div class="event-detail__label">Tempo</div>
+              <div class="event-detail__value">60 sec</div>
+            </div>
+            <div class="event-detail">
+              <div class="event-detail__label">Formato</div>
+              <div class="event-detail__value">Sprint massimale</div>
+            </div>
+          </div>
+        </div>
+        <div class="event-category-badge" data-cat="cardio">POTENZA ANAEROBICA</div>
+        <div class="event-bottom-line"></div>
+      </div>
+
+      <!-- ======== SCENE 6: EVENT 4 ======== -->
+      <div class="scene event-scene" id="scene-event-4">
+        <div class="grid-bg"></div>
+        <div class="event-accent-line" data-cat="metcon"></div>
+        <div class="event-number">04</div>
+        <div class="event-content">
+          <div class="event-num-display">04</div>
+          <div class="event-name">BARBELL CYCLING</div>
+          <div class="event-name-it">Ciclo di Bilanciere</div>
+          <div class="event-details">
+            <div class="event-detail">
+              <div class="event-detail__label">Formato</div>
+              <div class="event-detail__value">AMRAP</div>
+            </div>
+            <div class="event-detail">
+              <div class="event-detail__label">Tempo</div>
+              <div class="event-detail__value">5 min &mdash; 60/42kg</div>
+            </div>
+          </div>
+        </div>
+        <div class="event-category-badge" data-cat="metcon">CAPACIT&Agrave; DI LAVORO</div>
+        <div class="event-bottom-line"></div>
+      </div>
+
+      <!-- ======== SCENE 7: EVENT 5 ======== -->
+      <div class="scene event-scene" id="scene-event-5">
+        <div class="grid-bg"></div>
+        <div class="event-accent-line" data-cat="cardio"></div>
+        <div class="event-number">05</div>
+        <div class="event-content">
+          <div class="event-num-display">05</div>
+          <div class="event-name">3K RUN + 2K ECHO SKI</div>
+          <div class="event-name-it">Endurance Combinato</div>
+          <div class="event-details">
+            <div class="event-detail">
+              <div class="event-detail__label">Tempo</div>
+              <div class="event-detail__value">No cap</div>
+            </div>
+            <div class="event-detail">
+              <div class="event-detail__label">Distanza</div>
+              <div class="event-detail__value">5000m totali</div>
+            </div>
+          </div>
+        </div>
+        <div class="event-category-badge" data-cat="cardio">RESISTENZA AEROBICA</div>
+        <div class="event-bottom-line"></div>
+      </div>
+
+      <!-- ======== SCENE 8: EVENT 6 (MYSTERY) ======== -->
+      <div class="scene event-scene" id="scene-event-6">
+        <div class="mystery-static"><canvas id="mystery-canvas"></canvas></div>
+        <div class="mystery-question">?</div>
+        <div class="mystery-question">?</div>
+
+        <div class="event-content" style="align-items:center;">
+          <div class="event-num-display" style="text-shadow: 0 0 80px rgba(102,102,102,0.5);">06</div>
+          <div class="mystery-coming-soon" data-text="COMING SOON">COMING SOON</div>
+        </div>
+        <div class="event-category-badge" data-cat="mystery">???&nbsp;&nbsp;MYSTERY</div>
+      </div>
+
+      <!-- ======== SCENE 9: EVENT 7 ======== -->
+      <div class="scene event-scene" id="scene-event-7">
+        <div class="grid-bg"></div>
+        <div class="event-accent-line" data-cat="ginnastica"></div>
+        <div class="event-number">07</div>
+        <div class="event-content">
+          <div class="event-num-display">07</div>
+          <div class="event-name">GYMNASTICS TRIPLET</div>
+          <div class="event-name-it">Tripletta Ginnica</div>
+          <div class="event-details">
+            <div class="event-detail">
+              <div class="event-detail__label">Movimenti</div>
+              <div class="event-detail__value">T2B, DB Snatch, MU</div>
+            </div>
+            <div class="event-detail">
+              <div class="event-detail__label">Formato</div>
+              <div class="event-detail__value">Tripletta</div>
+            </div>
+          </div>
+        </div>
+        <div class="event-category-badge" data-cat="ginnastica">GINNASTICA</div>
+        <div class="event-bottom-line"></div>
+      </div>
+
+      <!-- ======== SCENE 10: EVENT 8 ======== -->
+      <div class="scene event-scene" id="scene-event-8">
+        <div class="grid-bg"></div>
+        <div class="event-accent-line" data-cat="metcon"></div>
+        <div class="event-number">08</div>
+        <div class="event-content">
+          <div class="event-num-display">08</div>
+          <div class="event-name">METCON AMRAP</div>
+          <div class="event-name-it">Metabolico</div>
+          <div class="event-details">
+            <div class="event-detail">
+              <div class="event-detail__label">Movimenti</div>
+              <div class="event-detail__value">Burpees, Ski, Bike</div>
+            </div>
+            <div class="event-detail">
+              <div class="event-detail__label">Formato</div>
+              <div class="event-detail__value">AMRAP</div>
+            </div>
+          </div>
+        </div>
+        <div class="event-category-badge" data-cat="metcon">CONDIZIONAMENTO</div>
+        <div class="event-bottom-line"></div>
+      </div>
+
+      <!-- ======== SCENE 11: EVENT 9 ======== -->
+      <div class="scene event-scene" id="scene-event-9">
+        <div class="grid-bg"></div>
+        <div class="event-accent-line" data-cat="forza"></div>
+        <div class="event-number">09</div>
+        <div class="event-content">
+          <div class="event-num-display">09</div>
+          <div class="event-name">HEAVY CLEAN LADDER</div>
+          <div class="event-name-it">Scala di Girate</div>
+          <div class="event-details">
+            <div class="event-detail">
+              <div class="event-detail__label">Formato</div>
+              <div class="event-detail__value">Pesi crescenti</div>
+            </div>
+            <div class="event-detail">
+              <div class="event-detail__label">Tipo</div>
+              <div class="event-detail__value">Ladder</div>
+            </div>
+          </div>
+        </div>
+        <div class="event-category-badge" data-cat="forza">FORZA</div>
+        <div class="event-bottom-line"></div>
+      </div>
+
+      <!-- ======== SCENE 12: EVENT 10 ======== -->
+      <div class="scene event-scene" id="scene-event-10">
+        <div class="grid-bg"></div>
+        <div class="event-accent-line" data-cat="metcon"></div>
+        <div class="event-number">10</div>
+        <div class="event-content">
+          <div class="event-num-display">10</div>
+          <div class="event-name">THE FINALE</div>
+          <div class="event-name-it">La Finale</div>
+          <div class="event-details">
+            <div class="event-detail">
+              <div class="event-detail__label">Formato</div>
+              <div class="event-detail__value">AMRAP</div>
+            </div>
+            <div class="event-detail">
+              <div class="event-detail__label">Tempo</div>
+              <div class="event-detail__value">16 min</div>
+            </div>
+            <div class="event-detail">
+              <div class="event-detail__label">Movimenti</div>
+              <div class="event-detail__value">HSPU, C2B, DB Lunges</div>
+            </div>
+          </div>
+        </div>
+        <div class="event-category-badge" data-cat="metcon">EVENTO FINALE</div>
+        <div class="event-bottom-line"></div>
+      </div>
+
+      <!-- ======== SCENE 13: EPI SCORING ======== -->
+      <div class="scene" id="scene-epi">
+        <div class="grid-bg"></div>
+
+        <div class="epi-title">ELITE PERFORMANCE INDEX</div>
+        <div class="epi-subtitle">Il Tuo Indice di Prestazione Elite</div>
+
+        <div class="epi-circle-container">
+          <svg viewBox="0 0 280 280">
+            <defs>
+              <linearGradient id="epiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FF3C00"/>
+                <stop offset="50%" stop-color="#FF6B35"/>
+                <stop offset="100%" stop-color="#D4A843"/>
+              </linearGradient>
+            </defs>
+            <circle class="epi-circle-bg" cx="140" cy="140" r="130"/>
+            <circle class="epi-circle-fill" cx="140" cy="140" r="130"/>
+          </svg>
+          <div class="epi-score">
+            <div class="epi-score__number" id="epi-score-value">0</div>
+            <div class="epi-score__label">Punti EPI</div>
+          </div>
+        </div>
+
+        <div class="epi-bars">
+          <div class="epi-bar">
+            <div class="epi-bar__fill" style="background: #FF3C00;"></div>
+            <div class="epi-bar__label">Forza</div>
+          </div>
+          <div class="epi-bar">
+            <div class="epi-bar__fill" style="background: #7C4DFF;"></div>
+            <div class="epi-bar__label">Ginnastica</div>
+          </div>
+          <div class="epi-bar">
+            <div class="epi-bar__fill" style="background: #00E676;"></div>
+            <div class="epi-bar__label">Cardio</div>
+          </div>
+          <div class="epi-bar">
+            <div class="epi-bar__fill" style="background: #FF6B35;"></div>
+            <div class="epi-bar__label">Metcon</div>
+          </div>
+          <div class="epi-bar">
+            <div class="epi-bar__fill" style="background: #D4A843;"></div>
+            <div class="epi-bar__label">Globale</div>
+          </div>
+        </div>
+
+        <div class="epi-description">Un numero unico che rappresenta la tua forma atletica</div>
+      </div>
+
+      <!-- ======== SCENE 14: ATHLETES ======== -->
+      <div class="scene" id="scene-athletes">
+        <div class="grid-bg"></div>
+
+        <div class="athletes-title">15 ATLETI</div>
+        <div class="athletes-subtitle">Bad Boars CrossFit &mdash; Sassari</div>
+
+        <div class="athletes-grid">
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(0,70%,40%), hsl(40,70%,30%));">01</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(24,70%,40%), hsl(64,70%,30%));">02</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(48,70%,40%), hsl(88,70%,30%));">03</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(72,70%,40%), hsl(112,70%,30%));">04</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(96,70%,40%), hsl(136,70%,30%));">05</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(120,70%,40%), hsl(160,70%,30%));">06</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(144,70%,40%), hsl(184,70%,30%));">07</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(168,70%,40%), hsl(208,70%,30%));">08</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(192,70%,40%), hsl(232,70%,30%));">09</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(216,70%,40%), hsl(256,70%,30%));">10</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(240,70%,40%), hsl(280,70%,30%));">11</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(264,70%,40%), hsl(304,70%,30%));">12</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(288,70%,40%), hsl(328,70%,30%));">13</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(312,70%,40%), hsl(352,70%,30%));">14</div>
+          <div class="athlete-circle" style="background: linear-gradient(135deg, hsl(336,70%,40%), hsl(16,70%,30%));">15</div>
+        </div>
+
+        <div class="athletes-scroll-names">
+          Atleta 01 &bull; Atleta 02 &bull; Atleta 03 &bull; Atleta 04 &bull; Atleta 05 &bull;
+          Atleta 06 &bull; Atleta 07 &bull; Atleta 08 &bull; Atleta 09 &bull; Atleta 10 &bull;
+          Atleta 11 &bull; Atleta 12 &bull; Atleta 13 &bull; Atleta 14 &bull; Atleta 15
+        </div>
+      </div>
+
+      <!-- ======== SCENE 15: CLOSING ======== -->
+      <div class="scene" id="scene-closing">
+        <div class="closing-logo">
+          <span class="accent">XENOM</span><br>
+          <span class="outline">BAD BOARS</span><br>
+          <span class="accent">EDITION</span>
+        </div>
+        <div class="closing-divider"></div>
+        <div class="closing-location">Sassari, Sardegna</div>
+        <div class="closing-date">2026 &mdash; Data da definire</div>
+        <div class="closing-social">@badboarscrossfit</div>
+        <div class="closing-disclaimer">
+          Adattamento locale non ufficiale ispirato al formato XENOM&trade; &mdash;
+          The Decathlon of Fitness&trade;. Bad Boars CrossFit, Sassari.
+        </div>
+      </div>
+
+    </div><!-- /video-viewport -->
+  </div><!-- /video-wrapper -->
+
+  <!-- ============ PLAYER CONTROLS (outside viewport) ============ -->
+  <div class="player-controls">
+    <div class="player-controls__instructions">
+      Premi Fullscreen + Play, poi avvia la registrazione schermo (OBS / registrazione nativa)
+    </div>
+    <div class="player-controls__progress-wrap" id="progress-wrap">
+      <div class="player-controls__progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="player-controls__row">
+      <div class="player-controls__buttons">
+        <button class="player-controls__btn" id="btn-play">&#9654; Play</button>
+        <button class="player-controls__btn" id="btn-pause">&#10074;&#10074; Pausa</button>
+        <button class="player-controls__btn" id="btn-restart">&#8634; Riavvia</button>
+        <button class="player-controls__btn" id="btn-fullscreen">&#x26F6; Fullscreen</button>
+        <a class='player-controls__btn' href='/#risorse' style='text-decoration: none; margin-left: 16px; background: var(--accent-primary); border-color: var(--accent-primary); color: #fff;'>&#x2190; Torna al Sito</a>
+      </div>
+      <div class="player-controls__info">
+        <div class="player-controls__time" id="time-display">00:00 / 00:00</div>
+        <div class="player-controls__scene-indicator" id="scene-indicator">SCENA 1/15 &mdash; INTRO</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCRIPTS ============ -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12/dist/gsap.min.js"></script>
+  <script>
+  /* ============================================
+     XENOM BAD BOARS EDITION - Video Timeline
+     Self-contained GSAP motion graphics
+     ============================================ */
+  (function () {
+    'use strict';
+
+    /* ---- Constants ---- */
+    const EVENTS = [
+      { num: 1,  name: '1RM SNATCH',               nameIT: 'Strappo Massimale',    time: '9 min',  detail: '4 tentativi',              cat: 'forza',      catLabel: 'FORZA' },
+      { num: 2,  name: 'WALL WALK & ROPE CLIMB',   nameIT: 'Scalata & Corda',      time: 'AMRAP',  detail: '8 min',                    cat: 'ginnastica', catLabel: 'GINNASTICA' },
+      { num: 3,  name: 'MAX CAL ECHO BIKE',        nameIT: 'Sprint Calorie',       time: '60 sec', detail: 'Sprint massimale',          cat: 'cardio',     catLabel: 'POTENZA ANAEROBICA' },
+      { num: 4,  name: 'BARBELL CYCLING',           nameIT: 'Ciclo di Bilanciere',  time: 'AMRAP',  detail: '5 min — 60/42kg',          cat: 'metcon',     catLabel: 'CAPACITA DI LAVORO' },
+      { num: 5,  name: '3K RUN + 2K ECHO SKI',     nameIT: 'Endurance Combinato',  time: 'No cap', detail: '5000m totali',              cat: 'cardio',     catLabel: 'RESISTENZA AEROBICA' },
+      { num: 6,  name: 'COMING SOON',               nameIT: 'In Arrivo',            time: '???',    detail: '???',                       cat: 'mystery',    catLabel: 'MYSTERY' },
+      { num: 7,  name: 'GYMNASTICS TRIPLET',        nameIT: 'Tripletta Ginnica',    time: 'TBD',    detail: 'T2B, DB Snatch, MU',       cat: 'ginnastica', catLabel: 'GINNASTICA' },
+      { num: 8,  name: 'METCON AMRAP',              nameIT: 'Metabolico',           time: 'TBD',    detail: 'Burpees, Ski, Bike',        cat: 'metcon',     catLabel: 'CONDIZIONAMENTO' },
+      { num: 9,  name: 'HEAVY CLEAN LADDER',        nameIT: 'Scala di Girate',      time: 'TBD',    detail: 'Pesi crescenti',            cat: 'forza',      catLabel: 'FORZA' },
+      { num: 10, name: 'THE FINALE',                nameIT: 'La Finale',            time: 'AMRAP',  detail: '16 min — HSPU, C2B, Lunges',cat: 'metcon',    catLabel: 'EVENTO FINALE' }
+    ];
+
+    const EPI_DOMAINS = [
+      { label: 'Forza',     score: 920, color: '#FF3C00' },
+      { label: 'Ginnastica',score: 870, color: '#7C4DFF' },
+      { label: 'Cardio',    score: 840, color: '#00E676' },
+      { label: 'Metcon',    score: 900, color: '#FF6B35' },
+      { label: 'Globale',   score: 950, color: '#D4A843' }
+    ];
+
+    const SCENE_NAMES = [
+      'INTRO', "COS'E XENOM",
+      'EVENTO 1', 'EVENTO 2', 'EVENTO 3', 'EVENTO 4', 'EVENTO 5',
+      'EVENTO 6', 'EVENTO 7', 'EVENTO 8', 'EVENTO 9', 'EVENTO 10',
+      'EPI SCORING', 'ATLETI', 'CHIUSURA'
+    ];
+
+    /* ---- DOM ---- */
+    const viewport       = document.getElementById('video-viewport');
+    const progressBar    = document.getElementById('progress-bar');
+    const timeDisplay    = document.getElementById('time-display');
+    const sceneIndicator = document.getElementById('scene-indicator');
+    const btnPlay        = document.getElementById('btn-play');
+    const btnPause       = document.getElementById('btn-pause');
+    const btnRestart     = document.getElementById('btn-restart');
+    const btnFullscreen  = document.getElementById('btn-fullscreen');
+    const progressWrap   = document.getElementById('progress-wrap');
+
+    /* ---- TV Static for Mystery ---- */
+    let staticAnimId = null;
+    function initStatic() {
+      const canvas = document.getElementById('mystery-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = 960;
+      canvas.height = 540;
+
+      function drawStatic() {
+        const imageData = ctx.createImageData(240, 135);
+        const d = imageData.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const v = Math.random() * 255;
+          d[i] = v; d[i+1] = v; d[i+2] = v; d[i+3] = 255;
+        }
+        ctx.putImageData(imageData, 0, 0);
+        ctx.drawImage(canvas, 0, 0, 240, 135, 0, 0, 960, 540);
+        staticAnimId = requestAnimationFrame(drawStatic);
+      }
+
+      window._startStatic = function () { if (!staticAnimId) drawStatic(); };
+      window._stopStatic  = function () { if (staticAnimId) { cancelAnimationFrame(staticAnimId); staticAnimId = null; } };
+    }
+
+    /* ---- Build Master Timeline ---- */
+    function buildTimeline() {
+      const tl = gsap.timeline({ paused: true });
+
+      function showScene(id) { return gsap.to(id, { opacity: 1, visibility: 'visible', duration: 0.01 }); }
+      function hideScene(id) { return gsap.to(id, { opacity: 0, visibility: 'hidden', duration: 0.01 }); }
+
+      /* =========== SCENE 1: INTRO  (0s - 8s) =========== */
+      tl.addLabel('scene-intro', 0);
+      tl.add(showScene('#scene-intro'), 0);
+
+      // Grid fade in
+      tl.to('#scene-intro .grid-bg', { opacity: 1, duration: 1.5 }, 0.2);
+
+      // Particles scatter
+      tl.fromTo('#scene-intro .particle',
+        { opacity: 0, scale: 0 },
+        { opacity: 1, scale: 1, duration: 0.5, stagger: { each: 0.04, from: 'random' } }, 0.3
+      );
+
+      // XENOM glitch in
+      tl.to('.intro-xenom', { opacity: 1, duration: 0.08 }, 0.6);
+      tl.fromTo('.intro-xenom',
+        { x: -30, filter: 'blur(12px)' },
+        { x: 0, filter: 'blur(0px)', duration: 0.5, ease: 'power4.out' }, 0.6
+      );
+      // Flicker
+      tl.to('.intro-xenom', { opacity: 0, duration: 0.04 }, 1.4);
+      tl.to('.intro-xenom', { opacity: 1, duration: 0.04 }, 1.5);
+      tl.to('.intro-xenom', { opacity: 0, duration: 0.03 }, 1.7);
+      tl.to('.intro-xenom', { opacity: 1, duration: 0.04 }, 1.8);
+
+      // BAD BOARS slide up
+      tl.fromTo('.intro-badboars',
+        { y: 80, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, 2.2
+      );
+
+      // Accent line
+      tl.to('.intro-line', { width: 160, duration: 0.6, ease: 'power2.out' }, 3.0);
+
+      // Subtitle
+      tl.fromTo('.intro-subtitle',
+        { y: 25, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.9, ease: 'power2.out' }, 3.4
+      );
+
+      // Particles float
+      tl.to('#scene-intro .particle', {
+        y: '-=50', x: '+=25', rotation: '+=40',
+        duration: 3.5, ease: 'none', stagger: 0.03
+      }, 3.5);
+
+      // Wipe transition
+      tl.to('.wipe-overlay', { x: '0%', duration: 0.3, ease: 'power3.in' }, 7.0);
+      tl.add(hideScene('#scene-intro'), 7.35);
+      tl.to('.wipe-overlay', { x: '100%', duration: 0.3, ease: 'power3.out' }, 7.4);
+      tl.set('.wipe-overlay', { x: '-100%' }, 7.75);
+
+
+      /* =========== SCENE 2: WHAT IS XENOM  (8s - 20s) =========== */
+      tl.addLabel('scene-what', 8);
+      tl.add(showScene('#scene-what'), 8);
+
+      // Kinetic words
+      tl.to('#scene-what .word', {
+        opacity: 1, duration: 0.35, stagger: 0.2, ease: 'power2.out'
+      }, 8.3);
+      tl.fromTo('#scene-what .word',
+        { y: 40, rotateX: 50 },
+        { y: 0, rotateX: 0, duration: 0.5, stagger: 0.2, ease: 'back.out(2.5)' }, 8.3
+      );
+
+      // Counters
+      const counterEls = document.querySelectorAll('.what-counter');
+      counterEls.forEach(function (el, i) {
+        tl.to(el, { opacity: 1, duration: 0.4 }, 10.5 + i * 0.5);
+        tl.fromTo(el, { y: 20 }, { y: 0, duration: 0.4, ease: 'power2.out' }, 10.5 + i * 0.5);
+        const numEl = el.querySelector('.what-counter__number');
+        const target = parseInt(numEl.dataset.target, 10);
+        const counter = { val: 0 };
+        tl.to(counter, {
+          val: target,
+          duration: 1.5,
+          ease: 'power1.inOut',
+          onUpdate: function () { numEl.textContent = Math.round(counter.val); }
+        }, 10.5 + i * 0.5);
+      });
+
+      // Icons
+      tl.to('.what-icon', { opacity: 1, duration: 0.5, stagger: 0.35 }, 13.5);
+      tl.fromTo('.what-icon',
+        { scale: 0.4, y: 40 },
+        { scale: 1, y: 0, duration: 0.7, stagger: 0.35, ease: 'back.out(1.8)' }, 13.5
+      );
+
+      // Fade out
+      tl.to('#scene-what', { opacity: 0, duration: 0.6 }, 19.0);
+      tl.add(hideScene('#scene-what'), 19.6);
+
+
+      /* =========== SCENES 3-12: EVENTS (20s - 100s, 8s each) =========== */
+      EVENTS.forEach(function (evt, i) {
+        var sceneId = '#scene-event-' + evt.num;
+        var t0 = 20 + i * 8;
+        var isMystery = evt.cat === 'mystery';
+
+        tl.addLabel('scene-event-' + evt.num, t0);
+        tl.add(showScene(sceneId), t0);
+
+        if (isMystery) {
+          /* --- Mystery Event 6 --- */
+          tl.call(function () { if (window._startStatic) window._startStatic(); }, null, t0 + 0.1);
+          tl.to(sceneId + ' .mystery-static', { opacity: 0.35, duration: 0.6 }, t0 + 0.2);
+
+          // Question marks
+          tl.to(sceneId + ' .mystery-question', { opacity: 0.12, duration: 0.4, stagger: 0.15 }, t0 + 0.6);
+
+          // Number slam
+          tl.set(sceneId + ' .event-num-display', { scale: 3, opacity: 0 }, t0 + 0.8);
+          tl.to(sceneId + ' .event-num-display', { opacity: 1, scale: 1, duration: 0.5, ease: 'power4.out' }, t0 + 1);
+
+          // COMING SOON
+          tl.set(sceneId + ' .mystery-coming-soon', { scale: 1.5, opacity: 0 }, t0 + 1.8);
+          tl.to(sceneId + ' .mystery-coming-soon', { opacity: 1, scale: 1, duration: 0.6, ease: 'power3.out' }, t0 + 2);
+
+          // Category badge
+          tl.fromTo(sceneId + ' .event-category-badge',
+            { x: 40, opacity: 0 },
+            { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, t0 + 3
+          );
+
+          // Glitch flickers
+          tl.to(sceneId + ' .mystery-coming-soon', { opacity: 0, duration: 0.04 }, t0 + 4.2);
+          tl.to(sceneId + ' .mystery-coming-soon', { opacity: 1, duration: 0.04 }, t0 + 4.3);
+          tl.to(sceneId + ' .mystery-coming-soon', { opacity: 0, duration: 0.03 }, t0 + 5.2);
+          tl.to(sceneId + ' .mystery-coming-soon', { opacity: 1, duration: 0.04 }, t0 + 5.3);
+          tl.to(sceneId + ' .mystery-static',      { opacity: 0, duration: 0.04 }, t0 + 5.6);
+          tl.to(sceneId + ' .mystery-static',      { opacity: 0.3, duration: 0.04 }, t0 + 5.7);
+
+          // Exit
+          tl.to(sceneId + ' .mystery-static', { opacity: 0, duration: 0.4 }, t0 + 6.8);
+          tl.call(function () { if (window._stopStatic) window._stopStatic(); }, null, t0 + 7.2);
+          tl.to(sceneId, { opacity: 0, duration: 0.4 }, t0 + 7.2);
+          tl.add(hideScene(sceneId), t0 + 7.6);
+
+        } else {
+          /* --- Normal Events --- */
+          // Accent line grow
+          tl.set(sceneId + ' .event-accent-line', { scaleY: 0, opacity: 1 }, t0);
+          tl.to(sceneId + ' .event-accent-line', { scaleY: 1, duration: 0.6, ease: 'power2.out' }, t0 + 0.1);
+
+          // Background number
+          tl.to(sceneId + ' .event-number', { opacity: 1, duration: 0.8 }, t0 + 0.1);
+
+          // Number display slam
+          tl.set(sceneId + ' .event-num-display', { scale: 2.5, opacity: 0 }, t0 + 0.2);
+          tl.to(sceneId + ' .event-num-display', { opacity: 1, scale: 1, duration: 0.45, ease: 'power4.out' }, t0 + 0.4);
+
+          // Event name
+          tl.fromTo(sceneId + ' .event-name',
+            { x: -70, opacity: 0 },
+            { x: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, t0 + 1.0
+          );
+
+          // Italian name
+          tl.fromTo(sceneId + ' .event-name-it',
+            { x: -50, opacity: 0 },
+            { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, t0 + 1.5
+          );
+
+          // Details
+          tl.to(sceneId + ' .event-detail', { opacity: 1, duration: 0.35, stagger: 0.25 }, t0 + 2.2);
+          tl.fromTo(sceneId + ' .event-detail',
+            { y: 20 },
+            { y: 0, duration: 0.45, stagger: 0.25, ease: 'power2.out' }, t0 + 2.2
+          );
+
+          // Category badge
+          tl.fromTo(sceneId + ' .event-category-badge',
+            { x: 50, opacity: 0 },
+            { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, t0 + 3.0
+          );
+
+          // Exit slide
+          tl.to(sceneId + ' .event-content', { x: -100, opacity: 0, duration: 0.45, ease: 'power2.in' }, t0 + 6.8);
+          tl.to(sceneId + ' .event-category-badge', { x: 50, opacity: 0, duration: 0.35 }, t0 + 6.8);
+          tl.to(sceneId + ' .event-accent-line', { scaleY: 0, duration: 0.3, transformOrigin: 'bottom' }, t0 + 7.0);
+          tl.to(sceneId, { opacity: 0, duration: 0.3 }, t0 + 7.3);
+          tl.add(hideScene(sceneId), t0 + 7.6);
+        }
+      });
+
+
+      /* =========== SCENE 13: EPI SCORING  (100s - 120s) =========== */
+      var epiT = 100;
+      tl.addLabel('scene-epi', epiT);
+      tl.add(showScene('#scene-epi'), epiT);
+
+      // Title
+      tl.fromTo('.epi-title',
+        { y: 35, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }, epiT + 0.3
+      );
+      tl.fromTo('.epi-subtitle',
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out' }, epiT + 0.9
+      );
+
+      // Circle container
+      tl.to('.epi-circle-container', { opacity: 1, duration: 0.6 }, epiT + 1.8);
+      // Circle fill animation
+      tl.to('.epi-circle-fill', { strokeDashoffset: 816 * 0.15, duration: 3, ease: 'power2.inOut' }, epiT + 2.2);
+
+      // Score counter
+      var scoreEl = document.getElementById('epi-score-value');
+      if (scoreEl) {
+        var scoreCounter = { val: 0 };
+        tl.to(scoreCounter, {
+          val: 8530,
+          duration: 3,
+          ease: 'power2.inOut',
+          onUpdate: function () {
+            scoreEl.textContent = Math.round(scoreCounter.val).toLocaleString('it-IT');
+          }
+        }, epiT + 2.2);
+      }
+
+      // Domain bars
+      var barFills = document.querySelectorAll('.epi-bar__fill');
+      barFills.forEach(function (bar, i) {
+        var h = EPI_DOMAINS[i].score / 7;
+        tl.to(bar, { height: h + 'px', opacity: 1, duration: 0.7, ease: 'power2.out' }, epiT + 6 + i * 0.35);
+      });
+      tl.to('.epi-bar__label', { opacity: 1, duration: 0.3, stagger: 0.2 }, epiT + 6.5);
+
+      // Description text
+      tl.fromTo('.epi-description',
+        { y: 15, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6 }, epiT + 9
+      );
+
+      // Fade out
+      tl.to('#scene-epi', { opacity: 0, duration: 0.6 }, epiT + 18.5);
+      tl.add(hideScene('#scene-epi'), epiT + 19.1);
+
+
+      /* =========== SCENE 14: ATHLETES  (120s - 140s) =========== */
+      var athT = 120;
+      tl.addLabel('scene-athletes', athT);
+      tl.add(showScene('#scene-athletes'), athT);
+
+      // Title
+      tl.fromTo('.athletes-title',
+        { scale: 0.7, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.8, ease: 'power3.out' }, athT + 0.3
+      );
+      tl.fromTo('.athletes-subtitle',
+        { y: 25, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5 }, athT + 0.9
+      );
+
+      // Grid cascade
+      tl.to('.athlete-circle', {
+        opacity: 1, scale: 1, duration: 0.45,
+        stagger: { each: 0.08, from: 'random' },
+        ease: 'back.out(1.8)'
+      }, athT + 1.8);
+
+      // Names scroll
+      tl.to('.athletes-scroll-names', { opacity: 1, duration: 0.5 }, athT + 5.5);
+      tl.fromTo('.athletes-scroll-names',
+        { y: 30 },
+        { y: -40, duration: 11, ease: 'none' }, athT + 5.5
+      );
+
+      // Fade out
+      tl.to('#scene-athletes', { opacity: 0, duration: 0.6 }, athT + 18.5);
+      tl.add(hideScene('#scene-athletes'), athT + 19.1);
+
+
+      /* =========== SCENE 15: CLOSING  (140s - 160s) =========== */
+      var clsT = 140;
+      tl.addLabel('scene-closing', clsT);
+      tl.add(showScene('#scene-closing'), clsT);
+
+      // Logo
+      tl.fromTo('.closing-logo',
+        { scale: 0.6, opacity: 0, filter: 'blur(8px)' },
+        { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 1.2, ease: 'power3.out' }, clsT + 0.5
+      );
+
+      // Divider expand
+      tl.to('.closing-divider', { width: 140, opacity: 1, duration: 0.7, ease: 'power2.out' }, clsT + 2);
+
+      // Location
+      tl.fromTo('.closing-location',
+        { y: 25, opacity: 0, letterSpacing: '20px' },
+        { y: 0, opacity: 1, letterSpacing: '14px', duration: 0.7, ease: 'power2.out' }, clsT + 2.8
+      );
+
+      // Date
+      tl.fromTo('.closing-date',
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6 }, clsT + 3.8
+      );
+
+      // Social
+      tl.fromTo('.closing-social',
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6 }, clsT + 5
+      );
+
+      // Disclaimer
+      tl.to('.closing-disclaimer', { opacity: 0.7, duration: 0.6 }, clsT + 6.5);
+
+      // Hold, then fade to black
+      tl.to('#scene-closing', { opacity: 0, duration: 2.5 }, clsT + 15);
+
+      return tl;
+    }
+
+    /* ---- Scene Index ---- */
+    function getSceneIndex(time) {
+      if (time < 8)    return 0;
+      if (time < 20)   return 1;
+      if (time < 100)  return Math.min(Math.floor((time - 20) / 8) + 2, 11);
+      if (time < 120)  return 12;
+      if (time < 140)  return 13;
+      return 14;
+    }
+
+    /* ---- Viewport Scaling ---- */
+    function scaleViewport() {
+      var w = window.innerWidth;
+      var s = Math.min(w / 1920, 1);
+      viewport.style.transform = 'scale(' + s + ')';
+      viewport.style.transformOrigin = 'top center';
+      viewport.style.marginBottom = (-(1080 * (1 - s))) + 'px';
+    }
+
+    /* ---- Init ---- */
+    function init() {
+      initStatic();
+      var tl = buildTimeline();
+      var dur = tl.duration();
+      var isPlaying = false;
+
+      btnPlay.addEventListener('click', function () {
+        tl.play();
+        isPlaying = true;
+        btnPlay.classList.add('player-controls__btn--active');
+        btnPause.classList.remove('player-controls__btn--active');
+      });
+
+      btnPause.addEventListener('click', function () {
+        tl.pause();
+        isPlaying = false;
+        btnPause.classList.add('player-controls__btn--active');
+        btnPlay.classList.remove('player-controls__btn--active');
+      });
+
+      btnRestart.addEventListener('click', function () {
+        tl.restart();
+        isPlaying = true;
+        btnPlay.classList.add('player-controls__btn--active');
+        btnPause.classList.remove('player-controls__btn--active');
+      });
+
+      btnFullscreen.addEventListener('click', function () {
+        if (viewport.requestFullscreen) {
+          viewport.requestFullscreen();
+        } else if (viewport.webkitRequestFullscreen) {
+          viewport.webkitRequestFullscreen();
+        } else if (viewport.msRequestFullscreen) {
+          viewport.msRequestFullscreen();
+        }
+      });
+
+      progressWrap.addEventListener('click', function (e) {
+        var rect = progressWrap.getBoundingClientRect();
+        var pct = (e.clientX - rect.left) / rect.width;
+        tl.seek(pct * dur);
+      });
+
+      function updateUI() {
+        var t = tl.time();
+        var pct = (t / dur) * 100;
+        progressBar.style.width = pct + '%';
+
+        var m = Math.floor(t / 60);
+        var s = Math.floor(t % 60);
+        var tm = Math.floor(dur / 60);
+        var ts = Math.floor(dur % 60);
+        timeDisplay.textContent =
+          String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') +
+          ' / ' +
+          String(tm).padStart(2, '0') + ':' + String(ts).padStart(2, '0');
+
+        var idx = getSceneIndex(t);
+        sceneIndicator.textContent = 'SCENA ' + (idx + 1) + '/15 \u2014 ' + SCENE_NAMES[idx];
+
+        requestAnimationFrame(updateUI);
+      }
+      updateUI();
+
+      scaleViewport();
+      window.addEventListener('resize', scaleViewport);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+</body>
+</html>

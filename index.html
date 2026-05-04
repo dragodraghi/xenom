@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XENOM // Tusk Protocol — Bad Boars Edition | Sassari</title>
+  <meta name="description" content="XENOM Tusk Protocol — Bad Boars Edition: 10 eventi, 2 giornate (6-7 Giugno 2026), categorie RX/Scaled/Master. Test di logoramento sistemico al box CrossFit Bad Boars di Sassari.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&family=Oswald:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/website.css">
+
+  <!-- Favicon placeholder -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
+</head>
+<body>
+
+  <!-- Skip link per accessibilità -->
+  <a href="#about" class="skip-link" style="position:absolute;top:-100%;left:0;padding:1rem;background:var(--accent-primary);color:#fff;z-index:9999;font-family:var(--font-heading);text-decoration:none;transition:top 0.2s;" onfocus="this.style.top='0'" onblur="this.style.top='-100%'">Vai al contenuto</a>
+
+  <!-- Bottone torna su -->
+  <button id="back-to-top" aria-label="Torna su" style="position:fixed;bottom:2rem;right:2rem;width:48px;height:48px;border-radius:50%;background:var(--accent-primary);color:#fff;border:none;cursor:pointer;font-size:1.4rem;z-index:900;opacity:0;pointer-events:none;transition:all 0.3s;box-shadow:0 4px 16px rgba(255,60,0,0.3);">↑</button>
+
+  <!-- ========== NAVIGATION ========== -->
+  <nav class="nav" id="nav">
+    <div class="nav__inner">
+      <a href="#" class="nav__logo">XENOM <span>BB</span></a>
+      <ul class="nav__links">
+        <li><a href="#about">Cos'è</a></li>
+        <li><a href="#events">Eventi</a></li>
+        <li><a href="#epi">Punteggio</a></li>
+        <li><a href="#athletes">Atleti</a></li>
+        <li><a href="#schedule">Programma</a></li>
+        <li><a href="#location">Location</a></li>
+        <li><a href="#risorse">Risorse</a></li>
+      </ul>
+      <button class="nav__hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+
+  <!-- ========== MOBILE DRAWER ========== -->
+  <div class="nav__mobile-drawer" id="mobile-drawer">
+    <button class="nav__mobile-close" id="mobile-close" aria-label="Chiudi menu">✕</button>
+    <a href="#about" class="mobile-link">Cos'è</a>
+    <a href="#events" class="mobile-link">Eventi</a>
+    <a href="#epi" class="mobile-link">Punteggio</a>
+    <a href="#athletes" class="mobile-link">Atleti</a>
+    <a href="#schedule" class="mobile-link">Programma</a>
+    <a href="#location" class="mobile-link">Location</a>
+    <a href="#risorse" class="mobile-link">Risorse</a>
+  </div>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero" id="hero">
+    <div class="hero__bg"></div>
+    <div class="hero__grid-pattern"></div>
+    <div class="hero__noise"></div>
+
+    <div class="hero__content">
+      <div class="hero__badge">XENOM // Tusk Protocol — 6-7 Giugno 2026, Sassari</div>
+
+      <h1 class="hero__title">
+        <span class="accent">XENOM</span>
+        <span class="outline">TUSK PROTOCOL</span>
+        <span class="accent">BAD BOARS EDITION</span>
+      </h1>
+
+      <p class="hero__subtitle">10 Events. 2 Days. Zero Excuses.</p>
+
+      <div class="hero__stats">
+        <div class="hero__stat">
+          <div class="hero__stat-number" data-counter="10">0</div>
+          <div class="hero__stat-label">Eventi</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-number" data-counter="2">0</div>
+          <div class="hero__stat-label">Giorni</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-number" data-counter="3">0</div>
+          <div class="hero__stat-label">Categorie</div>
+        </div>
+      </div>
+
+      <div class="hero__cta">
+        <a href="#events" class="btn btn--primary">Scopri gli Eventi</a>
+        <a href="#epi" class="btn btn--outline">Come Funziona</a>
+      </div>
+    </div>
+
+    <div class="hero__scroll-indicator">
+      <div class="hero__scroll-line"></div>
+    </div>
+  </section>
+
+
+  <!-- ========== COS'È XENOM ========== -->
+  <section class="section section--alt about" id="about">
+    <div class="container">
+      <div class="section__header reveal">
+        <div class="section__number">01</div>
+        <div class="section__label">Il Manifesto</div>
+        <h2>Tusk Protocol</h2>
+        <hr class="divider divider--center">
+      </div>
+
+      <div class="about__grid">
+        <div class="about__text reveal-left">
+          <p style="font-family: var(--font-heading); font-size: 1.15rem; line-height: 1.6; color: var(--text-primary); border-left: 3px solid var(--accent-primary); padding-left: var(--space-md); margin-bottom: var(--space-lg);">
+            Il tempo delle scuse è terminato. Il <strong>Tusk Protocol</strong> non è una gara, è un <strong>test di logoramento sistemico</strong>. Dieci prove progettate per trovare il tuo punto di rottura e superarlo. Al Bad Boars, non contano i "se", conta solo quanto sei disposto a scavare nel fango.
+          </p>
+          <p>
+            <strong>XENOM</strong> è una competizione globale di fitness funzionale con un formato fisso di <strong>10 eventi</strong> che testano forza massimale, ginnastica e capacità aerobica. A differenza dei CrossFit Games, XENOM utilizza gli <strong>stessi 10 eventi in ogni competizione</strong>, permettendo agli atleti di confrontare le proprie performance nel tempo e nel mondo tramite il sistema <strong>EPI (Elite Performance Index)</strong>.
+          </p>
+          <p>
+            La <strong>Bad Boars Edition</strong> è il nostro <em>collaudo in anteprima</em> del Tusk Protocol al box di Sassari: i <strong>10 eventi distribuiti su 2 giornate</strong> (sabato e domenica, <strong>6-7 Giugno 2026</strong>), <strong>3 categorie</strong> — RX, Scaled, Master. Saremo i primi al mondo a metterlo alla prova prima del lancio ufficiale del <strong>27 Giugno 2026</strong>.
+          </p>
+        </div>
+
+        <div class="about__categories reveal-right">
+          <div class="about__category">
+            <span class="about__category-icon">🏋️</span>
+            <div class="about__category-name">Forza</div>
+            <div class="about__category-desc">Snatch, Clean, carichi massimali</div>
+          </div>
+          <div class="about__category">
+            <span class="about__category-icon">🤸</span>
+            <div class="about__category-name">Ginnastica</div>
+            <div class="about__category-desc">Muscle-Up, HSPU, Wall Walk</div>
+          </div>
+          <div class="about__category">
+            <span class="about__category-icon">❤️‍🔥</span>
+            <div class="about__category-name">Cardio</div>
+            <div class="about__category-desc">Run, Bike, Ski, Metcon</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========== I 10 EVENTI ========== -->
+  <section class="section events" id="events">
+    <div class="container">
+      <div class="section__header reveal">
+        <div class="section__number">02</div>
+        <div class="section__label">La Competizione</div>
+        <h2>I 10 Eventi</h2>
+        <hr class="divider divider--center">
+        <p class="text-center" style="margin: var(--space-md) auto 0; max-width: 600px;">Dieci prove che coprono ogni dominio del fitness. Stessi eventi, stessi standard, un unico punteggio globale.</p>
+      </div>
+
+      <div class="events__list" id="events-list">
+        <!-- Populated by JS from data.js -->
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========== SISTEMA EPI ========== -->
+  <section class="section section--alt epi" id="epi">
+    <div class="container">
+      <div class="section__header reveal">
+        <div class="section__number">03</div>
+        <div class="section__label">Il Punteggio</div>
+        <h2>Elite Performance Index</h2>
+        <hr class="divider divider--center">
+      </div>
+
+      <div class="epi__content">
+        <div class="epi__explanation reveal-left">
+          <h3>Come Funziona l'<span class="text-gold">EPI</span></h3>
+          <p style="margin-bottom: var(--space-lg); line-height: 1.8;">
+            Il sistema di punteggio EPI è ispirato al decathlon dell'atletica leggera olimpica. Ogni evento genera un punteggio basato su benchmark di livello elite mondiale.
+          </p>
+
+          <ol class="epi__steps" id="epi-steps">
+            <li>Ogni evento ha un benchmark basato su performance di livello elite mondiale</li>
+            <li>La tua performance viene convertita in punti usando una formula specifica per tipo di evento</li>
+            <li>Puoi ottenere più o meno di 1.000 punti per evento</li>
+            <li>I pesi nella formula garantiscono che miglioramenti in ogni dominio siano premiati equamente</li>
+            <li>Il totale dei 10 punteggi è il tuo EPI — comparabile tra eventi, location e tempo</li>
+          </ol>
+        </div>
+
+        <div class="epi__visual reveal-right">
+          <div class="epi__gauge">
+            <svg viewBox="0 0 250 250">
+              <circle class="epi__gauge-bg" cx="125" cy="125" r="110" />
+              <circle class="epi__gauge-fill" cx="125" cy="125" r="110" />
+            </svg>
+            <div class="epi__gauge-score">
+              <div class="epi__gauge-number" data-counter="7850">0</div>
+              <div class="epi__gauge-label">Punteggio EPI</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Esempio atleta</div>
+            </div>
+          </div>
+
+          <div class="epi__levels" id="epi-levels">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========== ATLETI ========== -->
+  <section class="section athletes" id="athletes">
+    <div class="container">
+      <div class="section__header reveal">
+        <div class="section__number">04</div>
+        <div class="section__label">I Protagonisti</div>
+        <h2>Atleti</h2>
+        <hr class="divider divider--center">
+        <p class="text-center" style="margin: var(--space-md) auto 0; max-width: 600px;">Iscrizioni aperte nelle <strong>3 categorie</strong>: <strong>RX</strong>, <strong>Scaled</strong>, <strong>Master</strong>. I profili dei partecipanti verranno pubblicati qui appena confermati. Per iscriverti contattaci sui canali social.</p>
+      </div>
+
+      <div class="athletes__grid" id="athletes-grid">
+        <!-- Populated by JS from data.js -->
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========== PROGRAMMA GIORNATA ========== -->
+  <section class="section section--alt schedule" id="schedule">
+    <div class="container">
+      <div class="section__header reveal">
+        <div class="section__number">05</div>
+        <div class="section__label">Le Due Giornate</div>
+        <h2>Programma</h2>
+        <hr class="divider divider--center">
+        <p class="text-center" style="margin: var(--space-md) auto 0; max-width: 560px;">10 eventi distribuiti su <strong>sabato 6</strong> e <strong>domenica 7 Giugno 2026</strong>. Scaletta dettagliata in fase di definizione — verrà pubblicata qui non appena confermata.</p>
+      </div>
+
+      <div class="schedule__timeline" id="schedule-timeline">
+        <!-- Populated by JS from data.js -->
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========== LOCATION ========== -->
+  <section class="section location" id="location">
+    <div class="container">
+      <div class="section__header reveal">
+        <div class="section__number">06</div>
+        <div class="section__label">Dove Trovarci</div>
+        <h2>Location</h2>
+        <hr class="divider divider--center">
+      </div>
+
+      <div class="location__content">
+        <div class="location__info reveal-left">
+          <div class="location__detail">
+            <div class="location__detail-icon">📍</div>
+            <div class="location__detail-text">
+              <h4>Bad Boars CrossFit</h4>
+              <p>Predda Niedda Sud Str.40, 07100 Sassari (SS), Sardegna</p>
+            </div>
+          </div>
+
+          <div class="location__detail">
+            <div class="location__detail-icon">📅</div>
+            <div class="location__detail-text">
+              <h4>Date</h4>
+              <p>Sabato 6 e Domenica 7 Giugno 2026</p>
+            </div>
+          </div>
+
+          <div class="location__detail">
+            <div class="location__detail-icon">🕐</div>
+            <div class="location__detail-text">
+              <h4>Orari</h4>
+              <p>Programma dettagliato in arrivo</p>
+            </div>
+          </div>
+
+          <div class="location__detail">
+            <div class="location__detail-icon">📱</div>
+            <div class="location__detail-text">
+              <h4>Contatti</h4>
+              <p>
+                Instagram: <a href="https://instagram.com/badboarscrossfit" target="_blank" rel="noopener noreferrer">@badboarscrossfit</a><br>
+                Facebook: <a href="https://www.facebook.com/badboarscrossfit" target="_blank" rel="noopener noreferrer">Bad Boars CrossFit</a>
+              </p>
+            </div>
+          </div>
+
+          <a href="https://instagram.com/badboarscrossfit" target="_blank" rel="noopener noreferrer" class="btn btn--primary" style="align-self: flex-start; margin-top: var(--space-md);">
+            Seguici su Instagram
+          </a>
+        </div>
+
+        <div class="location__map reveal-right">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3040.5!2d8.52!3d40.73!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQzJzQ4LjAiTiA4wrAzMScxMi4wIkU!5e0!3m2!1sit!2sit!4v1"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            title="Mappa Bad Boars CrossFit Sassari"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========== RISORSE ========== -->
+  <section class="section section--alt" id="risorse">
+    <div class="container">
+      <div class="section__header reveal">
+        <div class="section__number">07</div>
+        <div class="section__label">Materiali</div>
+        <h2>Risorse</h2>
+        <hr class="divider divider--center">
+        <p class="text-center" style="margin: var(--space-md) auto 0; max-width: 550px;">Presentazione completa dell'evento — regole, eventi, sistema di punteggio.</p>
+      </div>
+
+      <div style="max-width: 420px; margin: 0 auto;">
+
+        <!-- PDF Card -->
+        <a class='card reveal' href='/presentazione' style='display: block; text-decoration: none; text-align: center; padding: var(--space-2xl) var(--space-lg); border: 1px solid rgba(212, 168, 67, 0.15); position: relative; overflow: hidden;'>
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--accent-gold), var(--accent-secondary));"></div>
+          <div style="font-size: 3.5rem; margin-bottom: var(--space-md);">📄</div>
+          <h3 style="margin-bottom: var(--space-sm);">Presentazione PDF</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: var(--space-lg);">
+            Documento completo di 20 pagine: regole, eventi, punteggio EPI, atleti, programma e info pratiche.
+          </p>
+          <span class="btn btn--outline" style="pointer-events: none; border-color: var(--accent-gold); color: var(--accent-gold);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="8 15 12 18 16 15"/></svg>
+            Apri Presentazione
+          </span>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: var(--space-md);">
+            Ctrl+P nel browser per salvare come PDF
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__logo">XENOM // TUSK PROTOCOL <span>BAD BOARS</span> EDITION</div>
+      <p class="footer__disclaimer">
+        Collaudo locale in anteprima del format XENOM™ Tusk Protocol — Bad Boars CrossFit, Sassari.
+        XENOM™ e Tusk Protocol™ sono marchi di XENOM Inc. Questo evento non è affiliato, sponsorizzato o approvato.
+      </p>
+      <div class="footer__links">
+        <a href="https://www.xenom.global/" target="_blank" rel="noopener noreferrer">XENOM Ufficiale</a>
+        <a href="https://instagram.com/badboarscrossfit" target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href="https://www.facebook.com/badboarscrossfit" target="_blank" rel="noopener noreferrer">Bad Boars CrossFit</a>
+      </div>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: var(--space-md);">&copy; 2026 Bad Boars CrossFit — Sassari, Sardegna</p>
+    </div>
+  </footer>
+
+
+  <!-- ========== SCRIPTS ========== -->
+  <script src="js/data.js"></script>
+  <script src="js/animations.js"></script>
+
+</body>
+</html>

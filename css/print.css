@@ -1,0 +1,274 @@
+/* ============================================
+   XENOM BAD BOARS EDITION — Print Styles
+   Ottimizzato per stampa / salvataggio PDF
+   ============================================ */
+
+/* --- Impostazioni pagina A4 --- */
+@page {
+  size: A4 portrait;
+  margin: 15mm 20mm;
+}
+
+/* --- Stili di stampa --- */
+@media print {
+
+  /* Reset generale */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  html, body {
+    width: 210mm;
+    margin: 0;
+    padding: 0;
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #1A1A1A !important;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+  }
+
+  /* Elementi nascosti in stampa */
+  .no-print,
+  .print-btn-container {
+    display: none !important;
+  }
+
+  /* --- Interruzioni di pagina --- */
+  .page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .page {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .page-break-before {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  /* --- Copertina (resta scura) --- */
+  .page--cover {
+    background: #0A0A0A !important;
+    color: #FFFFFF !important;
+  }
+
+  .page--cover * {
+    color: #FFFFFF !important;
+  }
+
+  .page--cover .cover__accent {
+    background: #FF3C00 !important;
+  }
+
+  .page--cover .cover__subtitle {
+    color: #FF3C00 !important;
+  }
+
+  /* --- Retro copertina (resta scura) --- */
+  .page--backcover {
+    background: #0A0A0A !important;
+    color: #FFFFFF !important;
+  }
+
+  .page--backcover * {
+    color: #FFFFFF !important;
+  }
+
+  .page--backcover .backcover__accent {
+    color: #FF3C00 !important;
+  }
+
+  /* --- Pagine interne (tema chiaro) --- */
+  .page--light {
+    background: #FFFFFF !important;
+    color: #1A1A1A !important;
+  }
+
+  .page--light h1,
+  .page--light h2,
+  .page--light h3 {
+    color: #0A0A0A !important;
+  }
+
+  .page--light .section-number {
+    color: #E8E8E8 !important;
+  }
+
+  /* --- Tipografia stampa --- */
+  h1 {
+    font-size: 28pt;
+    line-height: 1.1;
+  }
+
+  h2 {
+    font-size: 20pt;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-size: 14pt;
+    line-height: 1.3;
+  }
+
+  p {
+    font-size: 10.5pt;
+    line-height: 1.6;
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* --- Badge categoria --- */
+  .badge {
+    border: 1.5pt solid currentColor !important;
+    padding: 2pt 10pt;
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
+    display: inline-block;
+  }
+
+  .badge--forza {
+    color: #CC3000 !important;
+    border-color: #CC3000 !important;
+  }
+
+  .badge--ginnastica {
+    color: #5C2DBF !important;
+    border-color: #5C2DBF !important;
+  }
+
+  .badge--cardio {
+    color: #00994D !important;
+    border-color: #00994D !important;
+  }
+
+  .badge--metcon {
+    color: #CC5500 !important;
+    border-color: #CC5500 !important;
+  }
+
+  .badge--mystery {
+    color: #666666 !important;
+    border-color: #666666 !important;
+  }
+
+  /* --- Tabelle --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+  }
+
+  thead th {
+    background: #0A0A0A !important;
+    color: #FFFFFF !important;
+    padding: 8pt 10pt;
+    text-align: left;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+    font-size: 8.5pt;
+  }
+
+  tbody td {
+    padding: 6pt 10pt;
+    border-bottom: 0.5pt solid #E0E0E0;
+  }
+
+  tbody tr:nth-child(even) td {
+    background: #F5F5F5 !important;
+  }
+
+  /* --- Evento: numero watermark --- */
+  .event-number-watermark {
+    color: #F0F0F0 !important;
+    font-size: 150pt;
+    font-family: 'Bebas Neue', sans-serif;
+    position: absolute;
+    right: -10mm;
+    top: 5mm;
+    line-height: 1;
+    z-index: 0;
+    opacity: 1 !important;
+  }
+
+  /* --- Timeline / programma --- */
+  .timeline-item {
+    border-left: 2pt solid #E0E0E0;
+  }
+
+  .timeline-item--active {
+    border-left-color: #FF3C00 !important;
+  }
+
+  .timeline-dot {
+    background: #FF3C00 !important;
+  }
+
+  /* --- Link --- */
+  a {
+    color: #1A1A1A !important;
+    text-decoration: none !important;
+  }
+
+  /* --- Accenti --- */
+  .accent-line {
+    background: #FF3C00 !important;
+    height: 3pt;
+  }
+
+  .accent-text {
+    color: #CC3000 !important;
+  }
+
+  /* --- EPI livelli --- */
+  .epi-level--legendary {
+    background: #FFF3E0 !important;
+    border-left: 3pt solid #FF3C00 !important;
+  }
+
+  .epi-level--elite {
+    background: #F3E5F5 !important;
+    border-left: 3pt solid #7C4DFF !important;
+  }
+
+  .epi-level--advanced {
+    background: #E8F5E9 !important;
+    border-left: 3pt solid #00E676 !important;
+  }
+
+  .epi-level--intermediate {
+    background: #E3F2FD !important;
+    border-left: 3pt solid #448AFF !important;
+  }
+
+  .epi-level--base {
+    background: #F5F5F5 !important;
+    border-left: 3pt solid #999999 !important;
+  }
+
+  /* --- Info box --- */
+  .info-box {
+    border: 1pt solid #E0E0E0;
+    padding: 10pt 14pt;
+    background: #FAFAFA !important;
+  }
+
+  /* --- Disclaimer --- */
+  .disclaimer {
+    border-top: 0.5pt solid #CCCCCC;
+    padding-top: 8pt;
+    font-size: 8pt;
+    color: #888888 !important;
+  }
+}

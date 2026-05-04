@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XENOM Bad Boars Edition — Presentazione PDF</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&family=Oswald:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Print CSS -->
+  <link rel="stylesheet" href="css/print.css">
+
+  <style>
+    /* ============================================
+       SCREEN STYLES (anteprima a schermo)
+       ============================================ */
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0A0A0A;
+      --bg-secondary: #141414;
+      --bg-tertiary: #1E1E1E;
+      --accent: #FF3C00;
+      --accent-secondary: #FF6B35;
+      --text-primary: #FFFFFF;
+      --text-secondary: #B0B0B0;
+      --text-muted: #666666;
+      --cat-forza: #FF3C00;
+      --cat-ginnastica: #7C4DFF;
+      --cat-cardio: #00E676;
+      --cat-metcon: #FF6B35;
+      --cat-mystery: #666666;
+      --font-display: 'Bebas Neue', 'Impact', sans-serif;
+      --font-heading: 'Oswald', 'Arial Narrow', sans-serif;
+      --font-body: 'Inter', 'Segoe UI', sans-serif;
+      --font-mono: 'Space Mono', 'Courier New', monospace;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      line-height: 1.6;
+    }
+
+    /* --- Print button --- */
+    .print-btn-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 9999;
+    }
+
+    .print-btn {
+      background: var(--accent);
+      color: #FFFFFF;
+      border: none;
+      padding: 14px 28px;
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .print-btn:hover {
+      background: #E03500;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(255, 60, 0, 0.4);
+    }
+
+    .print-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    /* --- Page container (screen) --- */
+    .pages-wrapper {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .page {
+      position: relative;
+      width: 100%;
+      min-height: 297mm;
+      padding: 40px 48px;
+      margin-bottom: 40px;
+      overflow: hidden;
+    }
+
+    .page--cover,
+    .page--backcover {
+      background: var(--bg-primary);
+      border: 1px solid #222;
+    }
+
+    .page--light {
+      background: #FFFFFF;
+      color: #1A1A1A;
+    }
+
+    .page--light h1,
+    .page--light h2,
+    .page--light h3,
+    .page--light h4 {
+      color: #0A0A0A;
+    }
+
+    .page--light p,
+    .page--light li {
+      color: #333333;
+    }
+
+    /* --- Typography --- */
+    .display-huge {
+      font-family: var(--font-display);
+      font-size: 120px;
+      line-height: 0.9;
+      letter-spacing: 6px;
+    }
+
+    .display-large {
+      font-family: var(--font-display);
+      font-size: 64px;
+      line-height: 1;
+      letter-spacing: 3px;
+    }
+
+    .display-medium {
+      font-family: var(--font-display);
+      font-size: 48px;
+      line-height: 1.05;
+      letter-spacing: 2px;
+    }
+
+    .heading-section {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+
+    .heading-sub {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .text-body {
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .text-small {
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .text-mono {
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    .text-muted {
+      color: var(--text-muted);
+    }
+
+    .page--light .text-muted {
+      color: #888888;
+    }
+
+    /* --- Accent elements --- */
+    .accent-line {
+      width: 60px;
+      height: 4px;
+      background: var(--accent);
+    }
+
+    .accent-line--wide {
+      width: 100px;
+    }
+
+    .accent-text {
+      color: var(--accent);
+    }
+
+    .page--light .accent-text {
+      color: #CC3000;
+    }
+
+    /* --- COVER PAGE --- */
+    .cover {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: calc(297mm - 80px);
+    }
+
+    .cover__label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .cover__title {
+      font-family: var(--font-display);
+      font-size: 160px;
+      line-height: 0.85;
+      letter-spacing: 8px;
+      color: #FFFFFF;
+    }
+
+    .cover__subtitle {
+      font-family: var(--font-display);
+      font-size: 52px;
+      color: var(--accent);
+      letter-spacing: 4px;
+      margin-top: 8px;
+    }
+
+    .cover__accent {
+      width: 80px;
+      height: 5px;
+      background: var(--accent);
+      margin: 32px 0;
+    }
+
+    .cover__tagline {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 6px;
+    }
+
+    .cover__location {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 48px;
+      letter-spacing: 2px;
+    }
+
+    .cover__grid {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 40%;
+      opacity: 0.03;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+
+    /* --- TABLE OF CONTENTS --- */
+    .toc-list {
+      list-style: none;
+      counter-reset: toc;
+    }
+
+    .toc-item {
+      counter-increment: toc;
+      display: flex;
+      align-items: baseline;
+      padding: 14px 0;
+      border-bottom: 1px solid #E8E8E8;
+    }
+
+    .toc-item__number {
+      font-family: var(--font-display);
+      font-size: 28px;
+      color: #CCCCCC;
+      width: 50px;
+      flex-shrink: 0;
+    }
+
+    .page--light .toc-item__number {
+      color: #CCCCCC;
+    }
+
+    .toc-item__title {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      flex-grow: 1;
+    }
+
+    .toc-item__dots {
+      flex-grow: 1;
+      border-bottom: 1px dotted #CCCCCC;
+      margin: 0 12px;
+      min-width: 40px;
+      position: relative;
+      top: -4px;
+    }
+
+    .toc-item__page {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: #888888;
+      flex-shrink: 0;
+    }
+
+    /* --- EVENT PAGES --- */
+    .event-page {
+      position: relative;
+    }
+
+    .event-number-watermark {
+      position: absolute;
+      top: 10px;
+      right: -15px;
+      font-family: var(--font-display);
+      font-size: 220px;
+      line-height: 1;
+      color: #F0F0F0;
+      z-index: 0;
+      user-select: none;
+    }
+
+    .page--cover .event-number-watermark,
+    .page--backcover .event-number-watermark {
+      color: #1A1A1A;
+    }
+
+    .event-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .event-header {
+      margin-bottom: 28px;
+    }
+
+    .event-header__number {
+      font-family: var(--font-display);
+      font-size: 56px;
+      line-height: 1;
+      color: #CCCCCC;
+    }
+
+    .page--light .event-header__number {
+      color: #DDDDDD;
+    }
+
+    .event-header__name-it {
+      font-family: var(--font-display);
+      font-size: 44px;
+      letter-spacing: 2px;
+      line-height: 1.05;
+      margin-top: 4px;
+    }
+
+    .event-header__name-en {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      color: #999999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 4px 16px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border: 2px solid currentColor;
+      margin: 16px 0;
+    }
+
+    .badge--forza { color: var(--cat-forza); }
+    .badge--ginnastica { color: var(--cat-ginnastica); }
+    .badge--cardio { color: var(--cat-cardio); }
+    .badge--metcon { color: var(--cat-metcon); }
+    .badge--mystery { color: var(--cat-mystery); }
+
+    .page--light .badge--forza { color: #CC3000; }
+    .page--light .badge--ginnastica { color: #5C2DBF; }
+    .page--light .badge--cardio { color: #00994D; }
+    .page--light .badge--metcon { color: #CC5500; }
+    .page--light .badge--mystery { color: #666666; }
+
+    /* Event details grid */
+    .event-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .event-detail {
+      padding: 16px;
+      background: #F8F8F8;
+      border-left: 3px solid #E0E0E0;
+    }
+
+    .event-detail__label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #888888;
+      margin-bottom: 4px;
+    }
+
+    .event-detail__value {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .event-detail--accent {
+      border-left-color: var(--accent);
+    }
+
+    .page--light .event-detail--accent {
+      border-left-color: #CC3000;
+    }
+
+    .event-description {
+      margin-top: 20px;
+      padding: 20px;
+      background: #F8F8F8;
+      border-radius: 2px;
+    }
+
+    .event-description p {
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    /* --- EPI PAGE --- */
+    .epi-levels {
+      margin: 24px 0;
+    }
+
+    .epi-level {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      margin-bottom: 8px;
+      border-left: 4px solid transparent;
+    }
+
+    .epi-level__name {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      width: 160px;
+      flex-shrink: 0;
+    }
+
+    .epi-level__score {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .epi-level--legendary {
+      background: rgba(255, 60, 0, 0.06);
+      border-left-color: var(--accent);
+    }
+    .epi-level--elite {
+      background: rgba(124, 77, 255, 0.06);
+      border-left-color: #7C4DFF;
+    }
+    .epi-level--advanced {
+      background: rgba(0, 230, 118, 0.06);
+      border-left-color: #00E676;
+    }
+    .epi-level--intermediate {
+      background: rgba(68, 138, 255, 0.06);
+      border-left-color: #448AFF;
+    }
+    .epi-level--base {
+      background: rgba(0, 0, 0, 0.03);
+      border-left-color: #999999;
+    }
+
+    .epi-steps {
+      counter-reset: step;
+      list-style: none;
+      margin-top: 28px;
+    }
+
+    .epi-step {
+      counter-increment: step;
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .epi-step::before {
+      content: counter(step);
+      font-family: var(--font-display);
+      font-size: 32px;
+      color: #DDDDDD;
+      width: 48px;
+      flex-shrink: 0;
+      line-height: 1;
+      padding-top: 2px;
+    }
+
+    .epi-step p {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* --- ATHLETES TABLE --- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background: #0A0A0A;
+      color: #FFFFFF;
+      padding: 12px 14px;
+      text-align: left;
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .page--light thead th {
+      background: #0A0A0A;
+      color: #FFFFFF;
+    }
+
+    tbody td {
+      padding: 10px 14px;
+      font-size: 14px;
+      border-bottom: 1px solid #E8E8E8;
+    }
+
+    tbody tr:nth-child(even) td {
+      background: #F7F7F7;
+    }
+
+    /* --- SCHEDULE TIMELINE --- */
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #E0E0E0;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding: 10px 0 10px 28px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -21px;
+      top: 16px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #CCCCCC;
+      border: 2px solid #FFFFFF;
+    }
+
+    .timeline-item--event .timeline-dot {
+      background: var(--accent);
+    }
+
+    .page--light .timeline-item--event .timeline-dot {
+      background: #CC3000;
+    }
+
+    .timeline-item--break .timeline-dot {
+      background: #448AFF;
+    }
+
+    .timeline__time {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      width: 56px;
+      flex-shrink: 0;
+    }
+
+    .timeline__desc {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .timeline__desc strong {
+      font-weight: 700;
+    }
+
+    .timeline-item--break .timeline__desc {
+      color: #448AFF;
+      font-style: italic;
+    }
+
+    .page--light .timeline-item--break .timeline__desc {
+      color: #2962FF;
+    }
+
+    /* --- INFO BOXES --- */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 24px 0;
+    }
+
+    .info-box {
+      padding: 20px;
+      background: #F8F8F8;
+      border: 1px solid #E8E8E8;
+    }
+
+    .info-box__title {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      color: #0A0A0A;
+    }
+
+    .info-box__title .accent-text {
+      margin-right: 6px;
+    }
+
+    .info-box ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .info-box li {
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 3px 0;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .info-box li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 5px;
+      height: 5px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .page--light .info-box li::before {
+      background: #CC3000;
+    }
+
+    .info-box--full {
+      grid-column: 1 / -1;
+    }
+
+    /* --- BACK COVER --- */
+    .backcover {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: calc(297mm - 80px);
+      color: #FFFFFF;
+    }
+
+    .backcover__title {
+      font-family: var(--font-display);
+      font-size: 72px;
+      letter-spacing: 4px;
+      line-height: 1;
+    }
+
+    .backcover__accent {
+      color: var(--accent);
+    }
+
+    .backcover__tagline {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 6px;
+      margin-top: 16px;
+    }
+
+    .backcover__location {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 40px;
+      letter-spacing: 2px;
+    }
+
+    .backcover__links {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .backcover__link {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: 1px;
+    }
+
+    .backcover__credits {
+      margin-top: 48px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .disclaimer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #333;
+      font-size: 11px;
+      color: #555;
+      max-width: 500px;
+      line-height: 1.5;
+    }
+
+    .page--light .disclaimer {
+      border-top-color: #CCCCCC;
+    }
+
+    /* --- Section page header pattern --- */
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-header__overline {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #999999;
+      margin-bottom: 8px;
+    }
+
+    .page-footer {
+      position: absolute;
+      bottom: 40px;
+      left: 48px;
+      right: 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #BBBBBB;
+    }
+
+    .page--cover .page-footer,
+    .page--backcover .page-footer {
+      color: #444444;
+    }
+
+    /* --- Responsive screen adjustments --- */
+    @media screen and (max-width: 800px) {
+      .pages-wrapper {
+        padding: 20px 10px;
+      }
+      .page {
+        padding: 28px 24px;
+      }
+      .cover__title {
+        font-size: 80px;
+      }
+      .cover__subtitle {
+        font-size: 32px;
+      }
+      .event-details {
+        grid-template-columns: 1fr;
+      }
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+      .display-huge {
+        font-size: 72px;
+      }
+      .event-number-watermark {
+        font-size: 140px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BUTTONS (nascosti in stampa) -->
+  <div class="print-btn-container no-print" style="display: flex; gap: 10px;">
+    <a class='print-btn' href='/#risorse' style='text-decoration: none; background: #1a1a1a; border: 1px solid #444;'>
+      <svg viewBox="0 0 24 24" style="fill: currentColor; width: 18px; height: 18px;"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      Torna al Sito
+    </a>
+    <button class="print-btn" onclick="window.print()">
+      <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+      Stampa / Salva PDF
+    </button>
+  </div>
+
+  <div class="pages-wrapper">
+
+    <!-- ================================================================
+         PAGE 1 — COVER
+         ================================================================ -->
+    <div class="page page--cover page-break">
+      <div class="cover__grid"></div>
+      <div class="cover">
+        <div class="cover__label">Competition Format &mdash; 2026</div>
+        <h1 class="cover__title">XENOM</h1>
+        <h2 class="cover__subtitle">BAD BOARS EDITION</h2>
+        <div class="cover__accent"></div>
+        <p class="cover__tagline">Il Decathlon del Fitness</p>
+        <p class="cover__location">Sassari, Sardegna &mdash; 2026</p>
+      </div>
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span></span>
+      </div>
+    </div>
+
+
+    <!-- ================================================================
+         PAGE 2 — TABLE OF CONTENTS
+         ================================================================ -->
+    <div class="page page--light page-break">
+      <div class="page-header">
+        <div class="page-header__overline">Sommario</div>
+        <h2 class="heading-section">Indice</h2>
+        <div class="accent-line"></div>
+      </div>
+
+      <ol class="toc-list">
+        <li class="toc-item">
+          <span class="toc-item__number">01</span>
+          <span class="toc-item__title">Cos'&egrave; XENOM</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">3</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">02</span>
+          <span class="toc-item__title">Bad Boars Edition &mdash; L'Adattamento Locale</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">4</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">03</span>
+          <span class="toc-item__title">Evento 1 &mdash; Strappo Massimale</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">5</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">04</span>
+          <span class="toc-item__title">Evento 2 &mdash; Scalata &amp; Corda</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">6</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">05</span>
+          <span class="toc-item__title">Evento 3 &mdash; Sprint Calorie</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">7</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">06</span>
+          <span class="toc-item__title">Evento 4 &mdash; Ciclo di Bilanciere</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">8</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">07</span>
+          <span class="toc-item__title">Evento 5 &mdash; Endurance Combinato</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">9</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">08</span>
+          <span class="toc-item__title">Evento 6 &mdash; In Arrivo</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">10</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">09</span>
+          <span class="toc-item__title">Evento 7 &mdash; Tripletta Ginnica</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">11</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">10</span>
+          <span class="toc-item__title">Evento 8 &mdash; Metabolico</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">12</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">11</span>
+          <span class="toc-item__title">Evento 9 &mdash; Scala di Girate Pesanti</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">13</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">12</span>
+          <span class="toc-item__title">Evento 10 &mdash; La Finale</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">14</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">13</span>
+          <span class="toc-item__title">Sistema di Punteggio EPI</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">15</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">14</span>
+          <span class="toc-item__title">I 15 Atleti</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">16&ndash;17</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">15</span>
+          <span class="toc-item__title">Programma della Giornata</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">18</span>
+        </li>
+        <li class="toc-item">
+          <span class="toc-item__number">16</span>
+          <span class="toc-item__title">Informazioni Pratiche</span>
+          <span class="toc-item__dots"></span>
+          <span class="toc-item__page">19</span>
+        </li>
+      </ol>
+
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>2</span>
+      </div>
+    </div>
+
+
+    <!-- ================================================================
+         PAGE 3 — COS'E' XENOM
+         ================================================================ -->
+    <div class="page page--light page-break">
+      <div class="page-header">
+        <div class="page-header__overline">Sezione 01</div>
+        <h2 class="heading-section">Cos'&egrave; XENOM</h2>
+        <div class="accent-line"></div>
+      </div>
+
+      <p class="text-body" style="margin-bottom:20px;">
+        <strong>XENOM</strong> &egrave; un nuovo format globale di competizione fitness standardizzata, definito
+        <em>&ldquo;Il Decathlon del Fitness&rdquo;</em>. Fondato da <strong>Keith Barlow</strong> con un
+        investimento di <strong>$15 milioni</strong> da parte di <strong>WndrCo</strong>, XENOM porta una rivoluzione
+        nel mondo delle competizioni CrossFit e di fitness funzionale.
+      </p>
+
+      <p class="text-body" style="margin-bottom:20px;">
+        Il format prevede <strong>10 eventi fissi</strong> distribuiti su <strong>2 giorni</strong>, progettati per
+        testare in modo completo <strong>forza</strong>, <strong>ginnastica</strong> e <strong>capacit&agrave; aerobica</strong>.
+        A differenza dei CrossFit Games, dove i workout vengono annunciati poco prima della gara, in XENOM gli eventi
+        sono sempre gli stessi &mdash; rendendo i risultati confrontabili a livello globale.
+      </p>
+
+      <p class="text-body" style="margin-bottom:28px;">
+        Il sistema di punteggio si chiama <strong>Elite Performance Index (EPI)</strong>, ispirato al decathlon olimpico:
+        ogni evento assegna un punteggio in punti, con circa <strong>1.000 punti</strong> come benchmark d'&eacute;lite per singolo evento.
+        XENOM &egrave; riconosciuto come <strong>Official CrossFit Partner Event Series</strong>.
+      </p>
+
+      <h3 class="heading-sub" style="margin-bottom:16px;">Differenze chiave rispetto ai CrossFit Games</h3>
+
+      <div class="info-grid">
+        <div class="info-box">
+          <div class="info-box__title"><span class="accent-text">01</span> Eventi Fissi</div>
+          <p class="text-small">Gli stessi 10 eventi in ogni competizione XENOM nel mondo. Nessuna sorpresa: preparazione mirata e risultati confrontabili.</p>
+        </div>
+        <div class="info-box">
+          <div class="info-box__title"><span class="accent-text">02</span> Punteggio a Punti</div>
+          <p class="text-small">Sistema EPI basato su punti assoluti, non su piazzamento relativo. Il tuo punteggio ha valore ovunque.</p>
+        </div>
+        <div class="info-box">
+          <div class="info-box__title"><span class="accent-text">03</span> Confronto Globale</div>
+          <p class="text-small">Grazie agli eventi standardizzati e al punteggio EPI, i risultati di Sassari si possono confrontare con quelli di qualsiasi altro evento XENOM nel mondo.</p>
+        </div>
+        <div class="info-box">
+          <div class="info-box__title"><span class="accent-text">04</span> Partner Ufficiale CrossFit</div>
+          <p class="text-small">XENOM fa parte della CrossFit Partner Event Series, garantendo standard di qualit&agrave; e riconoscimento internazionale.</p>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>3</span>
+      </div>
+    </div>
+
+
+    <!-- ================================================================
+         PAGE 4 — BAD BOARS EDITION
+         ================================================================ -->
+    <div class="page page--light page-break">
+      <div class="page-header">
+        <div class="page-header__overline">Sezione 02</div>
+        <h2 class="heading-section">Bad Boars Edition &mdash; L'Adattamento Locale</h2>
+        <div class="accent-line"></div>
+      </div>
+
+      <p class="text-body" style="margin-bottom:24px;">
+        La <strong>Bad Boars Edition</strong> &egrave; un adattamento locale e non ufficiale del format XENOM,
+        organizzato presso il box <strong>Bad Boars CrossFit</strong> nella zona industriale di Predda Niedda a Sassari.
+        L'obiettivo &egrave; portare lo spirito della competizione XENOM nella comunit&agrave; locale.
+      </p>
+
+      <div class="info-grid">
+        <div class="info-box">
+          <div class="info-box__title"><span class="accent-text">&rarr;</span> Format Compresso</div>
+          <p class="text-small">Tutti i 10 eventi concentrati in <strong>una singola giornata</strong>, rispetto ai 2 giorni del format originale. Intensit&agrave; massima.</p>
+        </div>
+        <div class="info-box">
+          <div class="info-box__title"><span class="accent-text">&rarr;</span> Divisione Unica</div>
+          <p class="text-small"><strong>Singola divisione RX</strong>. Un unico livello di competizione per tutti i 15 partecipanti.</p>
+        </div>
+        <div class="info-box">
+          <div class="info-box__title"><span class="accent-text">&rarr;</span> 15 Atleti</div>
+          <p class="text-small"><strong>15 atleti</strong> si sfidano testa a testa nei 10 eventi. Formato intimo e competitivo.</p>
+        </div>
+        <div class="info-box">
+          <div class="info-box__title"><span class="accent-text">&rarr;</span> Location</div>
+          <p class="text-small"><strong>Bad Boars CrossFit</strong><br>Predda Niedda Sud Str.40<br>07100 Sassari (SS), Sardegna</p>
+        </div>
+      </div>
+
+      <div class="disclaimer" style="margin-top:40px;">
+        <strong>Disclaimer:</strong> La Bad Boars Edition &egrave; un adattamento locale non ufficiale ispirato al format
+        XENOM&trade;. Non &egrave; organizzata, sponsorizzata o affiliata a XENOM Global. Gli eventi e il sistema di
+        punteggio sono stati adattati per il contesto locale.
+      </div>
+
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>4</span>
+      </div>
+    </div>
+
+
+    <!-- ================================================================
+         PAGES 5-14 — THE 10 EVENTS
+         ================================================================ -->
+
+    <!-- EVENT 1 -->
+    <div class="page page--light event-page page-break">
+      <div class="event-number-watermark">001</div>
+      <div class="event-content">
+        <div class="event-header">
+          <div class="event-header__number">001</div>
+          <h2 class="event-header__name-it">Strappo Massimale</h2>
+          <div class="event-header__name-en">1RM Snatch</div>
+          <span class="badge badge--forza">Forza</span>
+        </div>
+        <div class="accent-line accent-line--wide"></div>
+
+        <div class="event-description">
+          <p>Stabilisci il tuo massimale nello Snatch. Hai 9 minuti e 4 tentativi, uno ogni 90 secondi, per sollevare il carico pi&ugrave; pesante possibile.</p>
+        </div>
+
+        <div class="event-details">
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Formato</div>
+            <div class="event-detail__value">4 tentativi ogni 90s</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Time Cap</div>
+            <div class="event-detail__value">9 minuti</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Carico RX</div>
+            <div class="event-detail__value">Peso massimo</div>
+          </div>
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Scoring</div>
+            <div class="event-detail__value">Peso max sollevato (kg)</div>
+          </div>
+        </div>
+      </div>
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>5</span>
+      </div>
+    </div>
+
+    <!-- EVENT 2 -->
+    <div class="page page--light event-page page-break">
+      <div class="event-number-watermark">002</div>
+      <div class="event-content">
+        <div class="event-header">
+          <div class="event-header__number">002</div>
+          <h2 class="event-header__name-it">Scalata &amp; Corda</h2>
+          <div class="event-header__name-en">Wall Walk &amp; Rope Climb</div>
+          <span class="badge badge--ginnastica">Ginnastica</span>
+        </div>
+        <div class="accent-line accent-line--wide"></div>
+
+        <div class="event-description">
+          <p>AMRAP di 8 minuti con ladder ascendente. Testa stabilit&agrave; di spalla, core e capacit&agrave; sotto fatica.</p>
+        </div>
+
+        <div class="event-details">
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Formato</div>
+            <div class="event-detail__value">AMRAP 8 min &mdash; Ladder: 2WW+1RC, 4WW+2RC, 6WW+3RC...</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Time Cap</div>
+            <div class="event-detail__value">8 minuti</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Carico RX</div>
+            <div class="event-detail__value">Bodyweight</div>
+          </div>
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Scoring</div>
+            <div class="event-detail__value">Reps totali</div>
+          </div>
+        </div>
+      </div>
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>6</span>
+      </div>
+    </div>
+
+    <!-- EVENT 3 -->
+    <div class="page page--light event-page page-break">
+      <div class="event-number-watermark">003</div>
+      <div class="event-content">
+        <div class="event-header">
+          <div class="event-header__number">003</div>
+          <h2 class="event-header__name-it">Sprint Calorie</h2>
+          <div class="event-header__name-en">Max Cal Echo Bike</div>
+          <span class="badge badge--cardio">Potenza Anaerobica</span>
+        </div>
+        <div class="accent-line accent-line--wide"></div>
+
+        <div class="event-description">
+          <p>60 secondi di puro output sulla Echo Bike. Test brutale di potenza anaerobica e tolleranza al lattato.</p>
+        </div>
+
+        <div class="event-details">
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Formato</div>
+            <div class="event-detail__value">60 secondi sprint</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Time Cap</div>
+            <div class="event-detail__value">60 secondi</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Carico RX</div>
+            <div class="event-detail__value">Echo Bike</div>
+          </div>
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Scoring</div>
+            <div class="event-detail__value">Calorie totali</div>
+          </div>
+        </div>
+      </div>
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>7</span>
+      </div>
+    </div>
+
+    <!-- EVENT 4 -->
+    <div class="page page--light event-page page-break">
+      <div class="event-number-watermark">004</div>
+      <div class="event-content">
+        <div class="event-header">
+          <div class="event-header__number">004</div>
+          <h2 class="event-header__name-it">Ciclo di Bilanciere</h2>
+          <div class="event-header__name-en">Barbell Cycling</div>
+          <span class="badge badge--metcon">Capacit&agrave; di Lavoro</span>
+        </div>
+        <div class="accent-line accent-line--wide"></div>
+
+        <div class="event-description">
+          <p>AMRAP di 5 minuti con un singolo bilanciere. Testa la capacit&agrave; di lavorare sotto fatica con carichi moderati e alta velocit&agrave;.</p>
+        </div>
+
+        <div class="event-details">
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Formato</div>
+            <div class="event-detail__value">AMRAP 5 min: 12 DL, 9 FS, 6 S2OH, 3 Thrusters</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Time Cap</div>
+            <div class="event-detail__value">5 minuti</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Carico RX</div>
+            <div class="event-detail__value">M 60 kg / F 42 kg</div>
+          </div>
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Scoring</div>
+            <div class="event-detail__value">Reps totali</div>
+          </div>
+        </div>
+      </div>
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>8</span>
+      </div>
+    </div>
+
+    <!-- EVENT 5 -->
+    <div class="page page--light event-page page-break">
+      <div class="event-number-watermark">005</div>
+      <div class="event-content">
+        <div class="event-header">
+          <div class="event-header__number">005</div>
+          <h2 class="event-header__name-it">Endurance Combinato</h2>
+          <div class="event-header__name-en">3K Run + 2K Echo Ski</div>
+          <span class="badge badge--cardio">Resistenza Aerobica</span>
+        </div>
+        <div class="accent-line accent-line--wide"></div>
+
+        <div class="event-description">
+          <p>Corsa da 3 km seguita da 2 km sull'Echo Ski. Test di resistenza aerobica pura.</p>
+        </div>
+
+        <div class="event-details">
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Formato</div>
+            <div class="event-detail__value">3K Run + 2K Echo Ski</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Time Cap</div>
+            <div class="event-detail__value">Nessuno</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Carico RX</div>
+            <div class="event-detail__value">Bodyweight</div>
+          </div>
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Scoring</div>
+            <div class="event-detail__value">Tempo totale</div>
+          </div>
+        </div>
+      </div>
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>9</span>
+      </div>
+    </div>
+
+    <!-- EVENT 6 -->
+    <div class="page page--light event-page page-break">
+      <div class="event-number-watermark">006</div>
+      <div class="event-content">
+        <div class="event-header">
+          <div class="event-header__number">006</div>
+          <h2 class="event-header__name-it">In Arrivo</h2>
+          <div class="event-header__name-en">Coming Soon</div>
+          <span class="badge badge--mystery">???</span>
+        </div>
+        <div class="accent-line accent-line--wide"></div>
+
+        <div class="event-description">
+          <p>Questo evento non &egrave; ancora stato rivelato da XENOM ufficiale. Sar&agrave; svelato nelle prossime settimane.</p>
+        </div>
+
+        <div class="event-details">
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Formato</div>
+            <div class="event-detail__value">TBD</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Time Cap</div>
+            <div class="event-detail__value">TBD</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Carico RX</div>
+            <div class="event-detail__value">TBD</div>
+          </div>
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Scoring</div>
+            <div class="event-detail__value">TBD</div>
+          </div>
+        </div>
+      </div>
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>10</span>
+      </div>
+    </div>
+
+    <!-- EVENT 7 -->
+    <div class="page page--light event-page page-break">
+      <div class="event-number-watermark">007</div>
+      <div class="event-content">
+        <div class="event-header">
+          <div class="event-header__number">007</div>
+          <h2 class="event-header__name-it">Tripletta Ginnica</h2>
+          <div class="event-header__name-en">Gymnastics Triplet</div>
+          <span class="badge badge--ginnastica">Ginnastica</span>
+        </div>
+        <div class="accent-line accent-line--wide"></div>
+
+        <div class="event-description">
+          <p>Tripletta ginnica che combina Toes-to-Bar, Dumbbell Hang Snatch con doppio manubrio e Muscle-Up su barra e anelli.</p>
+        </div>
+
+        <div class="event-details">
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Formato</div>
+            <div class="event-detail__value">T2B, DB Hang Snatch, Bar/Ring MU</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Time Cap</div>
+            <div class="event-detail__value">TBD</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Carico RX</div>
+            <div class="event-detail__value">Bodyweight + Dumbbell</div>
+          </div>
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Scoring</div>
+            <div class="event-detail__value">Reps o tempo</div>
+          </div>
+        </div>
+      </div>
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>11</span>
+      </div>
+    </div>
+
+    <!-- EVENT 8 -->
+    <div class="page page--light event-page page-break">
+      <div class="event-number-watermark">008</div>
+      <div class="event-content">
+        <div class="event-header">
+          <div class="event-header__number">008</div>
+          <h2 class="event-header__name-it">Metabolico</h2>
+          <div class="event-header__name-en">Metcon AMRAP</div>
+          <span class="badge badge--metcon">Condizionamento</span>
+        </div>
+        <div class="accent-line accent-line--wide"></div>
+
+        <div class="event-description">
+          <p>AMRAP di condizionamento metabolico. Testa la capacit&agrave; di lavoro e il pacing sotto fatica accumulata.</p>
+        </div>
+
+        <div class="event-details">
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Formato</div>
+            <div class="event-detail__value">Burpees, Echo Ski, Echo Bike</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Time Cap</div>
+            <div class="event-detail__value">TBD</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Carico RX</div>
+            <div class="event-detail__value">Bodyweight + Macchine</div>
+          </div>
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Scoring</div>
+            <div class="event-detail__value">Reps/calorie totali</div>
+          </div>
+        </div>
+      </div>
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>12</span>
+      </div>
+    </div>
+
+    <!-- EVENT 9 -->
+    <div class="page page--light event-page page-break">
+      <div class="event-number-watermark">009</div>
+      <div class="event-content">
+        <div class="event-header">
+          <div class="event-header__number">009</div>
+          <h2 class="event-header__name-it">Scala di Girate Pesanti</h2>
+          <div class="event-header__name-en">Heavy Clean Ladder</div>
+          <span class="badge badge--forza">Forza</span>
+        </div>
+        <div class="accent-line accent-line--wide"></div>
+
+        <div class="event-description">
+          <p>Scala di Clean con carichi progressivamente crescenti. L'ultimo peso sollevato determina il punteggio.</p>
+        </div>
+
+        <div class="event-details">
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Formato</div>
+            <div class="event-detail__value">Ladder pesi crescenti</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Time Cap</div>
+            <div class="event-detail__value">TBD</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Carico RX</div>
+            <div class="event-detail__value">Pesi crescenti</div>
+          </div>
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Scoring</div>
+            <div class="event-detail__value">Peso max completato</div>
+          </div>
+        </div>
+      </div>
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>13</span>
+      </div>
+    </div>
+
+    <!-- EVENT 10 -->
+    <div class="page page--light event-page page-break">
+      <div class="event-number-watermark">010</div>
+      <div class="event-content">
+        <div class="event-header">
+          <div class="event-header__number">010</div>
+          <h2 class="event-header__name-it">La Finale</h2>
+          <div class="event-header__name-en">The Finale</div>
+          <span class="badge badge--metcon">Evento Finale</span>
+        </div>
+        <div class="accent-line accent-line--wide"></div>
+
+        <div class="event-description">
+          <p>L'evento finale: AMRAP di 16 minuti. Testa resistenza nel pressing e pulling con gambe sotto fatica dai lunges pesanti.</p>
+        </div>
+
+        <div class="event-details">
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Formato</div>
+            <div class="event-detail__value">AMRAP 16 min: HSPU, C2B Pull-ups, DB Lunges</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Time Cap</div>
+            <div class="event-detail__value">16 minuti</div>
+          </div>
+          <div class="event-detail">
+            <div class="event-detail__label">Carico RX</div>
+            <div class="event-detail__value">M 2&times;22.5 kg / F 2&times;15 kg</div>
+          </div>
+          <div class="event-detail event-detail--accent">
+            <div class="event-detail__label">Scoring</div>
+            <div class="event-detail__value">Reps totali</div>
+          </div>
+        </div>
+      </div>
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>14</span>
+      </div>
+    </div>
+
+
+    <!-- ================================================================
+         PAGE 15 — EPI SCORING
+         ================================================================ -->
+    <div class="page page--light page-break">
+      <div class="page-header">
+        <div class="page-header__overline">Sistema di Punteggio</div>
+        <h2 class="heading-section">Elite Performance Index (EPI)</h2>
+        <div class="accent-line"></div>
+      </div>
+
+      <p class="text-body" style="margin-bottom:12px;">
+        L'<strong>Elite Performance Index</strong> &egrave; il sistema di punteggio di XENOM, ispirato al
+        decathlon olimpico. Ogni evento assegna un punteggio in punti basato sulla performance assoluta dell'atleta.
+        Il benchmark d'&eacute;lite &egrave; fissato a circa <strong>1.000 punti</strong> per evento.
+        Il punteggio totale sui 10 eventi costituisce il <strong>punteggio EPI</strong> complessivo dell'atleta.
+      </p>
+
+      <h3 class="heading-sub" style="margin:24px 0 16px;">Livelli EPI</h3>
+
+      <div class="epi-levels">
+        <div class="epi-level epi-level--legendary">
+          <span class="epi-level__name">Leggendario</span>
+          <span class="epi-level__score">10.000+ punti</span>
+        </div>
+        <div class="epi-level epi-level--elite">
+          <span class="epi-level__name">Elite</span>
+          <span class="epi-level__score">8.000+ punti</span>
+        </div>
+        <div class="epi-level epi-level--advanced">
+          <span class="epi-level__name">Avanzato</span>
+          <span class="epi-level__score">6.000+ punti</span>
+        </div>
+        <div class="epi-level epi-level--intermediate">
+          <span class="epi-level__name">Intermedio</span>
+          <span class="epi-level__score">4.000+ punti</span>
+        </div>
+        <div class="epi-level epi-level--base">
+          <span class="epi-level__name">Base</span>
+          <span class="epi-level__score">&lt; 4.000 punti</span>
+        </div>
+      </div>
+
+      <h3 class="heading-sub" style="margin:28px 0 16px;">Come Funziona</h3>
+
+      <ol class="epi-steps">
+        <li class="epi-step">
+          <p><strong>Completa un evento</strong> &mdash; Ogni atleta esegue l'evento secondo gli standard stabiliti. Il risultato grezzo (peso, reps, tempo, calorie) viene registrato.</p>
+        </li>
+        <li class="epi-step">
+          <p><strong>Conversione in punti EPI</strong> &mdash; Il risultato viene convertito in punti tramite la formula EPI specifica per quell'evento. Circa 1.000 punti = livello &eacute;lite.</p>
+        </li>
+        <li class="epi-step">
+          <p><strong>Accumulo progressivo</strong> &mdash; I punti di ogni evento si sommano. Dopo 10 eventi, il totale rappresenta il punteggio EPI complessivo.</p>
+        </li>
+        <li class="epi-step">
+          <p><strong>Classificazione</strong> &mdash; Il punteggio totale determina il livello dell'atleta (Base, Intermedio, Avanzato, Elite, Leggendario).</p>
+        </li>
+        <li class="epi-step">
+          <p><strong>Confronto globale</strong> &mdash; Poich&eacute; gli eventi sono standardizzati, il punteggio EPI &egrave; confrontabile con quello di qualsiasi altro evento XENOM nel mondo.</p>
+        </li>
+      </ol>
+
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>15</span>
+      </div>
+    </div>
+
+
+    <!-- ================================================================
+         PAGES 16-17 — ATHLETES
+         ================================================================ -->
+    <div class="page page--light page-break">
+      <div class="page-header">
+        <div class="page-header__overline">Partecipanti</div>
+        <h2 class="heading-section">I 15 Atleti</h2>
+        <div class="accent-line"></div>
+      </div>
+
+      <p class="text-body" style="margin-bottom:24px;">
+        Quindici atleti si sfidano nella Bad Boars Edition. Ecco l'elenco completo dei partecipanti.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:50px;">#</th>
+            <th>Nome</th>
+            <th style="width:80px;">Et&agrave;</th>
+            <th style="width:200px;">Box</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>01</td><td>Atleta 01</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>02</td><td>Atleta 02</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>03</td><td>Atleta 03</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>04</td><td>Atleta 04</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>05</td><td>Atleta 05</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>06</td><td>Atleta 06</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>07</td><td>Atleta 07</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>08</td><td>Atleta 08</td><td>&mdash;</td><td>&mdash;</td></tr>
+        </tbody>
+      </table>
+
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>16</span>
+      </div>
+    </div>
+
+    <div class="page page--light page-break">
+      <div class="page-header">
+        <div class="page-header__overline">Partecipanti (continua)</div>
+        <h2 class="heading-section">I 15 Atleti</h2>
+        <div class="accent-line"></div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:50px;">#</th>
+            <th>Nome</th>
+            <th style="width:80px;">Et&agrave;</th>
+            <th style="width:200px;">Box</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>09</td><td>Atleta 09</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>10</td><td>Atleta 10</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>11</td><td>Atleta 11</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>12</td><td>Atleta 12</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>13</td><td>Atleta 13</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>14</td><td>Atleta 14</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>15</td><td>Atleta 15</td><td>&mdash;</td><td>&mdash;</td></tr>
+        </tbody>
+      </table>
+
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>17</span>
+      </div>
+    </div>
+
+
+    <!-- ================================================================
+         PAGE 18 — SCHEDULE
+         ================================================================ -->
+    <div class="page page--light page-break">
+      <div class="page-header">
+        <div class="page-header__overline">Giornata di Gara</div>
+        <h2 class="heading-section">Programma della Giornata</h2>
+        <div class="accent-line"></div>
+      </div>
+
+      <div class="timeline">
+
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">07:30</span>
+          <span class="timeline__desc">Registrazione e Check-in</span>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">08:15</span>
+          <span class="timeline__desc">Briefing Generale</span>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">08:45</span>
+          <span class="timeline__desc">Riscaldamento Guidato</span>
+        </div>
+
+        <div class="timeline-item timeline-item--event">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">09:00</span>
+          <span class="timeline__desc"><strong>Evento 1</strong> &mdash; 1RM Snatch</span>
+        </div>
+
+        <div class="timeline-item timeline-item--event">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">09:30</span>
+          <span class="timeline__desc"><strong>Evento 2</strong> &mdash; Wall Walk &amp; Rope Climb</span>
+        </div>
+
+        <div class="timeline-item timeline-item--event">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">09:50</span>
+          <span class="timeline__desc"><strong>Evento 3</strong> &mdash; Max Cal Echo Bike</span>
+        </div>
+
+        <div class="timeline-item timeline-item--event">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">10:15</span>
+          <span class="timeline__desc"><strong>Evento 4</strong> &mdash; Barbell Cycling</span>
+        </div>
+
+        <div class="timeline-item timeline-item--event">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">10:45</span>
+          <span class="timeline__desc"><strong>Evento 5</strong> &mdash; 3K Run + 2K Echo Ski</span>
+        </div>
+
+        <div class="timeline-item timeline-item--break">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">11:30</span>
+          <span class="timeline__desc">Pausa &mdash; Recupero e Classifica Parziale</span>
+        </div>
+
+        <div class="timeline-item timeline-item--event">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">12:00</span>
+          <span class="timeline__desc"><strong>Evento 6</strong> &mdash; TBD</span>
+        </div>
+
+        <div class="timeline-item timeline-item--event">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">12:30</span>
+          <span class="timeline__desc"><strong>Evento 7</strong> &mdash; Gymnastics Triplet</span>
+        </div>
+
+        <div class="timeline-item timeline-item--break">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">13:00</span>
+          <span class="timeline__desc">Pausa Pranzo</span>
+        </div>
+
+        <div class="timeline-item timeline-item--event">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">14:00</span>
+          <span class="timeline__desc"><strong>Evento 8</strong> &mdash; Metcon AMRAP</span>
+        </div>
+
+        <div class="timeline-item timeline-item--event">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">14:30</span>
+          <span class="timeline__desc"><strong>Evento 9</strong> &mdash; Heavy Clean Ladder</span>
+        </div>
+
+        <div class="timeline-item timeline-item--event">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">15:15</span>
+          <span class="timeline__desc"><strong>Evento 10</strong> &mdash; La Finale</span>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">15:45</span>
+          <span class="timeline__desc">Calcolo Punteggi EPI</span>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <span class="timeline__time">16:15</span>
+          <span class="timeline__desc"><strong>Premiazione e Chiusura</strong></span>
+        </div>
+
+      </div>
+
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>18</span>
+      </div>
+    </div>
+
+
+    <!-- ================================================================
+         PAGE 19 — PRACTICAL INFO
+         ================================================================ -->
+    <div class="page page--light page-break">
+      <div class="page-header">
+        <div class="page-header__overline">Logistica</div>
+        <h2 class="heading-section">Informazioni Pratiche</h2>
+        <div class="accent-line"></div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-box info-box--full">
+          <div class="info-box__title"><span class="accent-text">&bull;</span> Location</div>
+          <p class="text-body" style="margin-bottom:8px;">
+            <strong>Bad Boars CrossFit</strong><br>
+            Predda Niedda Sud Str.40<br>
+            07100 Sassari (SS), Sardegna
+          </p>
+          <p class="text-small text-muted">Zona industriale di Predda Niedda, facilmente raggiungibile da tutta la citt&agrave;.</p>
+        </div>
+
+        <div class="info-box">
+          <div class="info-box__title"><span class="accent-text">&bull;</span> Cosa Portare</div>
+          <ul>
+            <li>Scarpe da training</li>
+            <li>Corda per salti (opzionale)</li>
+            <li>Cambio vestiti</li>
+            <li>Acqua e borraccia</li>
+            <li>Snack e integratori</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <div class="info-box__title"><span class="accent-text">&bull;</span> Regolamento</div>
+          <ul>
+            <li>Rispetto degli standard di movimento</li>
+            <li>Giudici assegnati ad ogni atleta</li>
+            <li>No lifting straps per lo Snatch</li>
+            <li>Polsiere e ginocchiere consentite</li>
+            <li>Cinture da sollevamento consentite</li>
+          </ul>
+        </div>
+
+        <div class="info-box info-box--full">
+          <div class="info-box__title"><span class="accent-text">&bull;</span> Contatti</div>
+          <p class="text-body">
+            Instagram: <strong>@badboarscrossfit</strong><br>
+            Per qualsiasi domanda o informazione, contattare direttamente il box tramite Instagram.
+          </p>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>19</span>
+      </div>
+    </div>
+
+
+    <!-- ================================================================
+         PAGE 20 — BACK COVER
+         ================================================================ -->
+    <div class="page page--backcover">
+      <div class="cover__grid"></div>
+      <div class="backcover">
+        <h2 class="backcover__title">XENOM</h2>
+        <h3 class="backcover__title" style="font-size:42px;margin-top:4px;">
+          <span class="backcover__accent">BAD BOARS</span> EDITION
+        </h3>
+
+        <div class="accent-line accent-line--wide" style="margin:28px auto;"></div>
+
+        <p class="backcover__tagline">Il Decathlon del Fitness</p>
+        <p class="backcover__location">Sassari, Sardegna &mdash; 2026</p>
+
+        <div class="backcover__links">
+          <a href="https://xenom.global" class="backcover__link">xenom.global</a>
+          <a href="https://instagram.com/badboarscrossfit" class="backcover__link">@badboarscrossfit</a>
+        </div>
+
+        <div class="backcover__credits">
+          <p>Bad Boars CrossFit &mdash; Predda Niedda Sud Str.40, 07100 Sassari</p>
+          <p>Format ispirato a XENOM&trade; &mdash; fondato da Keith Barlow</p>
+        </div>
+
+        <div class="disclaimer">
+          Adattamento locale non ufficiale ispirato al formato XENOM&trade;. Questo evento non &egrave; organizzato, sponsorizzato o affiliato a XENOM Global o CrossFit LLC. Tutti i marchi citati appartengono ai rispettivi proprietari.
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <span>XENOM Bad Boars Edition</span>
+        <span>20</span>
+      </div>
+    </div>
+
+  </div><!-- .pages-wrapper -->
+
+</body>
+</html>
