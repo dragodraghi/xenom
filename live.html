@@ -3,28 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Classifica Live — TUSK Protocol</title>
-  <meta name="description" content="Classifica EPI live TUSK Protocol — disponibile dal 29 Maggio 2026.">
+  <title>Classifica Live — TUSK Protocol Bad Boars</title>
+  <meta name="description" content="Classifica EPI in tempo reale del TUSK Protocol del 29-30 Maggio 2026 al Bad Boars CrossFit Sassari.">
+
+  <meta property="og:title" content="Classifica Live — TUSK Protocol">
+  <meta property="og:description" content="Punteggi EPI in tempo reale, 6 categorie. Bad Boars CrossFit Sassari.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="it_IT">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="css/design-system.css">
   <link rel="stylesheet" href="css/website.css">
+  <link rel="stylesheet" href="css/live.css">
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
-  <style>
-    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; }
-    .placeholder { text-align: center; max-width: 520px; }
-    .placeholder__icon { font-size: 5rem; margin-bottom: 1rem; }
-    .placeholder h1 { font-family: var(--font-heading); font-size: 2.5rem; text-transform: uppercase; margin-bottom: 1rem; }
-    .placeholder p { color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6; }
-  </style>
 </head>
 <body>
-  <div class="placeholder">
-    <div class="placeholder__icon">🏆</div>
-    <h1>Classifica Live</h1>
-    <p>La classifica EPI in tempo reale sarà attiva durante l'evento del <strong>29-30 Maggio 2026</strong>. Aggiornamenti in arrivo nei prossimi giorni.</p>
-    <a href="index.html" class="btn btn--outline">← Torna alla Home</a>
-  </div>
+
+  <nav class="nav nav--simple">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">TUSK <span>BB</span></a>
+      <a href="iscriviti.html" class="btn btn--primary btn--small">📝 Iscriviti</a>
+    </div>
+  </nav>
+
+  <header class="live-hero">
+    <div class="container">
+      <div class="section__label">Classifica Live</div>
+      <h1>TUSK Protocol — Leaderboard EPI</h1>
+      <p>29-30 Maggio 2026 · Bad Boars CrossFit Sassari · Aggiornata in tempo reale</p>
+    </div>
+  </header>
+
+  <section class="live-section">
+    <div class="container">
+
+      <nav class="live-tabs" role="tablist" id="live-tabs">
+        <button class="live-tab is-active" data-cat="ultimate" role="tab">Ultimate (M)</button>
+        <button class="live-tab" data-cat="advanced" role="tab">Advanced (M)</button>
+        <button class="live-tab" data-cat="challenge" role="tab">Challenge (M)</button>
+        <button class="live-tab" data-cat="essential" role="tab">Essential (M)</button>
+        <button class="live-tab" data-cat="performance" role="tab">Performance (F)</button>
+        <button class="live-tab" data-cat="intermediate" role="tab">Intermediate (F)</button>
+      </nav>
+
+      <div class="live-status" id="live-status">
+        <span class="live-dot"></span>Caricamento...
+      </div>
+
+      <div id="live-content">
+        <div class="live-table-wrapper">
+          <table class="live-table" id="live-table">
+            <thead>
+              <tr>
+                <th class="live-table__rank">#</th>
+                <th class="live-table__atleta">Atleta</th>
+                <th class="live-table__box">Box</th>
+                <th class="live-table__ev" data-ev="1">E1</th>
+                <th class="live-table__ev" data-ev="2">E2</th>
+                <th class="live-table__ev" data-ev="3">E3</th>
+                <th class="live-table__ev" data-ev="4">E4</th>
+                <th class="live-table__ev" data-ev="5">E5</th>
+                <th class="live-table__ev" data-ev="6">E6</th>
+                <th class="live-table__ev" data-ev="7">E7</th>
+                <th class="live-table__ev" data-ev="8">E8</th>
+                <th class="live-table__ev" data-ev="9">E9</th>
+                <th class="live-table__ev" data-ev="10">E10</th>
+                <th class="live-table__epi">EPI Tot</th>
+              </tr>
+            </thead>
+            <tbody id="live-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="live-empty" class="live-empty" hidden>
+        <div class="live-empty__icon">🐗</div>
+        <p>Nessun atleta in questa categoria.<br>La classifica si popolerà quando i giudici inseriranno i risultati.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__logo">TUSK PROTOCOL <span>BAD BOARS</span> EDITION</div>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: var(--space-md);">
+        &copy; 2026 Bad Boars CrossFit · Sassari ·
+        <a href="admin.html" style="color: var(--text-muted);">🔒 Area Giudici</a>
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/live.js"></script>
 </body>
 </html>
