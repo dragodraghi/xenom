@@ -76,15 +76,93 @@
 
         <!-- TAB ATLETI -->
         <section class="admin-panel" data-panel="atleti">
-          <h2>Atleti registrati</h2>
-          <p class="admin-empty">Tab Atleti — implementato in M6.</p>
+          <div class="admin-panel__header">
+            <h2>Atleti <span id="count-atleti" style="color: var(--text-muted); font-size: 1rem;"></span></h2>
+            <button class="btn btn--primary btn--small" id="btn-aggiungi-atleta">+ Aggiungi atleta</button>
+          </div>
+          <input type="search" id="search-atleti" class="search-input" placeholder="Cerca per nome o box..." autocomplete="off">
+          <div id="lista-atleti" class="admin-list">
+            <p class="admin-empty">Caricamento...</p>
+          </div>
         </section>
 
         <!-- TAB RISULTATI -->
         <section class="admin-panel" data-panel="risultati">
           <h2>Inserisci risultato</h2>
-          <p class="admin-empty">Tab Inserimento Risultato — implementato in M6.</p>
+
+          <div class="form__field">
+            <label for="ris-search-atleta">1. Cerca atleta</label>
+            <input type="search" id="ris-search-atleta" class="search-input" placeholder="Inizia a digitare il nome..." autocomplete="off">
+            <div id="ris-suggerimenti" class="suggerimenti" hidden></div>
+            <div id="ris-atleta-selezionato" class="atleta-pill" hidden>
+              <span id="ris-atleta-nome"></span>
+              <button type="button" id="ris-deseleziona" aria-label="Deseleziona">✕</button>
+            </div>
+          </div>
+
+          <div class="form__field">
+            <label for="ris-evento">2. Seleziona evento</label>
+            <select id="ris-evento">
+              <option value="">— Seleziona evento —</option>
+            </select>
+          </div>
+
+          <div id="ris-form-dinamico" hidden></div>
+
+          <div id="ris-anteprima" class="ris-anteprima" hidden>
+            <div class="ris-anteprima__label">Punteggio EPI calcolato</div>
+            <div class="ris-anteprima__valore" id="ris-anteprima-valore">—</div>
+            <div class="ris-anteprima__hint" id="ris-anteprima-hint"></div>
+          </div>
+
+          <div id="ris-esistente" class="ris-warning" hidden>
+            <strong>⚠️ Risultato già presente per questo evento</strong>
+            <span id="ris-esistente-detail"></span>
+            <em>Salvando, sovrascriverai il precedente.</em>
+          </div>
+
+          <button type="button" class="btn btn--primary btn--large btn--full" id="ris-btn-salva" disabled>Salva risultato</button>
         </section>
+
+        <!-- MODAL ATLETA -->
+        <div class="modal" id="modal-atleta" hidden>
+          <div class="modal__backdrop" data-close="modal-atleta"></div>
+          <div class="modal__content">
+            <button class="modal__close" data-close="modal-atleta" aria-label="Chiudi">✕</button>
+            <h3 id="modal-atleta-title">Aggiungi atleta</h3>
+            <form id="form-atleta" class="form" novalidate>
+              <input type="hidden" id="atleta-id">
+              <div class="form__field">
+                <label for="atleta-nome">Nome e Cognome</label>
+                <input type="text" id="atleta-nome" required maxlength="80" autocapitalize="words">
+              </div>
+              <div class="form__field">
+                <label for="atleta-categoria">Categoria</label>
+                <select id="atleta-categoria" required>
+                  <option value="">— Seleziona —</option>
+                  <option value="ultimate">Ultimate (M)</option>
+                  <option value="advanced">Advanced (M)</option>
+                  <option value="challenge">Challenge (M)</option>
+                  <option value="essential">Essential (M)</option>
+                  <option value="performance">Performance (F)</option>
+                  <option value="intermediate">Intermediate (F)</option>
+                </select>
+              </div>
+              <div class="form__field">
+                <label for="atleta-box">Box</label>
+                <input type="text" id="atleta-box" required maxlength="80">
+              </div>
+              <div class="form__field">
+                <label for="atleta-contatto">Contatto (opzionale)</label>
+                <input type="text" id="atleta-contatto" maxlength="80" placeholder="Telefono o email">
+              </div>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button type="submit" class="btn btn--primary">Salva</button>
+                <button type="button" class="btn btn--ghost" data-close="modal-atleta">Annulla</button>
+              </div>
+            </form>
+          </div>
+        </div>
 
         <!-- TAB EVENTI -->
         <section class="admin-panel" data-panel="eventi">
