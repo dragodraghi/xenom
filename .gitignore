@@ -5,3 +5,6 @@ Thumbs.db
 .env
 .env.local
 *.log
+tmp-admin/
+release.json
+ruleset.json

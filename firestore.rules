@@ -1,0 +1,216 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isGameAdmin(gameId) {
+      return isSignedIn()
+        && request.auth.uid in get(/databases/$(database)/documents/games/$(gameId)).data.admins;
+    }
+
+    function isAnonymousUser() {
+      return isSignedIn()
+        && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    function isValidScheduleStatus(status) {
+      return status in ['bozza', 'inviata', 'accettata', 'rifiutata'];
+    }
+
+    function isValidPlayerCreate(playerId) {
+      return request.auth.uid == playerId
+        && request.resource.data.keys().hasOnly([
+          'name',
+          'joinedAt',
+          'predictions',
+          'topScorerPick',
+          'winnerPick',
+          'points',
+          'paid',
+          'scheduleStatus'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 30
+        && request.resource.data.joinedAt == request.time
+        && request.resource.data.predictions is map
+        && request.resource.data.predictions.keys().size() == 0
+        && request.resource.data.topScorerPick == ''
+        && request.resource.data.winnerPick == ''
+        && request.resource.data.points == 0
+        && request.resource.data.paid == false
+        && request.resource.data.scheduleStatus == 'bozza';
+    }
+
+    function isValidPlayerPicks() {
+      return request.resource.data.predictions is map
+        && request.resource.data.predictions.keys().size() <= 150
+        && request.resource.data.topScorerPick is string
+        && request.resource.data.topScorerPick.size() <= 40
+        && request.resource.data.winnerPick is string
+        && request.resource.data.winnerPick.size() <= 40;
+    }
+
+    function isPlayerReadMarkerUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastAnnouncementReadAt'])
+        && request.resource.data.lastAnnouncementReadAt == request.time;
+    }
+
+    function isPlayerSchedinaUpdate() {
+      return resource.data.scheduleStatus in ['bozza', 'rifiutata']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'predictions',
+          'topScorerPick',
+          'winnerPick',
+          'scheduleStatus'
+        ])
+        && isValidPlayerPicks()
+        && isValidScheduleStatus(request.resource.data.scheduleStatus)
+        && (
+          request.resource.data.scheduleStatus == resource.data.scheduleStatus
+          || request.resource.data.scheduleStatus == 'inviata'
+        );
+    }
+
+    function isTuskAdmin() {
+      return request.auth != null
+        && request.auth.token.email == "admin@tusk-badboars.com";
+    }
+
+    function isValidTuskIscrizione() {
+      return request.resource.data.keys().hasAll(['nome', 'categoriaId', 'box', 'contatto'])
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() > 1
+        && request.resource.data.nome.size() < 100
+        && request.resource.data.categoriaId is string
+        && request.resource.data.categoriaId.size() < 50
+        && request.resource.data.box is string
+        && request.resource.data.box.size() < 100
+        && request.resource.data.contatto is string
+        && request.resource.data.contatto.size() < 100;
+    }
+
+    match /games/{gameId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn()
+        && request.auth.uid in resource.data.admins;
+
+      match /matches/{matchId} {
+        allow read: if isSignedIn();
+        allow write: if isGameAdmin(gameId);
+      }
+
+      match /players/{playerId} {
+        allow read: if isSignedIn();
+        allow create: if isAnonymousUser()
+          && isValidPlayerCreate(playerId);
+        allow update: if isAnonymousUser()
+          && request.auth.uid == playerId
+          && (isPlayerReadMarkerUpdate() || isPlayerSchedinaUpdate());
+        allow update, delete: if isGameAdmin(gameId);
+      }
+
+      match /announcements/{announcementId} {
+        allow read: if isSignedIn() && (
+          isGameAdmin(gameId)
+          || (
+            resource.data.status == 'published'
+            && resource.data.deletedAt == null
+            && (resource.data.targetUids == null || request.auth.uid in resource.data.targetUids)
+          )
+        );
+        allow create: if isGameAdmin(gameId)
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.title is string
+          && request.resource.data.title.size() <= 120
+          && request.resource.data.body is string
+          && request.resource.data.body.size() <= 2000
+          && request.resource.data.status in ['draft', 'published']
+          && (request.resource.data.targetUids == null || request.resource.data.targetUids is list);
+        allow update: if isGameAdmin(gameId)
+          && request.resource.data.title.size() <= 120
+          && request.resource.data.body.size() <= 2000
+          && (
+            (resource.data.status == 'draft' && request.resource.data.status == 'published'
+              && request.resource.data.publishedAt == request.time)
+            || (resource.data.status == 'published' && request.resource.data.status == 'published'
+              && request.resource.data.editedAt == request.time)
+            || (resource.data.status == 'draft' && request.resource.data.status == 'draft')
+            || (request.resource.data.deletedAt == request.time)
+          );
+        allow delete: if isGameAdmin(gameId);
+      }
+
+      match /threads/{playerUid} {
+        allow read: if isSignedIn() && (
+          request.auth.uid == playerUid
+          || isGameAdmin(gameId)
+        );
+        allow write: if false;
+
+        match /messages/{messageId} {
+          allow read: if isSignedIn() && (
+            request.auth.uid == playerUid
+            || isGameAdmin(gameId)
+          );
+          allow create: if isSignedIn()
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0
+            && request.resource.data.text.size() <= 1000
+            && request.resource.data.senderUid == request.auth.uid
+            && (
+              (
+                request.auth.uid == playerUid
+                && request.resource.data.from == 'player'
+                && (
+                  !exists(/databases/$(database)/documents/games/$(gameId)/threads/$(playerUid))
+                  || request.time > get(/databases/$(database)/documents/games/$(gameId)/threads/$(playerUid)).data.lastMessageAt + duration.value(2, 's')
+                )
+              )
+              || (
+                isGameAdmin(gameId)
+                && request.resource.data.from == 'committee'
+              )
+            );
+          allow update, delete: if false;
+        }
+      }
+    }
+
+    match /users/{uid} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+      match /fcmTokens/{token} {
+        allow read, write: if isSignedIn() && request.auth.uid == uid;
+      }
+    }
+
+    match /tusk_categorie/{doc} {
+      allow read: if true;
+      allow write: if isTuskAdmin();
+    }
+
+    match /tusk_eventi/{doc} {
+      allow read: if true;
+      allow write: if isTuskAdmin();
+    }
+
+    match /tusk_atleti/{doc} {
+      allow read: if true;
+      allow write: if isTuskAdmin();
+    }
+
+    match /tusk_risultati/{doc} {
+      allow read: if true;
+      allow write: if isTuskAdmin();
+    }
+
+    match /tusk_iscrizioni_pending/{doc} {
+      allow create: if isValidTuskIscrizione();
+      allow read: if isTuskAdmin();
+      allow delete: if isTuskAdmin();
+      allow update: if false;
+    }
+  }
+}
