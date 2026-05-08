@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup — TUSK Protocol</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/website.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <style>
+    body { padding: 2rem 1rem; }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 { font-family: var(--font-heading); text-transform: uppercase; margin-bottom: 0.5rem; }
+    .subtitle { color: var(--text-muted); margin-bottom: 2rem; }
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 { font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 1rem; }
+    .field { margin-bottom: 1rem; }
+    .field label { display:block; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.4rem; color:var(--text-secondary);}
+    .field input { width:100%; padding:0.7rem 1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); color:var(--text-primary); border-radius:4px; font-size:1rem; }
+    .field input:focus { outline:none; border-color:var(--accent-primary); }
+    button { padding:0.85rem 1.5rem; border:none; border-radius:4px; font-weight:600; cursor:pointer; font-family: var(--font-heading); text-transform: uppercase; letter-spacing: 1px; }
+    .btn-primary { background:var(--accent-primary); color:#fff; }
+    .btn-primary:hover { background:#ff5722; }
+    .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+    .btn-ghost { background:transparent; color:var(--text-secondary); border:1px solid rgba(255,255,255,0.2); }
+    .log { background: rgba(0,0,0,0.5); padding:1rem; border-radius:4px; font-family:monospace; font-size:0.85rem; margin-top:1rem; max-height:300px; overflow-y:auto; white-space:pre-wrap; line-height:1.5; }
+    .log .ok { color:#5cd97a; }
+    .log .err { color:#ff6666; }
+    .log .info { color:#7fb8ff; }
+    .row { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
+    .pill { display:inline-block; padding:0.25rem 0.7rem; border-radius:999px; font-size:0.8rem; font-weight:600; }
+    .pill-on { background:#2d8a4e; color:#fff; }
+    .pill-off { background:#444; color:#aaa; }
+    .step-badge { display:inline-block; width:28px; height:28px; border-radius:50%; background:var(--accent-primary); color:#fff; text-align:center; line-height:28px; font-weight:700; margin-right:0.5rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>🛠️ Setup TUSK Protocol</h1>
+  <p class="subtitle">Pagina di setup iniziale. Popola le collezioni Firestore <code>tusk_categorie</code> con i 6 documenti previsti. Idempotente: rieseguibile in sicurezza.</p>
+
+  <!-- LOGIN -->
+  <div class="card" id="card-login">
+    <h2><span class="step-badge">1</span>Login admin</h2>
+    <div class="row" style="margin-bottom:0.7rem;">
+      Stato auth: <span id="auth-status" class="pill pill-off">Non autenticato</span>
+    </div>
+    <div class="field">
+      <label for="password">Password admin <small>(email <code>tusk.admin@gmail.com</code> hardcoded)</small></label>
+      <input type="password" id="password" autocomplete="current-password">
+    </div>
+    <div class="row">
+      <button class="btn-primary" id="btn-login">Login</button>
+      <button class="btn-ghost" id="btn-logout">Logout</button>
+    </div>
+  </div>
+
+  <!-- POPOLA CATEGORIE -->
+  <div class="card">
+    <h2><span class="step-badge">2</span>Popola tusk_categorie</h2>
+    <p style="color:var(--text-secondary); margin-bottom:1rem;">Crea (o sovrascrive) i 6 documenti delle categorie. Necessita login admin.</p>
+    <div class="row">
+      <button class="btn-primary" id="btn-seed-categorie" disabled>Popola 6 categorie</button>
+      <button class="btn-ghost" id="btn-list-categorie" disabled>Lista categorie esistenti</button>
+    </div>
+    <div class="log" id="log-categorie"></div>
+  </div>
+
+  <!-- TEST SCRITTURA SCHEDINONE (verifica isolamento) -->
+  <div class="card">
+    <h2><span class="step-badge">3</span>Test sicurezza (opzionale)</h2>
+    <p style="color:var(--text-secondary); margin-bottom:1rem;">Verifica che l'admin TUSK NON possa scrivere su Schedinone. Deve restituire <code>permission denied</code>.</p>
+    <div class="row">
+      <button class="btn-ghost" id="btn-test-schedinone" disabled>Tenta scrittura su Schedinone (deve fallire)</button>
+    </div>
+    <div class="log" id="log-test"></div>
+  </div>
+
+  <p style="color:var(--text-muted); font-size:0.85rem; margin-top:2rem; text-align:center;">
+    <a href="index.html" style="color:var(--text-muted);">← Home</a>
+  </p>
+</div>
+
+<script type="module">
+import { db, auth, loginAdmin, logoutAdmin, onAdminAuthChange, isAdminLoggedIn, COL } from "./js/firebase-config.js";
+import { doc, setDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+const $ = (id) => document.getElementById(id);
+
+const CATEGORIE = [
+  { id: "ultimate",     gender: "M", ordine: 1, nome: "Ultimate",     descrizione: "Carichi pesanti, ginnastica Pro (Muscle-up, HSW)" },
+  { id: "advanced",     gender: "M", ordine: 2, nome: "Advanced",     descrizione: "RX puro, niente semplificazioni" },
+  { id: "challenge",    gender: "M", ordine: 3, nome: "Challenge",    descrizione: "Carichi moderati, skill scalate" },
+  { id: "essential",    gender: "M", ordine: 4, nome: "Essential",    descrizione: "Movimenti fondamentali, focus intensità" },
+  { id: "performance",  gender: "F", ordine: 1, nome: "Performance",  descrizione: "Tutte le skill tecniche" },
+  { id: "intermediate", gender: "F", ordine: 2, nome: "Intermediate", descrizione: "Qualità movimento, no carichi élite" }
+];
+
+function log(boxId, msg, kind = "info") {
+  const box = $(boxId);
+  const line = document.createElement("div");
+  line.className = kind;
+  line.textContent = `[${new Date().toLocaleTimeString("it-IT")}] ${msg}`;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+// --- Auth state ---
+function setAuthUI(user) {
+  const status = $("auth-status");
+  const enabled = !!(user && isAdminLoggedIn());
+  if (enabled) {
+    status.textContent = `Autenticato come ${user.email}`;
+    status.className = "pill pill-on";
+  } else {
+    status.textContent = user ? `Autenticato come ${user.email} (NON admin)` : "Non autenticato";
+    status.className = "pill pill-off";
+  }
+  $("btn-seed-categorie").disabled = !enabled;
+  $("btn-list-categorie").disabled = !enabled;
+  $("btn-test-schedinone").disabled = !enabled;
+}
+
+onAdminAuthChange(setAuthUI);
+
+// --- Login ---
+$("btn-login").addEventListener("click", async () => {
+  const password = $("password").value;
+  if (!password) { alert("Inserisci la password"); return; }
+  $("btn-login").disabled = true;
+  try {
+    await loginAdmin(password);
+    $("password").value = "";
+  } catch (err) {
+    alert("Login fallito: " + (err.code || err.message));
+  } finally {
+    $("btn-login").disabled = false;
+  }
+});
+
+$("btn-logout").addEventListener("click", () => logoutAdmin());
+
+// --- Popola categorie ---
+$("btn-seed-categorie").addEventListener("click", async () => {
+  $("log-categorie").innerHTML = "";
+  log("log-categorie", `Inizio scrittura ${CATEGORIE.length} documenti su ${COL.categorie}...`, "info");
+  let ok = 0, ko = 0;
+  for (const cat of CATEGORIE) {
+    try {
+      await setDoc(doc(db, COL.categorie, cat.id), {
+        nome: cat.nome,
+        gender: cat.gender,
+        ordine: cat.ordine,
+        descrizione: cat.descrizione
+      });
+      log("log-categorie", `✓ ${cat.id} salvato`, "ok");
+      ok++;
+    } catch (err) {
+      log("log-categorie", `✗ ${cat.id} ERRORE: ${err.code || err.message}`, "err");
+      ko++;
+    }
+  }
+  log("log-categorie", `=== Fine: ${ok} salvati, ${ko} errori ===`, ko === 0 ? "ok" : "err");
+});
+
+// --- Lista categorie ---
+$("btn-list-categorie").addEventListener("click", async () => {
+  $("log-categorie").innerHTML = "";
+  log("log-categorie", `Lettura ${COL.categorie}...`, "info");
+  try {
+    const snap = await getDocs(collection(db, COL.categorie));
+    if (snap.empty) {
+      log("log-categorie", "(collezione vuota)", "info");
+      return;
+    }
+    snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (a.gender === b.gender ? a.ordine - b.ordine : (a.gender === "M" ? -1 : 1)))
+      .forEach((c) => {
+        log("log-categorie", `  ${c.id} | ${c.nome} | gender=${c.gender} | ordine=${c.ordine} | "${c.descrizione}"`, "ok");
+      });
+    log("log-categorie", `=== Totale: ${snap.size} documenti ===`, "ok");
+  } catch (err) {
+    log("log-categorie", `Errore: ${err.code || err.message}`, "err");
+  }
+});
+
+// --- Test sicurezza Schedinone ---
+$("btn-test-schedinone").addEventListener("click", async () => {
+  $("log-test").innerHTML = "";
+  log("log-test", "Tentativo di scrittura su collezione 'games' di Schedinone...", "info");
+  try {
+    await addDoc(collection(db, "games"), { fakeData: "questo deve fallire", admins: [auth.currentUser.uid] });
+    log("log-test", "⚠️ ATTENZIONE: la scrittura è andata a buon fine. Le rules NON proteggono Schedinone come dovrebbero!", "err");
+  } catch (err) {
+    if (err.code === "permission-denied") {
+      log("log-test", "✓ CORRETTO: permission denied. Le rules proteggono Schedinone dall'admin TUSK.", "ok");
+    } else {
+      log("log-test", `Errore inatteso: ${err.code || err.message}`, "err");
+    }
+  }
+});
+</script>
+</body>
+</html>
