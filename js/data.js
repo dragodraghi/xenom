@@ -20,6 +20,15 @@ const XENOM_DATA = {
     disclaimer: "TUSK Protocol — Bad Boars CrossFit Sassari"
   },
 
+  categorie: [
+    { id: "ultimate",     gender: "M", ordine: 1, nome: "Ultimate",     descrizione: "Il vertice. Carichi pesanti, ginnastica Pro (Muscle-up, HSW)." },
+    { id: "advanced",     gender: "M", ordine: 2, nome: "Advanced",     descrizione: "Per chi vive il Box ogni giorno. Tutto RX, nessuna semplificazione." },
+    { id: "challenge",    gender: "M", ordine: 3, nome: "Challenge",    descrizione: "Sei bravo, ma carichi élite o skill complesse sono ancora un obiettivo." },
+    { id: "essential",    gender: "M", ordine: 4, nome: "Essential",    descrizione: "Zero barriere. Movimenti fondamentali, focus su intensità e qualità." },
+    { id: "performance",  gender: "F", ordine: 1, nome: "Performance",  descrizione: "Prestazione pura. Tutte le skill tecniche nel repertorio." },
+    { id: "intermediate", gender: "F", ordine: 2, nome: "Intermediate", descrizione: "Qualità del movimento e resistenza, senza lo stress dei carichi élite." }
+  ],
+
   eventi: [
     {
       numero: 1,
