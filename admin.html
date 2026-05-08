@@ -166,14 +166,54 @@
 
         <!-- TAB EVENTI -->
         <section class="admin-panel" data-panel="eventi">
-          <h2>Eventi e benchmark (sola lettura)</h2>
-          <p class="admin-empty">Tab Eventi — implementato in M8.</p>
+          <h2>Eventi e benchmark</h2>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Lista dei 10 eventi configurati con i benchmark per ogni categoria. Per modificare un benchmark: <strong>Firebase Console → Firestore → tusk_eventi → {numero}</strong>, poi click "Strumenti → Ricalcola EPI" qui sotto.</p>
+          <div id="lista-eventi" class="admin-list">
+            <p class="admin-empty">Caricamento...</p>
+          </div>
         </section>
 
         <!-- TAB STRUMENTI -->
         <section class="admin-panel" data-panel="strumenti">
           <h2>Strumenti</h2>
-          <p class="admin-empty">Tab Strumenti — implementato in M8.</p>
+
+          <div class="tools-grid">
+
+            <div class="tool-card">
+              <h3>🔁 Ricalcola tutti gli EPI</h3>
+              <p>Rilegge tutti i risultati e ricalcola i punti EPI usando i benchmark correnti. Da usare dopo aver modificato un benchmark in <code>tusk_eventi</code>.</p>
+              <button class="btn btn--primary btn--small" id="btn-ricalcola">Ricalcola tutti</button>
+              <div class="tool-output" id="ricalcola-output"></div>
+            </div>
+
+            <div class="tool-card">
+              <h3>📊 Esporta classifica CSV</h3>
+              <p>Esporta in CSV la classifica completa di una categoria. Utile per cerimonia premiazione e archivio.</p>
+              <select id="export-categoria" class="search-input" style="margin-bottom: 0.75rem;">
+                <option value="ultimate">Ultimate (M)</option>
+                <option value="advanced">Advanced (M)</option>
+                <option value="challenge">Challenge (M)</option>
+                <option value="essential">Essential (M)</option>
+                <option value="performance">Performance (F)</option>
+                <option value="intermediate">Intermediate (F)</option>
+              </select>
+              <button class="btn btn--primary btn--small" id="btn-export">Scarica CSV</button>
+            </div>
+
+            <div class="tool-card">
+              <h3>📋 Esporta lista atleti</h3>
+              <p>Lista atleti registrati (CSV: nome, categoria, box, contatto).</p>
+              <button class="btn btn--ghost btn--small" id="btn-export-atleti">Scarica atleti.csv</button>
+            </div>
+
+            <div class="tool-card">
+              <h3>🔢 Conteggi rapidi</h3>
+              <p>Statistiche al volo: numero atleti per categoria, risultati totali, eventi monitorati.</p>
+              <button class="btn btn--ghost btn--small" id="btn-stats">Mostra statistiche</button>
+              <div class="tool-output" id="stats-output"></div>
+            </div>
+
+          </div>
         </section>
 
       </div>

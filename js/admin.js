@@ -19,7 +19,8 @@ import {
   deleteDoc,
   getDoc,
   getDocs,
-  serverTimestamp
+  serverTimestamp,
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import {
   calcolaEpi,
@@ -112,6 +113,8 @@ function initAdminApp() {
   initTabIscrizioni();
   initTabAtleti();
   initTabRisultati();
+  initTabEventi();
+  initTabStrumenti();
 }
 function cleanupListeners() {
   unsubscribers.forEach((u) => { try { u(); } catch (e) {} });
@@ -648,6 +651,239 @@ risBtnSalva.addEventListener("click", async () => {
     risBtnSalva.classList.remove("is-loading");
   }
 });
+
+// =====================================================
+// TAB EVENTI (read-only)
+// =====================================================
+function initTabEventi() {
+  const lista = document.getElementById("lista-eventi");
+  if (!lista) return;
+  getDocs(query(collection(db, COL.eventi), orderBy("numero", "asc")))
+    .then((snap) => {
+      if (snap.empty) {
+        lista.innerHTML = `<p class="admin-empty">Nessun evento configurato. Vai su <a href="setup.html" style="color: var(--accent-primary);">setup.html</a> per popolare i 10 eventi.</p>`;
+        return;
+      }
+      lista.innerHTML = "";
+      snap.docs.forEach((d) => {
+        const e = d.data();
+        const card = document.createElement("div");
+        card.className = "admin-card";
+        const bm = e.benchmarks || {};
+        const bmStr = ["ultimate", "advanced", "challenge", "essential", "performance", "intermediate"]
+          .map((k) => `<span style="display:inline-block; margin-right: 0.8rem; font-size: 0.85em;"><strong style="color: var(--accent-primary);">${k.slice(0, 3).toUpperCase()}:</strong> ${bm[k] !== undefined ? bm[k] : "—"}</span>`)
+          .join("");
+        const rprStr = e.repsPerRound ? ` · <strong>RPR ${e.repsPerRound}</strong>` : "";
+        card.innerHTML = `
+          <div class="admin-card__info" style="flex-basis: 100%;">
+            <div class="admin-card__title">E${e.numero} — ${escapeHtml(e.nome)}</div>
+            <div class="admin-card__meta">
+              ${escapeHtml(e.scoringType)} · ${escapeHtml(e.scoringDirection)} · giorno ${e.giorno}${rprStr}<br>
+              <div style="margin-top: 0.4rem;">${bmStr}</div>
+            </div>
+          </div>
+        `;
+        lista.appendChild(card);
+      });
+    })
+    .catch((err) => {
+      lista.innerHTML = `<p class="admin-empty">Errore: ${escapeHtml(err.code || err.message)}</p>`;
+    });
+}
+
+// =====================================================
+// TAB STRUMENTI
+// =====================================================
+function initTabStrumenti() {
+  const btnRicalcola = document.getElementById("btn-ricalcola");
+  const ricalcolaOutput = document.getElementById("ricalcola-output");
+  const btnExport = document.getElementById("btn-export");
+  const exportCategoria = document.getElementById("export-categoria");
+  const btnExportAtleti = document.getElementById("btn-export-atleti");
+  const btnStats = document.getElementById("btn-stats");
+  const statsOutput = document.getElementById("stats-output");
+
+  if (!btnRicalcola) return;
+
+  // Ricalcola EPI
+  btnRicalcola.onclick = async () => {
+    if (!confirm("Ricalcolare TUTTI gli EPI usando i benchmark correnti?\n\nOperazione rapida (max ~1 minuto), sicura, sovrascrive solo il campo puntiEpi sui risultati.")) return;
+    ricalcolaOutput.classList.add("is-visible");
+    ricalcolaOutput.textContent = "Caricamento eventi...\n";
+    btnRicalcola.disabled = true;
+
+    try {
+      const eventiSnap = await getDocs(collection(db, COL.eventi));
+      const eventiMap = {};
+      eventiSnap.docs.forEach((d) => { eventiMap[d.id] = d.data(); });
+
+      const risSnap = await getDocs(collection(db, COL.risultati));
+      ricalcolaOutput.textContent += `Trovati ${risSnap.size} risultati. Ricalcolo in corso...\n`;
+
+      let aggiornati = 0;
+      let invariati = 0;
+      let mancantiBenchmark = 0;
+
+      const docs = risSnap.docs;
+      for (let i = 0; i < docs.length; i += 400) {
+        const batch = writeBatch(db);
+        const chunk = docs.slice(i, i + 400);
+        chunk.forEach((d) => {
+          const r = d.data();
+          const evento = eventiMap[r.eventoId];
+          if (!evento) {
+            mancantiBenchmark++;
+            return;
+          }
+          const nuovi = calcolaEpi(r.valore, evento, r.categoriaId);
+          if (Math.abs(nuovi - (r.puntiEpi || 0)) > 0.05) {
+            batch.update(doc(db, COL.risultati, d.id), { puntiEpi: nuovi });
+            aggiornati++;
+          } else {
+            invariati++;
+          }
+        });
+        await batch.commit();
+        ricalcolaOutput.textContent += `Processati ${Math.min(i + 400, docs.length)}/${docs.length}...\n`;
+      }
+      ricalcolaOutput.textContent += `\n=== Fine ===\nAggiornati: ${aggiornati}\nInvariati: ${invariati}\nMancante evento: ${mancantiBenchmark}\nTotale: ${risSnap.size}`;
+    } catch (err) {
+      ricalcolaOutput.textContent += `\nERRORE: ${err.code || err.message}`;
+    } finally {
+      btnRicalcola.disabled = false;
+    }
+  };
+
+  // Esporta classifica per categoria
+  btnExport.onclick = async () => {
+    const cat = exportCategoria.value;
+    try {
+      const [atletiSnap, risSnap] = await Promise.all([
+        getDocs(collection(db, COL.atleti)),
+        getDocs(collection(db, COL.risultati))
+      ]);
+      const atleti = atletiSnap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((a) => a.categoriaId === cat);
+      const risultati = risSnap.docs.map((d) => d.data());
+
+      const headers = ["Pos", "Nome", "Box", "Contatto"];
+      for (let n = 1; n <= 10; n++) headers.push(`E${n}`);
+      headers.push("EPI Totale");
+
+      const rows = atleti.map((a) => {
+        const perEv = {};
+        risultati.filter((r) => r.atletaId === a.id).forEach((r) => {
+          perEv[r.eventoId] = r.puntiEpi;
+        });
+        const totale = Object.values(perEv).reduce((acc, p) => acc + (p || 0), 0);
+        return { atleta: a, perEv, totale };
+      }).sort((x, y) => y.totale - x.totale);
+
+      let csv = headers.join(";") + "\n";
+      rows.forEach((row, idx) => {
+        const cells = [
+          idx + 1,
+          csvSafe(row.atleta.nome),
+          csvSafe(row.atleta.box || ""),
+          csvSafe(row.atleta.contatto || "")
+        ];
+        for (let n = 1; n <= 10; n++) {
+          cells.push(row.perEv[String(n)] !== undefined ? row.perEv[String(n)].toFixed(1) : "");
+        }
+        cells.push(row.totale.toFixed(1));
+        csv += cells.join(";") + "\n";
+      });
+
+      downloadCsv(csv, `classifica-${cat}-${nowStr()}.csv`);
+      showToast(`📥 Classifica ${cat} esportata (${rows.length} atleti)`);
+    } catch (err) {
+      console.error(err);
+      alert("Errore export: " + (err.code || err.message));
+    }
+  };
+
+  // Esporta atleti
+  btnExportAtleti.onclick = async () => {
+    try {
+      const snap = await getDocs(query(collection(db, COL.atleti), orderBy("nome", "asc")));
+      let csv = "Nome;Categoria;Box;Contatto\n";
+      snap.docs.forEach((d) => {
+        const a = d.data();
+        csv += [
+          csvSafe(a.nome),
+          csvSafe(a.categoriaId),
+          csvSafe(a.box || ""),
+          csvSafe(a.contatto || "")
+        ].join(";") + "\n";
+      });
+      downloadCsv(csv, `atleti-${nowStr()}.csv`);
+      showToast(`📥 ${snap.size} atleti esportati`);
+    } catch (err) {
+      alert("Errore: " + (err.code || err.message));
+    }
+  };
+
+  // Statistiche
+  btnStats.onclick = async () => {
+    statsOutput.classList.add("is-visible");
+    statsOutput.textContent = "Caricamento...";
+    try {
+      const [atletiSnap, risSnap, iscrSnap] = await Promise.all([
+        getDocs(collection(db, COL.atleti)),
+        getDocs(collection(db, COL.risultati)),
+        getDocs(collection(db, COL.iscrizioni))
+      ]);
+      const atleti = atletiSnap.docs.map((d) => d.data());
+      const perCat = {};
+      atleti.forEach((a) => {
+        perCat[a.categoriaId] = (perCat[a.categoriaId] || 0) + 1;
+      });
+      const eventiCompilati = new Set(risSnap.docs.map((d) => d.data().eventoId));
+
+      let lines = [
+        `=== Statistiche TUSK Protocol ===`,
+        ``,
+        `Atleti totali: ${atleti.length}`,
+      ];
+      Object.keys(NOMI_CATEGORIE).forEach((cat) => {
+        const n = perCat[cat] || 0;
+        if (n > 0) lines.push(`  · ${NOMI_CATEGORIE[cat]}: ${n}`);
+      });
+      lines.push(``);
+      lines.push(`Iscrizioni pending: ${iscrSnap.size}`);
+      lines.push(`Risultati registrati: ${risSnap.size}`);
+      lines.push(`Eventi con almeno un risultato: ${eventiCompilati.size}/10`);
+      statsOutput.textContent = lines.join("\n");
+    } catch (err) {
+      statsOutput.textContent = "Errore: " + (err.code || err.message);
+    }
+  };
+}
+
+function csvSafe(s) {
+  const v = String(s || "");
+  if (/[;"\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
+  return v;
+}
+
+function downloadCsv(content, filename) {
+  // BOM UTF-8 per Excel italiano
+  const blob = new Blob(["﻿" + content], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function nowStr() {
+  const d = new Date();
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}-${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}`;
+}
 
 // =====================================================
 // HELPER
