@@ -1,5 +1,6 @@
 /* ============================================
-   XENOM BAD BOARS EDITION — Dati Centralizzati
+   TUSK PROTOCOL — Bad Boars Edition — Dati Centralizzati
+   (variabile XENOM_DATA mantenuta per compat con animations.js)
    ============================================ */
 
 const XENOM_DATA = {
