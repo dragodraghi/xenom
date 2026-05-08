@@ -207,8 +207,12 @@ const XENOM_DATA = {
   atleti: [],
 
   programma: [
-    { ora: "TBD", attivita: "Programma sabato 6 Giugno in fase di definizione", tipo: "admin" },
-    { ora: "TBD", attivita: "Programma domenica 7 Giugno in fase di definizione", tipo: "admin" }
+    { ora: "14:00",       giorno: 1, attivita: "Apertura Box, registrazione atleti",        tipo: "admin" },
+    { ora: "14:30-19:00", giorno: 1, attivita: "Eventi 1-4 (slot liberi prenotabili)",      tipo: "wod" },
+    { ora: "09:00",       giorno: 2, attivita: "Apertura, riscaldamento collettivo",         tipo: "admin" },
+    { ora: "10:00-17:00", giorno: 2, attivita: "Eventi 5-9 (heat strutturati)",              tipo: "wod" },
+    { ora: "18:00",       giorno: 2, attivita: "Finale (top 5/6 per categoria)",             tipo: "wod" },
+    { ora: "20:00",       giorno: 2, attivita: "Premiazioni + Party finale",                 tipo: "social" }
   ],
 
   contatti: {
