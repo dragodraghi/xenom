@@ -1066,3 +1066,40 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+/* --- TUSK Protocol: nav CTA + utility classes --- */
+.nav__cta {
+  background: var(--accent-primary);
+  color: #fff !important;
+  padding: 0.4rem 0.9rem;
+  border-radius: 4px;
+  transition: background 0.2s, transform 0.2s;
+}
+.nav__cta:hover {
+  background: #ff5722;
+  transform: translateY(-1px);
+}
+.nav__cta--accent {
+  background: var(--accent-gold);
+  color: #1a1a1a !important;
+}
+.nav__cta--accent:hover {
+  background: #e6c14d;
+}
+.mobile-link--cta {
+  color: var(--accent-primary) !important;
+  font-weight: 700;
+}
+.btn--large {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
+.btn--ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.btn--ghost:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
