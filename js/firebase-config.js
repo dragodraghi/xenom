@@ -21,7 +21,7 @@ const firebaseConfig = {
 };
 
 // Email admin TUSK (hardcoded). UX: i giudici inseriscono solo la password.
-export const ADMIN_EMAIL = "tusk.admin@gmail.com";
+export const ADMIN_EMAIL = "admin@tusk-badboars.com";
 
 // Prefisso collezioni TUSK (per non interferire con Schedinone nello stesso DB)
 export const COL = {

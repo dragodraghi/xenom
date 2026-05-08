@@ -17,7 +17,7 @@
 
 ## Credenziali admin
 
-- **Email admin (hardcoded):** `tusk.admin@gmail.com`
+- **Email admin (hardcoded):** `admin@tusk-badboars.com`
 - **Password:** _annota qui la password vera prima dell'evento — NON committarla in git_
 
 ⚠️ Distribuisci la password **solo** ai giudici designati (max 5-6 persone). Chi ha la password può inserire/modificare risultati e gestire atleti.
@@ -89,7 +89,7 @@
 
 | Problema | Soluzione |
 |---|---|
-| Giudice non riesce a fare login | Verifica password (case-sensitive). Se persiste, reset da Firebase Console → Authentication → user `tusk.admin@gmail.com` → menu kebab → "Reset password" |
+| Giudice non riesce a fare login | Verifica password (case-sensitive). Se persiste, reset da Firebase Console → Authentication → user `admin@tusk-badboars.com` → menu kebab → "Reset password" |
 | Risultato sbagliato salvato | Stesso flusso di inserimento: ricerca atleta + stesso evento → modifica valore → conferma sovrascrittura |
 | Atleta non appare nella search | Verifica in tab **Atleti** che esista (potrebbe essere in `tusk_iscrizioni_pending`, va prima approvato) |
 | Benchmark errato per una categoria | Firebase Console → `tusk_eventi/{N}` → modifica campo `benchmarks.{categoria}` → tab **Strumenti** → "Ricalcola tutti gli EPI" |
