@@ -4,19 +4,20 @@
 
 const XENOM_DATA = {
   evento: {
-    nome: "XENOM Tusk Protocol — Bad Boars Edition",
+    nome: "TUSK Protocol — Bad Boars Edition",
     sottotitolo: "Tusk Protocol",
     slogan: "10 Events. 2 Days. Zero Excuses.",
-    data: "6-7 Giugno 2026",
+    data: "29-30 Maggio 2026",
+    giorniSettimana: "Venerdì 29 e Sabato 30 Maggio",
+    costo: "10€",
+    costoNote: "Da consegnare al box in contanti",
     luogo: "Bad Boars CrossFit",
     indirizzo: "Predda Niedda Sud Str.40, 07100 Sassari (SS)",
-    divisione: "RX / Scaled / Master",
     numAtleti: 0,
     numEventi: 10,
     numGiorni: 2,
-    numCategorie: 3,
-    lancioUfficiale: "27 Giugno 2026",
-    disclaimer: "Collaudo locale in anteprima del format XENOM™ Tusk Protocol"
+    numCategorie: 6,
+    disclaimer: "TUSK Protocol — Bad Boars CrossFit Sassari"
   },
 
   eventi: [
