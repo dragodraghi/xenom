@@ -77,6 +77,19 @@
     <div class="log" id="log-categorie"></div>
   </div>
 
+  <!-- POPOLA EVENTI -->
+  <div class="card">
+    <h2><span class="step-badge">2b</span>Popola tusk_eventi (con benchmark placeholder)</h2>
+    <p style="color:var(--text-secondary); margin-bottom:1rem;">
+      Crea i 10 eventi con <strong>benchmark di esempio</strong>. Da sostituire con i benchmark reali (puoi modificare ogni documento da Firebase Console > Firestore > tusk_eventi, o tramite il bottone qui sotto dopo aver definito i numeri).
+    </p>
+    <div class="row">
+      <button class="btn-primary" id="btn-seed-eventi" disabled>Popola 10 eventi</button>
+      <button class="btn-ghost" id="btn-list-eventi" disabled>Lista eventi esistenti</button>
+    </div>
+    <div class="log" id="log-eventi"></div>
+  </div>
+
   <!-- TEST SCRITTURA SCHEDINONE (verifica isolamento) -->
   <div class="card">
     <h2><span class="step-badge">3</span>Test sicurezza (opzionale)</h2>
@@ -107,6 +120,140 @@ const CATEGORIE = [
   { id: "intermediate", gender: "F", ordine: 2, nome: "Intermediate", descrizione: "Qualità movimento, no carichi élite" }
 ];
 
+// Eventi TUSK Protocol — benchmark PLACEHOLDER da sostituire con valori reali
+const EVENTI = [
+  {
+    id: "1",
+    numero: 1,
+    nome: "1RM Snatch",
+    nomeIT: "Strappo Massimale",
+    descrizione: "Stabilisci il tuo massimale nello Snatch. 9 minuti, 4 tentativi (uno ogni 90 secondi).",
+    formato: "4 tentativi, 1 ogni 90 secondi",
+    scoringType: "weight",
+    scoringDirection: "higher",
+    giorno: 1,
+    repsPerRound: null,
+    benchmarks: { ultimate: 130, advanced: 100, challenge: 80, essential: 60, performance: 75, intermediate: 55 }
+  },
+  {
+    id: "2",
+    numero: 2,
+    nome: "Wall Walk + Rope Climb",
+    nomeIT: "Scalata + Corda",
+    descrizione: "AMRAP 8 min ladder ascendente: R1 = 2 WW + 1 RC, R2 = 4 + 2, R3 = 6 + 3, ecc. Score = ripetizioni totali.",
+    formato: "AMRAP 8 minuti, ladder ascendente",
+    scoringType: "reps",
+    scoringDirection: "higher",
+    giorno: 1,
+    repsPerRound: null,
+    benchmarks: { ultimate: 60, advanced: 45, challenge: 32, essential: 22, performance: 38, intermediate: 26 }
+  },
+  {
+    id: "3",
+    numero: 3,
+    nome: "Max Cal Echo Bike",
+    nomeIT: "Sprint Calorie",
+    descrizione: "60 secondi di puro output sulla Echo Bike. Massimo numero di calorie possibile.",
+    formato: "60 secondi sprint",
+    scoringType: "calories",
+    scoringDirection: "higher",
+    giorno: 1,
+    repsPerRound: null,
+    benchmarks: { ultimate: 38, advanced: 32, challenge: 26, essential: 20, performance: 28, intermediate: 22 }
+  },
+  {
+    id: "4",
+    numero: 4,
+    nome: "Barbell Cycling",
+    nomeIT: "Ciclo di Bilanciere",
+    descrizione: "AMRAP 5 min: 12 Deadlift + 9 Front Squat + 6 S2OH + 3 Thrusters = 30 reps/round.",
+    formato: "AMRAP 5 minuti, 30 reps per round",
+    scoringType: "rounds_reps",
+    scoringDirection: "higher",
+    giorno: 1,
+    repsPerRound: 30,
+    benchmarks: { ultimate: 180, advanced: 150, challenge: 120, essential: 90, performance: 150, intermediate: 120 }
+  },
+  {
+    id: "5",
+    numero: 5,
+    nome: "3K Run + 2K Echo Ski",
+    nomeIT: "Endurance Combinato",
+    descrizione: "Corsa 3 km seguita immediatamente da 2 km Echo Ski. No time cap. Score = tempo totale.",
+    formato: "3000m run + 2000m ski (in sequenza)",
+    scoringType: "time",
+    scoringDirection: "lower",
+    giorno: 2,
+    repsPerRound: null,
+    benchmarks: { ultimate: 900, advanced: 1080, challenge: 1260, essential: 1500, performance: 1080, intermediate: 1320 }
+  },
+  {
+    id: "6",
+    numero: 6,
+    nome: "Mystery WOD",
+    nomeIT: "Evento Sorpresa",
+    descrizione: "Da rivelare. Placeholder fino a definizione.",
+    formato: "Da definire",
+    scoringType: "reps",
+    scoringDirection: "higher",
+    giorno: 2,
+    repsPerRound: null,
+    benchmarks: { ultimate: 100, advanced: 80, challenge: 60, essential: 40, performance: 70, intermediate: 50 }
+  },
+  {
+    id: "7",
+    numero: 7,
+    nome: "Gymnastics Triplet",
+    nomeIT: "Tripletta Ginnica",
+    descrizione: "Toes-to-Bar + DB Hang Snatch + Bar/Ring Muscle-up. Score = ripetizioni totali.",
+    formato: "AMRAP/RFT da definire",
+    scoringType: "reps",
+    scoringDirection: "higher",
+    giorno: 2,
+    repsPerRound: null,
+    benchmarks: { ultimate: 60, advanced: 45, challenge: 30, essential: 20, performance: 40, intermediate: 25 }
+  },
+  {
+    id: "8",
+    numero: 8,
+    nome: "Metcon AMRAP",
+    nomeIT: "Metabolico",
+    descrizione: "Burpees + Echo Ski + Echo Bike. Capacità di lavoro sotto fatica.",
+    formato: "AMRAP da definire (durata e round)",
+    scoringType: "rounds_reps",
+    scoringDirection: "higher",
+    giorno: 2,
+    repsPerRound: 50,
+    benchmarks: { ultimate: 200, advanced: 150, challenge: 120, essential: 90, performance: 150, intermediate: 110 }
+  },
+  {
+    id: "9",
+    numero: 9,
+    nome: "Heavy Clean Ladder",
+    nomeIT: "Scala di Girate Pesanti",
+    descrizione: "Ladder a pesi crescenti nel Clean. Score = peso massimo sollevato con successo.",
+    formato: "Ladder progressiva (90s per scalino)",
+    scoringType: "weight",
+    scoringDirection: "higher",
+    giorno: 2,
+    repsPerRound: null,
+    benchmarks: { ultimate: 140, advanced: 110, challenge: 85, essential: 65, performance: 80, intermediate: 60 }
+  },
+  {
+    id: "10",
+    numero: 10,
+    nome: "The Finale",
+    nomeIT: "La Finale",
+    descrizione: "AMRAP 16 min: HSPU + Chest-to-Bar Pull-up + DB Lunges. Solo top 5/6 per categoria.",
+    formato: "AMRAP 16 minuti",
+    scoringType: "reps",
+    scoringDirection: "higher",
+    giorno: 2,
+    repsPerRound: null,
+    benchmarks: { ultimate: 200, advanced: 160, challenge: 120, essential: 90, performance: 160, intermediate: 120 }
+  }
+];
+
 function log(boxId, msg, kind = "info") {
   const box = $(boxId);
   const line = document.createElement("div");
@@ -129,6 +276,8 @@ function setAuthUI(user) {
   }
   $("btn-seed-categorie").disabled = !enabled;
   $("btn-list-categorie").disabled = !enabled;
+  $("btn-seed-eventi").disabled = !enabled;
+  $("btn-list-eventi").disabled = !enabled;
   $("btn-test-schedinone").disabled = !enabled;
 }
 
@@ -193,6 +342,49 @@ $("btn-list-categorie").addEventListener("click", async () => {
     log("log-categorie", `=== Totale: ${snap.size} documenti ===`, "ok");
   } catch (err) {
     log("log-categorie", `Errore: ${err.code || err.message}`, "err");
+  }
+});
+
+// --- Popola eventi ---
+$("btn-seed-eventi").addEventListener("click", async () => {
+  if (!confirm("Popolare i 10 eventi con benchmark PLACEHOLDER? I valori esistenti saranno sovrascritti.")) return;
+  $("log-eventi").innerHTML = "";
+  log("log-eventi", `Inizio scrittura ${EVENTI.length} documenti su ${COL.eventi}...`, "info");
+  let ok = 0, ko = 0;
+  for (const ev of EVENTI) {
+    try {
+      const { id, ...data } = ev;
+      await setDoc(doc(db, COL.eventi, id), data);
+      log("log-eventi", `✓ E${ev.numero} ${ev.nome} salvato`, "ok");
+      ok++;
+    } catch (err) {
+      log("log-eventi", `✗ E${ev.numero} ERRORE: ${err.code || err.message}`, "err");
+      ko++;
+    }
+  }
+  log("log-eventi", `=== Fine: ${ok} salvati, ${ko} errori ===`, ko === 0 ? "ok" : "err");
+});
+
+// --- Lista eventi ---
+$("btn-list-eventi").addEventListener("click", async () => {
+  $("log-eventi").innerHTML = "";
+  log("log-eventi", `Lettura ${COL.eventi}...`, "info");
+  try {
+    const snap = await getDocs(collection(db, COL.eventi));
+    if (snap.empty) {
+      log("log-eventi", "(collezione vuota)", "info");
+      return;
+    }
+    snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => a.numero - b.numero)
+      .forEach((e) => {
+        const bm = e.benchmarks || {};
+        log("log-eventi", `  E${e.numero} ${e.nome} | ${e.scoringType}/${e.scoringDirection} | day ${e.giorno} | bm: U=${bm.ultimate} A=${bm.advanced} C=${bm.challenge} E=${bm.essential} P=${bm.performance} I=${bm.intermediate}`, "ok");
+      });
+    log("log-eventi", `=== Totale: ${snap.size} documenti ===`, "ok");
+  } catch (err) {
+    log("log-eventi", `Errore: ${err.code || err.message}`, "err");
   }
 });
 
