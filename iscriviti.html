@@ -3,29 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iscrizioni in arrivo — TUSK Protocol</title>
-  <meta name="description" content="Form iscrizioni TUSK Protocol — disponibile a breve.">
+  <title>Iscriviti — TUSK Protocol Bad Boars Edition</title>
+  <meta name="description" content="Iscriviti al TUSK Protocol del 29-30 Maggio 2026 al Bad Boars CrossFit Sassari. 10€ in contanti al box.">
+
+  <meta property="og:title" content="Iscriviti — TUSK Protocol">
+  <meta property="og:description" content="29-30 Maggio 2026 · Bad Boars CrossFit Sassari · 10€">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="it_IT">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="css/design-system.css">
   <link rel="stylesheet" href="css/website.css">
+  <link rel="stylesheet" href="css/live.css">
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
-  <style>
-    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; }
-    .placeholder { text-align: center; max-width: 520px; }
-    .placeholder__icon { font-size: 5rem; margin-bottom: 1rem; }
-    .placeholder h1 { font-family: var(--font-heading); font-size: 2.5rem; text-transform: uppercase; margin-bottom: 1rem; }
-    .placeholder p { color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6; }
-  </style>
 </head>
 <body>
-  <div class="placeholder">
-    <div class="placeholder__icon">📝</div>
-    <h1>Iscrizioni in arrivo</h1>
-    <p>Il form di iscrizione online sarà disponibile nei prossimi giorni. Nel frattempo, contattaci sui social.</p>
-    <a href="index.html" class="btn btn--outline">← Torna alla Home</a>
-    <a href="https://instagram.com/badboarscrossfit" target="_blank" rel="noopener noreferrer" class="btn btn--primary" style="margin-left: 0.5rem;">📷 Instagram</a>
-  </div>
+
+  <nav class="nav nav--simple">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">TUSK <span>BB</span></a>
+      <a href="index.html" class="btn btn--ghost btn--small">← Home</a>
+    </div>
+  </nav>
+
+  <section class="form-section">
+    <div class="container container--narrow">
+
+      <header class="form-header">
+        <div class="section__label">Iscrizione</div>
+        <h1>Iscriviti al TUSK Protocol</h1>
+        <p>29-30 Maggio 2026 — Bad Boars CrossFit, Sassari. <strong>10€</strong> in contanti al box il giorno della gara.</p>
+      </header>
+
+      <form id="form-iscrizione" class="form" novalidate>
+        <div class="form__field">
+          <label for="nome">Nome e Cognome *</label>
+          <input type="text" id="nome" name="nome" required maxlength="80" autocomplete="name" autocapitalize="words">
+          <span class="form__error" data-error-for="nome"></span>
+        </div>
+
+        <div class="form__field">
+          <label for="categoriaId">Categoria *</label>
+          <select id="categoriaId" name="categoriaId" required>
+            <option value="">— Seleziona categoria —</option>
+            <optgroup label="Uomini">
+              <option value="ultimate">Ultimate (M) — Vertice, ginnastica Pro</option>
+              <option value="advanced">Advanced (M) — RX puro</option>
+              <option value="challenge">Challenge (M) — Carichi moderati</option>
+              <option value="essential">Essential (M) — Movimenti fondamentali</option>
+            </optgroup>
+            <optgroup label="Donne">
+              <option value="performance">Performance (F) — Skill tecniche complete</option>
+              <option value="intermediate">Intermediate (F) — Senza carichi élite</option>
+            </optgroup>
+          </select>
+          <span class="form__error" data-error-for="categoriaId"></span>
+        </div>
+
+        <div class="form__field">
+          <label for="box">Box di provenienza *</label>
+          <input type="text" id="box" name="box" required maxlength="80" placeholder="Es. Bad Boars CrossFit, CrossFit Olbia..." autocomplete="organization">
+          <span class="form__error" data-error-for="box"></span>
+        </div>
+
+        <div class="form__field">
+          <label for="contatto">Contatto (telefono o email) *</label>
+          <input type="text" id="contatto" name="contatto" required maxlength="80" placeholder="Es. +39 333 1234567 oppure mario@email.com" autocomplete="tel">
+          <span class="form__error" data-error-for="contatto"></span>
+        </div>
+
+        <div class="form__field">
+          <label for="note">Note (opzionale)</label>
+          <textarea id="note" name="note" maxlength="300" rows="3" placeholder="Allergie, infortuni, richieste particolari..."></textarea>
+          <span class="form__hint">Max 300 caratteri</span>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--large btn--full" id="btn-submit">Invia Iscrizione</button>
+
+        <p class="form__disclaimer">
+          Le iscrizioni vengono <strong>approvate manualmente</strong> dall'organizzatore. Verrai contattato a breve per la conferma. Il pagamento di <strong>10€</strong> avviene al box il giorno della gara.
+        </p>
+      </form>
+
+      <div id="iscrizione-success" class="form-success" hidden>
+        <div class="form-success__icon">✅</div>
+        <h2>Iscrizione ricevuta</h2>
+        <p>La tua richiesta è stata registrata. L'organizzatore ti contatterà a breve per confermare. Grazie per la tua partecipazione!</p>
+        <a href="index.html" class="btn btn--outline">← Torna alla Home</a>
+        <a href="live.html" class="btn btn--primary">Vedi Classifica Live</a>
+      </div>
+
+      <div id="iscrizione-error" class="form-error" hidden>
+        <div class="form-error__icon">❌</div>
+        <h2>Si è verificato un errore</h2>
+        <p id="iscrizione-error-msg">Qualcosa è andato storto. Riprova tra qualche secondo.</p>
+        <button type="button" class="btn btn--outline" id="btn-retry">Riprova</button>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__logo">TUSK PROTOCOL <span>BAD BOARS</span> EDITION</div>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: var(--space-md);">&copy; 2026 Bad Boars CrossFit · Sassari</p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/iscriviti.js"></script>
 </body>
 </html>
