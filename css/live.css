@@ -1,6 +1,10 @@
 /* live.css — Stili condivisi per app live, form iscrizione, area admin */
 
 /* === Layout === */
+[hidden] {
+  display: none !important;
+}
+
 .container--narrow {
   max-width: 640px;
 }
