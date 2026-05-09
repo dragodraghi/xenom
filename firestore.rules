@@ -122,6 +122,22 @@ service cloud.firestore {
         && request.resource.data.box.size() <= 80;
     }
 
+    function isValidTuskRisultatoPubblico() {
+      return request.resource.data.keys().hasOnly(['atletaId', 'eventoId', 'categoriaId', 'puntiEpi'])
+        && request.resource.data.keys().hasAll(['atletaId', 'eventoId', 'categoriaId', 'puntiEpi'])
+        && request.resource.data.atletaId is string
+        && request.resource.data.atletaId.size() > 0
+        && request.resource.data.atletaId.size() <= 80
+        && request.resource.data.eventoId is string
+        && request.resource.data.eventoId.size() > 0
+        && request.resource.data.eventoId.size() <= 20
+        && request.resource.data.categoriaId is string
+        && isValidTuskCategoria(request.resource.data.categoriaId)
+        && request.resource.data.puntiEpi is number
+        && request.resource.data.puntiEpi >= 0
+        && request.resource.data.puntiEpi <= 20000;
+    }
+
     match /games/{gameId} {
       allow read: if isSignedIn();
       allow write: if isSignedIn()
@@ -238,8 +254,14 @@ service cloud.firestore {
     }
 
     match /tusk_risultati/{doc} {
-      allow read: if true;
+      allow read: if isTuskAdmin();
       allow write: if isTuskAdmin();
+    }
+
+    match /tusk_risultati_pubblici/{doc} {
+      allow read: if true;
+      allow create, update: if isTuskAdmin() && isValidTuskRisultatoPubblico();
+      allow delete: if isTuskAdmin();
     }
 
     match /tusk_iscrizioni_pending/{doc} {

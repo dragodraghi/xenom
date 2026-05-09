@@ -30,7 +30,8 @@ export const COL = {
   atleti: "tusk_atleti",
   atletiPubblici: "tusk_atleti_pubblici",
   iscrizioni: "tusk_iscrizioni_pending",
-  risultati: "tusk_risultati"
+  risultati: "tusk_risultati",
+  risultatiPubblici: "tusk_risultati_pubblici"
 };
 
 const app = initializeApp(firebaseConfig);

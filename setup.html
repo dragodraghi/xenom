@@ -49,6 +49,7 @@
 
   <h1>🛠️ Setup TUSK Protocol</h1>
   <p class="subtitle">Pagina di setup iniziale. Popola le collezioni Firestore <code>tusk_categorie</code> con i 6 documenti previsti. Idempotente: rieseguibile in sicurezza.</p>
+  <p class="subtitle" style="color:#ffb347;"><strong>Blocco produzione:</strong> i pulsanti che sovrascrivono categorie/eventi sono disattivati online. Per modifiche gara usa la console Firebase o il tab Eventi/Strumenti.</p>
 
   <!-- LOGIN -->
   <div class="card" id="card-login">
@@ -110,6 +111,11 @@ import { db, auth, loginAdmin, logoutAdmin, onAdminAuthChange, isAdminLoggedIn, 
 import { doc, setDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
+const SETUP_WRITE_HOSTS = new Set(["localhost", "127.0.0.1"]);
+
+function isSetupWriteAllowed() {
+  return SETUP_WRITE_HOSTS.has(window.location.hostname);
+}
 
 const CATEGORIE = [
   { id: "ultimate",     gender: "M", ordine: 1, nome: "Ultimate",     descrizione: "Carichi pesanti, ginnastica Pro (Muscle-up, HSW)" },
@@ -267,6 +273,7 @@ function log(boxId, msg, kind = "info") {
 function setAuthUI(user) {
   const status = $("auth-status");
   const enabled = !!(user && isAdminLoggedIn());
+  const writeEnabled = enabled && isSetupWriteAllowed();
   if (enabled) {
     status.textContent = `Autenticato come ${user.email}`;
     status.className = "pill pill-on";
@@ -274,9 +281,9 @@ function setAuthUI(user) {
     status.textContent = user ? `Autenticato come ${user.email} (NON admin)` : "Non autenticato";
     status.className = "pill pill-off";
   }
-  $("btn-seed-categorie").disabled = !enabled;
+  $("btn-seed-categorie").disabled = !writeEnabled;
   $("btn-list-categorie").disabled = !enabled;
-  $("btn-seed-eventi").disabled = !enabled;
+  $("btn-seed-eventi").disabled = !writeEnabled;
   $("btn-list-eventi").disabled = !enabled;
   $("btn-test-schedinone").disabled = !enabled;
 }
@@ -302,6 +309,10 @@ $("btn-logout").addEventListener("click", () => logoutAdmin());
 
 // --- Popola categorie ---
 $("btn-seed-categorie").addEventListener("click", async () => {
+  if (!isSetupWriteAllowed()) {
+    alert("Setup bloccato in produzione: questa azione sovrascriverebbe categorie/eventi gara.");
+    return;
+  }
   $("log-categorie").innerHTML = "";
   log("log-categorie", `Inizio scrittura ${CATEGORIE.length} documenti su ${COL.categorie}...`, "info");
   let ok = 0, ko = 0;
@@ -347,6 +358,10 @@ $("btn-list-categorie").addEventListener("click", async () => {
 
 // --- Popola eventi ---
 $("btn-seed-eventi").addEventListener("click", async () => {
+  if (!isSetupWriteAllowed()) {
+    alert("Setup bloccato in produzione: questa azione sovrascriverebbe i WOD e i benchmark.");
+    return;
+  }
   if (!confirm("Popolare i 10 eventi con benchmark PLACEHOLDER? I valori esistenti saranno sovrascritti.")) return;
   $("log-eventi").innerHTML = "";
   log("log-eventi", `Inizio scrittura ${EVENTI.length} documenti su ${COL.eventi}...`, "info");

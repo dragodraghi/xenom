@@ -53,7 +53,7 @@ const unsubAtleti = onSnapshot(
 
 // === Listener risultati ===
 const unsubRisultati = onSnapshot(
-  collection(db, COL.risultati),
+  collection(db, COL.risultatiPubblici),
   (snap) => {
     risultatiCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     risultatiLoaded = true;

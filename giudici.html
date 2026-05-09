@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="TUSK BB">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="manifest" href="giudici.webmanifest">
   <link rel="apple-touch-icon" href="assets/icons/tusk-icon-180.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -255,6 +255,13 @@
               <p>Aggiorna la copia usata dalla classifica live senza email o telefono. Serve dopo import manuali o modifiche da Firebase Console.</p>
               <button class="btn btn--ghost btn--small" id="btn-sync-pubblici">Sincronizza</button>
               <div class="tool-output" id="sync-pubblici-output"></div>
+            </div>
+
+            <div class="tool-card">
+              <h3>🛡️ Sincronizza risultati pubblici</h3>
+              <p>Rigenera la copia pulita per live e podio. Non contiene nome giudice, storico correzioni o dati operativi.</p>
+              <button class="btn btn--ghost btn--small" id="btn-sync-risultati-pubblici">Sincronizza risultati</button>
+              <div class="tool-output" id="sync-risultati-pubblici-output"></div>
             </div>
 
             <div class="tool-card">

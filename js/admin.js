@@ -160,6 +160,9 @@ function initAdminApp() {
   initTabRisultati();
   initTabEventi();
   initTabStrumenti();
+  syncRisultatiPubblici({ silent: true }).catch((err) => {
+    console.warn("Sync risultati pubblici:", err.code || err.message);
+  });
 }
 function cleanupListeners() {
   unsubscribers.forEach((u) => { try { u(); } catch (e) {} });
@@ -451,6 +454,15 @@ function datiAtletaPubblici(atleta) {
   };
 }
 
+function datiRisultatoPubblico(r) {
+  return {
+    atletaId: String(r.atletaId || "").trim(),
+    eventoId: String(r.eventoId || "").trim(),
+    categoriaId: String(r.categoriaId || "").trim(),
+    puntiEpi: Number(r.puntiEpi || 0)
+  };
+}
+
 function atletaPubblicoUguale(esistente, prossimo) {
   const chiaviConsentite = new Set(["nome", "categoriaId", "box"]);
   return esistente
@@ -458,6 +470,16 @@ function atletaPubblicoUguale(esistente, prossimo) {
     && esistente.nome === prossimo.nome
     && esistente.categoriaId === prossimo.categoriaId
     && esistente.box === prossimo.box;
+}
+
+function risultatoPubblicoUguale(esistente, prossimo) {
+  const chiaviConsentite = new Set(["atletaId", "eventoId", "categoriaId", "puntiEpi"]);
+  return esistente
+    && Object.keys(esistente).every((k) => chiaviConsentite.has(k))
+    && esistente.atletaId === prossimo.atletaId
+    && esistente.eventoId === prossimo.eventoId
+    && esistente.categoriaId === prossimo.categoriaId
+    && Number(esistente.puntiEpi || 0) === Number(prossimo.puntiEpi || 0);
 }
 
 function programmaSyncAtletiPubblici() {
@@ -518,6 +540,56 @@ async function syncAtletiPubblici({ silent = false, outputEl = null } = {}) {
     outputEl.textContent = msg;
   }
   return { aggiornati, rimossi, totale: atletiCache.length };
+}
+
+async function syncRisultatiPubblici({ silent = false, outputEl = null } = {}) {
+  const [snapPrivati, snapPubblici] = await Promise.all([
+    getDocs(collection(db, COL.risultati)),
+    getDocs(collection(db, COL.risultatiPubblici))
+  ]);
+
+  const pubblici = new Map(snapPubblici.docs.map((d) => [d.id, d.data()]));
+  let batch = writeBatch(db);
+  let operazioniBatch = 0;
+  let aggiornati = 0;
+  let rimossi = 0;
+
+  async function commitSePieno(force = false) {
+    if (operazioniBatch === 0) return;
+    if (!force && operazioniBatch < 400) return;
+    await batch.commit();
+    batch = writeBatch(db);
+    operazioniBatch = 0;
+  }
+
+  for (const d of snapPrivati.docs) {
+    const pubblico = datiRisultatoPubblico(d.data());
+    const esistente = pubblici.get(d.id);
+    if (!risultatoPubblicoUguale(esistente, pubblico)) {
+      batch.set(doc(db, COL.risultatiPubblici, d.id), pubblico);
+      operazioniBatch++;
+      aggiornati++;
+      await commitSePieno();
+    }
+    pubblici.delete(d.id);
+  }
+
+  for (const id of pubblici.keys()) {
+    batch.delete(doc(db, COL.risultatiPubblici, id));
+    operazioniBatch++;
+    rimossi++;
+    await commitSePieno();
+  }
+
+  await commitSePieno(true);
+
+  const msg = `Risultati pubblici aggiornati: ${aggiornati} scritti, ${rimossi} rimossi, ${snapPrivati.size} risultati privati.`;
+  if (!silent) showToast(msg);
+  if (outputEl) {
+    outputEl.classList.add("is-visible");
+    outputEl.textContent = msg;
+  }
+  return { aggiornati, rimossi, totale: snapPrivati.size };
 }
 
 // =====================================================
@@ -1017,6 +1089,23 @@ function formatDettaglioRisultato(r, evento) {
   return `${formatValoreEsistente(r, evento)} -> ${r.puntiEpi} punti EPI (${formatAutoreRisultato(r)})`;
 }
 
+function timestampKey(ts) {
+  if (!ts) return "";
+  if (typeof ts.toMillis === "function") return String(ts.toMillis());
+  if (typeof ts.seconds === "number") return `${ts.seconds}:${ts.nanoseconds || 0}`;
+  return String(ts);
+}
+
+function firmaRisultato(r) {
+  return JSON.stringify({
+    valore: r?.valore ?? null,
+    valoreSecondario: r?.valoreSecondario ?? null,
+    puntiEpi: r?.puntiEpi ?? null,
+    aggiornatoDa: r?.aggiornatoDa || r?.inseritoDa || "",
+    aggiornatoIl: timestampKey(r?.aggiornatoIl || r?.inseritoIl)
+  });
+}
+
 risBtnSalva.addEventListener("click", async () => {
   if (!atletaCorrente || !eventoCorrente) return;
   const giudice = nomeGiudiceCorrente();
@@ -1038,6 +1127,7 @@ risBtnSalva.addEventListener("click", async () => {
   const puntiEpi = calcolaEpi(valore, eventoCorrente, atletaCorrente.categoriaId);
   const risId = `${atletaCorrente.id}_${eventoCorrente.id}`;
   const risultatoRef = doc(db, COL.risultati, risId);
+  const risultatoPubblicoRef = doc(db, COL.risultatiPubblici, risId);
 
   if (puntiEpi > EPI_ANOMALY_THRESHOLD) {
     const valoreFmt = formatValoreEsistente({ valore }, eventoCorrente);
@@ -1049,9 +1139,11 @@ risBtnSalva.addEventListener("click", async () => {
 
   try {
     let overwriteConfirmed = false;
+    let overwriteSignature = "";
     const currentSnap = await getDoc(risultatoRef);
     if (currentSnap.exists()) {
       const current = currentSnap.data();
+      overwriteSignature = firmaRisultato(current);
       if (!confirm(`Sovrascrivere il risultato esistente per ${atletaCorrente.nome} su E${eventoCorrente.numero} ${eventoCorrente.nome}?\n\nPrecedente: ${formatDettaglioRisultato(current, eventoCorrente)}\nNuovo: ${puntiEpi} pt\nGiudice: ${giudice}`)) return;
       overwriteConfirmed = true;
     }
@@ -1063,6 +1155,12 @@ risBtnSalva.addEventListener("click", async () => {
         conflict.code = "tusk/concurrent-result";
         conflict.current = snap.data();
         throw conflict;
+      }
+      if (snap.exists() && overwriteConfirmed && firmaRisultato(snap.data()) !== overwriteSignature) {
+        const stale = new Error("Risultato modificato dopo la conferma.");
+        stale.code = "tusk/stale-result";
+        stale.current = snap.data();
+        throw stale;
       }
 
       const previous = snap.exists() ? snap.data() : null;
@@ -1095,6 +1193,7 @@ risBtnSalva.addEventListener("click", async () => {
       }
 
       transaction.set(risultatoRef, payload, { merge: true });
+      transaction.set(risultatoPubblicoRef, datiRisultatoPubblico(payload));
     });
     showToast(`✅ Salvato: ${puntiEpi} pt EPI per ${atletaCorrente.nome}`);
     // Reset form
@@ -1111,11 +1210,11 @@ risBtnSalva.addEventListener("click", async () => {
     risSearchAtleta.value = "";
     risSearchAtleta.focus();
   } catch (err) {
-    if (err.code === "tusk/concurrent-result") {
+    if (err.code === "tusk/concurrent-result" || err.code === "tusk/stale-result") {
       risEsistenteCorrente = err.current;
       risEsistenteDetail.textContent = ` ${formatDettaglioRisultato(err.current, eventoCorrente)}`;
       risEsistente.hidden = false;
-      alert(`Attenzione: un altro giudice ha appena salvato questo atleta/WOD.\n\nRisultato presente: ${formatDettaglioRisultato(err.current, eventoCorrente)}\n\nVerifica prima di sovrascrivere.`);
+      alert(`Attenzione: un altro giudice ha appena salvato o modificato questo atleta/WOD.\n\nRisultato presente: ${formatDettaglioRisultato(err.current, eventoCorrente)}\n\nVerifica prima di sovrascrivere.`);
       return;
     }
     console.error("Errore salvataggio risultato:", err);
@@ -1176,6 +1275,8 @@ function initTabStrumenti() {
   const btnExportAtleti = document.getElementById("btn-export-atleti");
   const btnSyncPubblici = document.getElementById("btn-sync-pubblici");
   const syncPubbliciOutput = document.getElementById("sync-pubblici-output");
+  const btnSyncRisultatiPubblici = document.getElementById("btn-sync-risultati-pubblici");
+  const syncRisultatiPubbliciOutput = document.getElementById("sync-risultati-pubblici-output");
   const btnStats = document.getElementById("btn-stats");
   const statsOutput = document.getElementById("stats-output");
 
@@ -1201,9 +1302,9 @@ function initTabStrumenti() {
       let mancantiBenchmark = 0;
 
       const docs = risSnap.docs;
-      for (let i = 0; i < docs.length; i += 400) {
+      for (let i = 0; i < docs.length; i += 240) {
         const batch = writeBatch(db);
-        const chunk = docs.slice(i, i + 400);
+        const chunk = docs.slice(i, i + 240);
         chunk.forEach((d) => {
           const r = d.data();
           const evento = eventiMap[r.eventoId];
@@ -1214,13 +1315,15 @@ function initTabStrumenti() {
           const nuovi = calcolaEpi(r.valore, evento, r.categoriaId);
           if (Math.abs(nuovi - (r.puntiEpi || 0)) > 0.05) {
             batch.update(doc(db, COL.risultati, d.id), { puntiEpi: nuovi });
+            batch.set(doc(db, COL.risultatiPubblici, d.id), datiRisultatoPubblico({ ...r, puntiEpi: nuovi }));
             aggiornati++;
           } else {
+            batch.set(doc(db, COL.risultatiPubblici, d.id), datiRisultatoPubblico(r));
             invariati++;
           }
         });
         await batch.commit();
-        ricalcolaOutput.textContent += `Processati ${Math.min(i + 400, docs.length)}/${docs.length}...\n`;
+        ricalcolaOutput.textContent += `Processati ${Math.min(i + 240, docs.length)}/${docs.length}...\n`;
       }
       ricalcolaOutput.textContent += `\n=== Fine ===\nAggiornati: ${aggiornati}\nInvariati: ${invariati}\nMancante evento: ${mancantiBenchmark}\nTotale: ${risSnap.size}`;
     } catch (err) {
@@ -1317,6 +1420,27 @@ function initTabStrumenti() {
         }
       } finally {
         btnSyncPubblici.disabled = false;
+      }
+    };
+  }
+
+  // Sincronizza copia pubblica dei risultati senza dati giudici/storico
+  if (btnSyncRisultatiPubblici) {
+    btnSyncRisultatiPubblici.onclick = async () => {
+      btnSyncRisultatiPubblici.disabled = true;
+      if (syncRisultatiPubbliciOutput) {
+        syncRisultatiPubbliciOutput.classList.add("is-visible");
+        syncRisultatiPubbliciOutput.textContent = "Sincronizzazione risultati in corso...";
+      }
+      try {
+        await syncRisultatiPubblici({ outputEl: syncRisultatiPubbliciOutput });
+      } catch (err) {
+        if (syncRisultatiPubbliciOutput) {
+          syncRisultatiPubbliciOutput.classList.add("is-visible");
+          syncRisultatiPubbliciOutput.textContent = "Errore: " + (err.code || err.message);
+        }
+      } finally {
+        btnSyncRisultatiPubblici.disabled = false;
       }
     };
   }

@@ -1,0 +1,56 @@
+{
+  "name": "TUSK Protocol Giudici",
+  "short_name": "TUSK Giudici",
+  "description": "Console riservata per approvazioni, atleti e risultati TUSK Protocol Bad Boars.",
+  "start_url": "/giudici.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#ff3c00",
+  "lang": "it",
+  "categories": ["sports", "fitness"],
+  "icons": [
+    {
+      "src": "/assets/icons/tusk-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/tusk-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/tusk-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Area giudici",
+      "short_name": "Giudici",
+      "description": "Pannello admin riservato",
+      "url": "/giudici.html",
+      "icons": [{ "src": "/assets/icons/tusk-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Classifica live",
+      "short_name": "Live",
+      "description": "Classifica EPI in tempo reale",
+      "url": "/live.html",
+      "icons": [{ "src": "/assets/icons/tusk-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Podio",
+      "short_name": "Podio",
+      "description": "Top 3 per categoria",
+      "url": "/podio.html",
+      "icons": [{ "src": "/assets/icons/tusk-icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
