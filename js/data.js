@@ -217,7 +217,8 @@ const XENOM_DATA = {
   ],
 
   contatti: {
-    instagram: "Da confermare con il coach",
+    instagram: "@bad_boars_crossfit",
+    instagramUrl: "https://www.instagram.com/bad_boars_crossfit/",
     facebook: "Bad Boars CrossFit",
     facebookUrl: "https://www.facebook.com/pages/Bad-Boars-CrossFit/480247628798596",
     email: "info@badboarscrossfit.com",
