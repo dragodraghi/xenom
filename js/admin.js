@@ -400,7 +400,6 @@ Se il link si apre dentro WhatsApp/Instagram: apri il menu e scegli "Apri nel br
 Riferimenti Bad Boars:
 Instagram: https://www.instagram.com/bad_boars_crossfit/
 Facebook: https://www.facebook.com/pages/Bad-Boars-CrossFit/480247628798596
-Contatti box: https://www.badboarscrossfit.com/contatti.php
 
 Dopo l'invio l'organizzazione approva manualmente la richiesta e ti contatta per conferma.`;
   }
