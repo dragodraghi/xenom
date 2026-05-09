@@ -264,10 +264,21 @@ function updateShareText(stats = CATEGORIE_ORDINATE.map(slotStatsCategoria)) {
 Compila il form qui:
 ${athleteUrl}${riepilogo}
 
-Dal telefono puoi aggiungerlo alla schermata Home:
-1. Apri il link
-2. Menu del browser
-3. "Aggiungi a schermata Home"
+Salvalo come app sul telefono, cosi lo ritrovi subito:
+
+IPHONE
+1. Apri il link con Safari.
+2. Tocca il pulsante Condividi (quadrato con freccia).
+3. Scorri e scegli "Aggiungi a schermata Home".
+4. Tocca "Aggiungi".
+
+ANDROID
+1. Apri il link con Chrome.
+2. Tocca i tre puntini in alto a destra.
+3. Tocca "Installa app" oppure "Aggiungi a schermata Home".
+4. Conferma con "Installa" o "Aggiungi".
+
+Se il link si apre dentro WhatsApp/Instagram: apri il menu e scegli "Apri nel browser" prima di salvarlo.
 
 Dopo l'invio l'organizzazione approva manualmente la richiesta e ti contatta per conferma.`;
   }
