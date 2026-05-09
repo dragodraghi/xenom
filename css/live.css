@@ -71,6 +71,22 @@
   margin: 0 auto;
 }
 
+.admin-login-section .section__label {
+  color: var(--accent-gold);
+}
+
+.admin-login-section .form-header h1 {
+  color: var(--text-primary);
+}
+
+.form--admin-login {
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid rgba(212, 168, 67, 0.32);
+  border-radius: var(--radius-md);
+  background: rgba(10, 10, 10, 0.94);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.4);
+}
+
 .form-event-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

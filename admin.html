@@ -19,21 +19,22 @@
 <body>
 
   <!-- ==== SCREEN LOGIN ==== -->
-  <section id="screen-login" class="form-section">
+  <section id="screen-login" class="form-section admin-login-section">
     <div class="container container--narrow">
       <header class="form-header">
         <div class="section__label">Area Riservata</div>
-        <h1>Login Giudici</h1>
-        <p>Inserisci la password fornita dall'organizzatore TUSK Protocol.</p>
+        <h1>Pannello Giudici</h1>
+        <p>Questa e la pagina admin per approvare iscrizioni e inserire risultati. Non e il form atleta.</p>
       </header>
 
-      <form id="form-login" class="form" novalidate>
+      <form id="form-login" class="form form--admin-login" novalidate>
         <div class="form__field">
-          <label for="password">Password</label>
+          <label for="password">Password giudici</label>
           <input type="password" id="password" name="password" required autocomplete="current-password" autofocus>
           <span class="form__error" data-error-for="password"></span>
         </div>
-        <button type="submit" class="btn btn--primary btn--large btn--full" id="btn-login">Accedi</button>
+        <button type="submit" class="btn btn--primary btn--large btn--full" id="btn-login">Entra nel pannello approvazioni</button>
+        <p class="form__disclaimer">Pagina riservata ai giudici. La pagina per gli atleti e iscriviti.html.</p>
         <p class="form__disclaimer">
           <a href="index.html" style="color: var(--text-muted);">← Torna alla home</a>
         </p>
