@@ -12,7 +12,7 @@
 | Landing | `/index.html` | Pubblico |
 | Form iscrizione | `/iscriviti.html` | Pubblico |
 | Classifica live | `/live.html` | Pubblico |
-| Area giudici | `/admin.html` | Riservata (login) |
+| Area giudici | `/giudici.html` | Riservata (login) |
 | Setup iniziale | `/setup.html` | Riservata (login) |
 
 ## Credenziali admin
@@ -27,11 +27,11 @@
 ## Pre-evento (entro Mercoledì 27 Maggio)
 
 ### 1. Verifica eventi e benchmark
-1. Apri `admin.html` → tab **Eventi**
+1. Apri `giudici.html` → tab **Eventi**
 2. Controlla che i 10 eventi abbiano i benchmark **veri** (non più placeholder) per le 6 categorie
 3. Se devi modificare un benchmark:
    - Firebase Console → Firestore → `tusk_eventi` → seleziona evento (1-10) → modifica campo `benchmarks.{categoria}`
-   - Torna in `admin.html` → tab **Strumenti** → click **"Ricalcola tutti gli EPI"**
+   - Torna in `giudici.html` → tab **Strumenti** → click **"Ricalcola tutti gli EPI"**
 
 ### 2. Approva tutte le iscrizioni rimaste
 1. Tab **Iscrizioni** → ci sono iscrizioni pending?
@@ -56,7 +56,7 @@
 
 ### Setup giudici (mattina del 29 Maggio)
 1. Distribuisci la password admin ai giudici designati
-2. Ogni giudice apre `admin.html` sul proprio telefono e fa login una volta
+2. Ogni giudice apre `giudici.html` sul proprio telefono e fa login una volta
 3. Firebase mantiene la sessione: NON serve ri-loggare durante la giornata
 4. Ogni giudice tiene aperta la pagina su tab **Inserisci Risultato**
 

@@ -8,8 +8,15 @@
   "orientation": "portrait",
   "background_color": "#0a0a0a",
   "theme_color": "#ff3c00",
+  "lang": "it",
   "categories": ["sports", "fitness"],
   "icons": [
+    {
+      "src": "/assets/icons/tusk-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/assets/icons/tusk-icon-192.png",
       "sizes": "192x192",
@@ -21,6 +28,29 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Classifica live",
+      "short_name": "Live",
+      "description": "Classifica EPI in tempo reale",
+      "url": "/live.html",
+      "icons": [{ "src": "/assets/icons/tusk-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Iscrizione atleta",
+      "short_name": "Iscriviti",
+      "description": "Modulo iscrizione TUSK Protocol",
+      "url": "/iscriviti.html",
+      "icons": [{ "src": "/assets/icons/tusk-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Area giudici",
+      "short_name": "Giudici",
+      "description": "Pannello admin riservato",
+      "url": "/giudici.html",
+      "icons": [{ "src": "/assets/icons/tusk-icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

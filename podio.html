@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Podio — TUSK Protocol Bad Boars</title>
+  <meta name="description" content="Premiazione TUSK Protocol — Top 3 per categoria. Vista da proiettore.">
+
+  <meta property="og:title" content="Podio — TUSK Protocol">
+  <meta property="og:description" content="Top 3 per categoria — Bad Boars CrossFit Sassari.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="it_IT">
+  <meta name="theme-color" content="#ff3c00">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="TUSK BB">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icons/tusk-icon-180.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/website.css">
+  <link rel="stylesheet" href="css/live.css">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏅</text></svg>">
+</head>
+<body class="podio-body">
+
+  <header class="podio-hero">
+    <div class="container">
+      <div class="podio-hero__brand">TUSK <span>PROTOCOL</span> · BAD BOARS</div>
+      <div class="podio-hero__title">
+        <h1 id="podio-cat-name">—</h1>
+        <p id="podio-cat-sub">29-30 Maggio 2026 · Bad Boars CrossFit Sassari</p>
+      </div>
+      <div class="podio-hero__status" id="podio-status"><span class="live-dot"></span>Caricamento…</div>
+    </div>
+  </header>
+
+  <main class="podio-section">
+    <div class="container">
+
+      <nav class="podio-tabs" role="tablist" id="podio-tabs">
+        <button class="podio-tab is-active" data-cat="ultimate" role="tab">Ultimate (M)</button>
+        <button class="podio-tab" data-cat="advanced" role="tab">Advanced (M)</button>
+        <button class="podio-tab" data-cat="challenge" role="tab">Challenge (M)</button>
+        <button class="podio-tab" data-cat="essential" role="tab">Essential (M)</button>
+        <button class="podio-tab" data-cat="performance" role="tab">Performance (F)</button>
+        <button class="podio-tab" data-cat="intermediate" role="tab">Intermediate (F)</button>
+      </nav>
+
+      <section id="podio-stage" class="podio-stage">
+        <article class="podio-card podio-card--silver" data-rank="2">
+          <div class="podio-card__rank">2°</div>
+          <div class="podio-card__nome">—</div>
+          <div class="podio-card__box">—</div>
+          <div class="podio-card__epi">— pt</div>
+        </article>
+        <article class="podio-card podio-card--gold" data-rank="1">
+          <div class="podio-card__rank">1°</div>
+          <div class="podio-card__nome">—</div>
+          <div class="podio-card__box">—</div>
+          <div class="podio-card__epi">— pt</div>
+        </article>
+        <article class="podio-card podio-card--bronze" data-rank="3">
+          <div class="podio-card__rank">3°</div>
+          <div class="podio-card__nome">—</div>
+          <div class="podio-card__box">—</div>
+          <div class="podio-card__epi">— pt</div>
+        </article>
+      </section>
+
+      <p id="podio-empty" class="podio-empty" hidden>
+        Nessun atleta classificato in questa categoria.
+      </p>
+
+      <p class="podio-hint">
+        Suggerimento: aggiungi <code>?rotate=15</code> all'URL per ciclare le categorie ogni 15 secondi.
+      </p>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__logo">TUSK PROTOCOL <span>BAD BOARS</span> EDITION</div>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: var(--space-md);">
+        &copy; 2026 Bad Boars CrossFit · Sassari ·
+        <a href="live.html" style="color: var(--text-muted);">📊 Classifica completa</a> ·
+        <a href="giudici.html" style="color: var(--text-muted);">🔒 Area Giudici</a>
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/podio.js"></script>
+  <script type="module" src="js/pwa.js"></script>
+</body>
+</html>

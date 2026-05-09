@@ -51,13 +51,34 @@ const unsubRisultati = onSnapshot(
 
 // === Tab switching ===
 tabs.forEach((tab) => {
-  tab.addEventListener("click", () => {
+  tab.addEventListener("click", (e) => {
     tabs.forEach((t) => t.classList.toggle("is-active", t === tab));
     categoriaCorrente = tab.dataset.cat;
     prevPosizioni = {}; // reset per non flashare al cambio tab
     render();
+    if (e.isTrusted && rotateSeconds > 0) {
+      rotatePausedUntil = Date.now() + ROTATE_PAUSE_MS;
+    }
   });
 });
+
+// === Auto-rotation per TV/proiettore: ?rotate=10 (secondi) ===
+const rotateParam = new URLSearchParams(window.location.search).get("rotate");
+const rotateSeconds = rotateParam ? Math.max(3, parseInt(rotateParam, 10) || 0) : 0;
+const ROTATE_PAUSE_MS = 30_000; // dopo un click manuale, pausa 30s
+let rotateTimer = null;
+let rotatePausedUntil = 0;
+
+if (rotateSeconds > 0) {
+  rotateTimer = setInterval(() => {
+    if (Date.now() < rotatePausedUntil) return;
+    if (document.hidden) return; // niente switch se la tab non è visibile
+    const tabsArr = Array.from(tabs);
+    const currentIdx = tabsArr.findIndex((t) => t.classList.contains("is-active"));
+    const nextIdx = (currentIdx + 1) % tabsArr.length;
+    tabsArr[nextIdx].click();
+  }, rotateSeconds * 1000);
+}
 
 // === Render ===
 function render() {
@@ -135,7 +156,8 @@ function render() {
 }
 
 function setStatus(text) {
-  status.innerHTML = `<span class="live-dot"></span>${escapeHtml(text)}`;
+  const rotateInfo = rotateSeconds > 0 ? ` · 🔁 rotazione ${rotateSeconds}s` : "";
+  status.innerHTML = `<span class="live-dot"></span>${escapeHtml(text + rotateInfo)}`;
 }
 
 function formatEpi(n) {
@@ -155,4 +177,5 @@ function escapeHtml(s) {
 window.addEventListener("beforeunload", () => {
   try { unsubAtleti(); } catch (e) {}
   try { unsubRisultati(); } catch (e) {}
+  if (rotateTimer) clearInterval(rotateTimer);
 });

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Form cartaceo backup — TUSK Protocol</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+    /* ========= Print-first design (A4 portrait) ========= */
+    @page { size: A4 portrait; margin: 14mm; }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      color: #000;
+      background: #fff;
+      font-size: 10.5pt;
+      line-height: 1.25;
+    }
+
+    /* On-screen preview (gives a visible page boundary) */
+    @media screen {
+      body {
+        padding: 24px;
+        background: #f4f4f4;
+      }
+      .sheet {
+        max-width: 210mm;
+        margin: 0 auto 24px;
+        padding: 14mm;
+        background: #fff;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        page-break-after: always;
+      }
+      .controls {
+        max-width: 210mm;
+        margin: 0 auto 16px;
+        text-align: center;
+      }
+      .controls button {
+        padding: 0.6rem 1.4rem;
+        font-size: 1rem;
+        background: #ff3c00;
+        color: #fff;
+        border: 0;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+    }
+
+    @media print {
+      .controls { display: none !important; }
+      .sheet { page-break-after: always; }
+      .sheet:last-child { page-break-after: auto; }
+    }
+
+    .sheet {
+      display: flex;
+      flex-direction: column;
+      min-height: 270mm;
+    }
+
+    .head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #000;
+      padding-bottom: 6mm;
+      margin-bottom: 6mm;
+    }
+    .head h1 {
+      font-size: 18pt;
+      margin: 0;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .head h1 small {
+      display: block;
+      font-size: 10pt;
+      letter-spacing: 0.5px;
+      color: #555;
+      font-weight: 400;
+      margin-top: 2px;
+    }
+    .head .badge {
+      border: 1.5px solid #000;
+      padding: 4mm 5mm;
+      font-weight: 700;
+      font-size: 11pt;
+      text-transform: uppercase;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4mm 8mm;
+      margin-bottom: 6mm;
+      font-size: 11pt;
+    }
+    .meta-grid label {
+      display: flex;
+      gap: 2mm;
+      align-items: flex-end;
+    }
+    .meta-grid label span {
+      font-weight: 700;
+      flex-shrink: 0;
+      text-transform: uppercase;
+      font-size: 9pt;
+      letter-spacing: 0.6px;
+    }
+    .meta-grid label .line {
+      flex-grow: 1;
+      border-bottom: 1px solid #000;
+      min-height: 6mm;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 3mm 2mm;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #000;
+      color: #fff;
+      font-size: 9pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    td {
+      height: 9mm;
+    }
+    /* Column widths */
+    col.c-num   { width: 7%; }
+    col.c-nome  { width: 28%; }
+    col.c-box   { width: 18%; }
+    col.c-cat   { width: 12%; }
+    col.c-perf  { width: 18%; }
+    col.c-firma { width: 17%; }
+
+    .footer-box {
+      margin-top: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6mm;
+      padding-top: 6mm;
+      border-top: 1px dashed #888;
+      font-size: 9pt;
+    }
+    .footer-box p {
+      margin: 0 0 2mm 0;
+    }
+    .footer-box .sign-row {
+      display: flex;
+      gap: 3mm;
+      align-items: flex-end;
+    }
+    .footer-box .sign-row .line {
+      flex-grow: 1;
+      border-bottom: 1px solid #000;
+      min-height: 7mm;
+    }
+    .footer-box .note {
+      color: #444;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button onclick="window.print()">🖨️ Stampa fogli (1 per evento)</button>
+    <p style="font-size:0.85rem; color:#444; margin-top:0.6rem;">
+      Stampa 10-15 copie. Una copia per evento, da usare se Firebase non risponde.
+    </p>
+  </div>
+
+  <!-- Pre-genera 10 fogli, uno per evento -->
+  <script>
+    const EVENTI = [
+      "1 — 1RM Snatch",
+      "2 — Wall Walk + Rope Climb (8min)",
+      "3 — Max Cal Echo Bike (60s)",
+      "4 — Barbell Cycling AMRAP (5min)",
+      "5 — 3K Run + 2K Echo Ski",
+      "6 — Mystery WOD",
+      "7 — Gymnastics Triplet",
+      "8 — Metcon AMRAP",
+      "9 — Heavy Clean Ladder",
+      "10 — The Finale (16min AMRAP)"
+    ];
+
+    const PERFORMANCE_HEADER = {
+      weight:       "Performance (kg)",
+      reps:         "Performance (reps)",
+      cal:          "Performance (cal)",
+      time:         "Performance (mm:ss)",
+      rounds_reps:  "Round + reps extra"
+    };
+
+    function sheet(eventoLabel, idx) {
+      const rows = Array.from({length: 18}, (_, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>`).join("");
+
+      return `
+        <div class="sheet">
+          <div class="head">
+            <h1>TUSK Protocol — Form Cartaceo<small>Bad Boars Edition · 29-30 Maggio 2026</small></h1>
+            <div class="badge">Evento ${eventoLabel.split(" — ")[0]}</div>
+          </div>
+
+          <div class="meta-grid">
+            <label><span>Evento:</span><span class="line">${eventoLabel}</span></label>
+            <label><span>Giorno:</span><span class="line"></span></label>
+            <label><span>Giudice:</span><span class="line"></span></label>
+            <label><span>Data:</span><span class="line"></span></label>
+          </div>
+
+          <table>
+            <colgroup>
+              <col class="c-num">
+              <col class="c-nome">
+              <col class="c-box">
+              <col class="c-cat">
+              <col class="c-perf">
+              <col class="c-firma">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nome e cognome</th>
+                <th>Box</th>
+                <th>Categoria</th>
+                <th>Performance</th>
+                <th>Firma atleta</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+
+          <div class="footer-box">
+            <div>
+              <p><strong>Note evento</strong> (DNF, infortuni, riassegnazioni heat):</p>
+              <div style="border:1px solid #000; height:18mm;"></div>
+            </div>
+            <div>
+              <p>Firma giudice di pedana</p>
+              <div class="sign-row"><span class="line"></span></div>
+              <p style="margin-top:4mm;">Ora consegna foglio</p>
+              <div class="sign-row"><span class="line"></span></div>
+              <p class="note">Consegna all'organizzatore entro 2h dalla fine evento.</p>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    document.body.insertAdjacentHTML("beforeend", EVENTI.map(sheet).join(""));
+  </script>
+</body>
+</html>

@@ -125,6 +125,14 @@
         <section class="admin-panel" data-panel="risultati">
           <h2>Inserisci risultato</h2>
 
+          <div class="ris-judge-strip">
+            <div class="form__field">
+              <label for="ris-giudice">Giudice di pedana</label>
+              <input type="text" id="ris-giudice" maxlength="60" placeholder="Es. Marco - lane 1" autocomplete="name">
+              <span class="form__hint">Obbligatorio: resta salvato su questo telefono/browser e viene scritto nel risultato.</span>
+            </div>
+          </div>
+
           <div class="form__field">
             <label for="ris-search-atleta">1. Cerca atleta</label>
             <input type="search" id="ris-search-atleta" class="search-input" placeholder="Inizia a digitare il nome..." autocomplete="off">
@@ -148,6 +156,7 @@
             <div class="ris-anteprima__label">Punteggio EPI calcolato</div>
             <div class="ris-anteprima__valore" id="ris-anteprima-valore">—</div>
             <div class="ris-anteprima__hint" id="ris-anteprima-hint"></div>
+            <div class="ris-anteprima__alert" id="ris-anteprima-alert" hidden></div>
           </div>
 
           <div id="ris-esistente" class="ris-warning" hidden>

@@ -20,6 +20,7 @@ import {
   getDoc,
   getDocs,
   serverTimestamp,
+  runTransaction,
   writeBatch
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import {
@@ -57,6 +58,42 @@ let iscrizioniCache = []; // [{id, nome, categoriaId, box, contatto?, note?}]
 let slotConfig = { caps: {} };
 let syncPubbliciTimer = null;
 let shareControlsInitialized = false;
+let iscrizioniPrevCount = -1; // -1 = primo render, niente beep
+const NOTIFY_AUDIO_KEY = "tuskNotifyAudio";
+let audioCtx = null;
+
+function isNotifyAudioOn() {
+  try { return localStorage.getItem(NOTIFY_AUDIO_KEY) !== "off"; } catch (e) { return true; }
+}
+
+function setNotifyAudio(on) {
+  try { localStorage.setItem(NOTIFY_AUDIO_KEY, on ? "on" : "off"); } catch (e) {}
+}
+
+function beepNuovaIscrizione() {
+  if (!isNotifyAudioOn()) return;
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    // Doppio bip 880Hz + 1320Hz (perfetta quinta) — chiaro ma non aggressivo
+    const t0 = audioCtx.currentTime;
+    [
+      { freq: 880,  start: t0,        dur: 0.12 },
+      { freq: 1320, start: t0 + 0.16, dur: 0.18 }
+    ].forEach(({ freq, start, dur }) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.18, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(start);
+      osc.stop(start + dur + 0.02);
+    });
+  } catch (e) { /* audio non disponibile */ }
+}
 
 // === Auth ===
 onAdminAuthChange((user) => {
@@ -166,7 +203,33 @@ function initShareControls() {
     if (!msg) return;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
   });
+  initAudioToggle();
   updateShareText();
+}
+
+function initAudioToggle() {
+  const target = document.querySelector(".slot-dashboard__header");
+  if (!target || target.querySelector("[data-audio-toggle]")) return;
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.dataset.audioToggle = "1";
+  btn.className = "btn btn--ghost btn--small";
+  btn.style.marginLeft = "0.4rem";
+  const sync = () => {
+    const on = isNotifyAudioOn();
+    btn.textContent = on ? "🔔 Audio ON" : "🔕 Audio OFF";
+    btn.title = on
+      ? "Beep alla nuova iscrizione attivo. Click per silenziare."
+      : "Beep silenziato. Click per riattivare.";
+  };
+  btn.addEventListener("click", () => {
+    const next = !isNotifyAudioOn();
+    setNotifyAudio(next);
+    sync();
+    if (next) beepNuovaIscrizione(); // beep di test quando si riattiva
+  });
+  sync();
+  target.appendChild(btn);
 }
 
 function slotStatsCategoria(categoriaId) {
@@ -306,6 +369,11 @@ function renderIscrizioni(snap) {
   const docs = snap.docs;
   iscrizioniCache = docs.map((d) => ({ id: d.id, ...d.data() }));
   renderSlotDashboard();
+  // Beep se sono arrivate nuove iscrizioni (skip primo render)
+  if (iscrizioniPrevCount >= 0 && docs.length > iscrizioniPrevCount) {
+    beepNuovaIscrizione();
+  }
+  iscrizioniPrevCount = docs.length;
   if (docs.length === 0) {
     listaIscrizioni.innerHTML = `<p class="admin-empty">Nessuna iscrizione in attesa.</p>`;
     badgeIscrizioni.hidden = true;
@@ -349,6 +417,7 @@ async function approvaIscrizione(idPending, dati) {
       categoriaId: dati.categoriaId,
       box: dati.box,
       contatto: dati.contatto || "",
+      presente: true,
       createdAt: serverTimestamp()
     };
     const batch = writeBatch(db);
@@ -488,9 +557,12 @@ function renderAtleti() {
         (a.box || "").toLowerCase().includes(filtro))
     : atletiCache;
 
-  countAtleti.textContent = atletiCache.length === filtrati.length
-    ? `(${atletiCache.length})`
-    : `(${filtrati.length}/${atletiCache.length})`;
+  const presentiTot = atletiCache.filter((a) => a.presente !== false).length;
+  const assentiTot = atletiCache.length - presentiTot;
+  const counterBase = atletiCache.length === filtrati.length
+    ? `${atletiCache.length}`
+    : `${filtrati.length}/${atletiCache.length}`;
+  countAtleti.textContent = `(${counterBase} · ${presentiTot} pres / ${assentiTot} ass)`;
 
   if (filtrati.length === 0) {
     listaAtleti.innerHTML = `<p class="admin-empty">${filtro ? "Nessun atleta trovato." : "Nessun atleta registrato. Aggiungi il primo dal bottone qui sopra o approva un'iscrizione pending."}</p>`;
@@ -499,25 +571,44 @@ function renderAtleti() {
 
   listaAtleti.innerHTML = "";
   filtrati.forEach((a) => {
+    const isPresente = a.presente !== false;
     const card = document.createElement("div");
-    card.className = "admin-card";
+    card.className = "admin-card" + (isPresente ? "" : " is-absent");
+    const badge = isPresente
+      ? ""
+      : ` <span class="atleta-badge atleta-badge--absent">Assente</span>`;
+    const toggleLabel = isPresente ? "Marca assente" : "Marca presente";
+    const toggleClass = isPresente ? "btn btn--ghost btn--small" : "btn btn--success btn--small";
     card.innerHTML = `
       <div class="admin-card__info">
-        <div class="admin-card__title">${escapeHtml(a.nome)}</div>
+        <div class="admin-card__title">${escapeHtml(a.nome)}${badge}</div>
         <div class="admin-card__meta">
           ${escapeHtml(NOMI_CATEGORIE[a.categoriaId] || a.categoriaId)} · ${escapeHtml(a.box || "—")}
           ${a.contatto ? `<br><span style="opacity:0.7; font-size:0.85em;">${escapeHtml(a.contatto)}</span>` : ""}
         </div>
       </div>
       <div class="admin-card__actions">
+        <button class="${toggleClass}" data-action="presenza">${toggleLabel}</button>
         <button class="btn btn--ghost btn--small" data-action="edit">Modifica</button>
         <button class="btn btn--danger btn--small" data-action="delete">Elimina</button>
       </div>
     `;
+    card.querySelector('[data-action="presenza"]').addEventListener("click", () => togglePresenza(a));
     card.querySelector('[data-action="edit"]').addEventListener("click", () => apriModalEditAtleta(a));
     card.querySelector('[data-action="delete"]').addEventListener("click", () => eliminaAtleta(a));
     listaAtleti.appendChild(card);
   });
+}
+
+async function togglePresenza(a) {
+  const wasPresente = a.presente !== false;
+  try {
+    await setDoc(doc(db, COL.atleti, a.id), { presente: !wasPresente }, { merge: true });
+    showToast(`${a.nome} marcato ${!wasPresente ? "presente ✅" : "assente ⚠️"}`, wasPresente ? "err" : "ok");
+  } catch (err) {
+    console.error(err);
+    alert(`Errore aggiornamento presenza: ${err.code || err.message}`);
+  }
 }
 
 searchAtleti.addEventListener("input", renderAtleti);
@@ -571,7 +662,7 @@ formAtleta.addEventListener("submit", async (e) => {
       showToast(`✅ ${nome} aggiornato`);
     } else {
       const newId = crypto.randomUUID();
-      const nuovoAtleta = { ...atleta, createdAt: serverTimestamp() };
+      const nuovoAtleta = { ...atleta, presente: true, createdAt: serverTimestamp() };
       batch.set(doc(db, COL.atleti, newId), nuovoAtleta);
       batch.set(doc(db, COL.atletiPubblici, newId), datiAtletaPubblici(nuovoAtleta));
       await batch.commit();
@@ -606,11 +697,15 @@ const risSuggerimenti = document.getElementById("ris-suggerimenti");
 const risAtletaSelezionato = document.getElementById("ris-atleta-selezionato");
 const risAtletaNome = document.getElementById("ris-atleta-nome");
 const risDeseleziona = document.getElementById("ris-deseleziona");
+const risGiudice = document.getElementById("ris-giudice");
 const risEvento = document.getElementById("ris-evento");
 const risFormDinamico = document.getElementById("ris-form-dinamico");
 const risAnteprima = document.getElementById("ris-anteprima");
 const risAnteprimaValore = document.getElementById("ris-anteprima-valore");
 const risAnteprimaHint = document.getElementById("ris-anteprima-hint");
+const risAnteprimaAlert = document.getElementById("ris-anteprima-alert");
+const EPI_ANOMALY_THRESHOLD = 1800;
+const RIS_JUDGE_STORAGE_KEY = "tuskJudgeName";
 const risEsistente = document.getElementById("ris-esistente");
 const risEsistenteDetail = document.getElementById("ris-esistente-detail");
 const risBtnSalva = document.getElementById("ris-btn-salva");
@@ -621,6 +716,8 @@ let risEsistenteCorrente = null;
 let formRenderVersion = 0;
 
 function initTabRisultati() {
+  initGiudiceInput();
+
   // Carica eventi una volta (dovrebbe essere già popolato in setup)
   getDocs(query(collection(db, COL.eventi), orderBy("numero", "asc"))).then((snap) => {
     eventiCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -643,6 +740,18 @@ function initTabRisultati() {
   });
 }
 
+function initGiudiceInput() {
+  if (!risGiudice) return;
+  risGiudice.value = localStorage.getItem(RIS_JUDGE_STORAGE_KEY) || "";
+  risGiudice.oninput = () => {
+    localStorage.setItem(RIS_JUDGE_STORAGE_KEY, nomeGiudiceCorrente());
+  };
+}
+
+function nomeGiudiceCorrente() {
+  return String(risGiudice?.value || "").trim();
+}
+
 risSearchAtleta.addEventListener("input", () => {
   const qstr = risSearchAtleta.value.trim().toLowerCase();
   if (qstr.length < 2) {
@@ -656,12 +765,16 @@ risSearchAtleta.addEventListener("input", () => {
   if (matches.length === 0) {
     risSuggerimenti.innerHTML = '<div class="suggerimenti__item" style="color: var(--text-muted);">Nessun atleta trovato</div>';
   } else {
-    risSuggerimenti.innerHTML = matches.map((a) => `
-      <div class="suggerimenti__item" data-id="${escapeAttr(a.id)}">
-        <div class="suggerimenti__nome">${escapeHtml(a.nome)}</div>
+    risSuggerimenti.innerHTML = matches.map((a) => {
+      const isPresente = a.presente !== false;
+      const cls = `suggerimenti__item${isPresente ? "" : " is-absent"}`;
+      const tag = isPresente ? "" : ` <span class="atleta-badge atleta-badge--absent">Assente</span>`;
+      return `
+      <div class="${cls}" data-id="${escapeAttr(a.id)}">
+        <div class="suggerimenti__nome">${escapeHtml(a.nome)}${tag}</div>
         <div class="suggerimenti__meta">${escapeHtml(NOMI_CATEGORIE[a.categoriaId] || a.categoriaId)} · ${escapeHtml(a.box || "—")}</div>
-      </div>
-    `).join("");
+      </div>`;
+    }).join("");
     risSuggerimenti.querySelectorAll(".suggerimenti__item[data-id]").forEach((item) => {
       item.addEventListener("click", () => {
         const a = atletiCache.find((x) => x.id === item.dataset.id);
@@ -728,7 +841,7 @@ async function aggiornaFormDinamico() {
     if (d.exists()) {
       const r = d.data();
       risEsistenteCorrente = r;
-      risEsistenteDetail.textContent = ` ${formatValoreEsistente(r, evento)} → ${r.puntiEpi} punti EPI ${r.inseritoIl ? "(inserito " + formatTimestamp(r.inseritoIl) + ")" : ""}`;
+      risEsistenteDetail.textContent = ` ${formatDettaglioRisultato(r, evento)}`;
       risEsistente.hidden = false;
     }
   } catch (err) {
@@ -810,6 +923,18 @@ function aggiornaAnteprima() {
     risAnteprimaHint.textContent = "";
   }
 
+  const isAnomalous = punti > EPI_ANOMALY_THRESHOLD;
+  risAnteprima.classList.toggle("is-anomalous", isAnomalous);
+  if (risAnteprimaAlert) {
+    if (isAnomalous) {
+      risAnteprimaAlert.textContent = `⚠️ ${punti} punti supera 1.8× il benchmark — verifica il valore (es. 100 invece di 1000, oppure 1080 invece di 108).`;
+      risAnteprimaAlert.hidden = false;
+    } else {
+      risAnteprimaAlert.hidden = true;
+      risAnteprimaAlert.textContent = "";
+    }
+  }
+
   risAnteprima.hidden = false;
   risBtnSalva.disabled = false;
 }
@@ -882,8 +1007,26 @@ function formatTimestamp(ts) {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+function formatAutoreRisultato(r) {
+  const nome = r.aggiornatoDa || r.inseritoDa || "giudice non indicato";
+  const ts = r.aggiornatoIl || r.inseritoIl;
+  return `${nome}${ts ? " alle " + formatTimestamp(ts) : ""}`;
+}
+
+function formatDettaglioRisultato(r, evento) {
+  return `${formatValoreEsistente(r, evento)} -> ${r.puntiEpi} punti EPI (${formatAutoreRisultato(r)})`;
+}
+
 risBtnSalva.addEventListener("click", async () => {
   if (!atletaCorrente || !eventoCorrente) return;
+  const giudice = nomeGiudiceCorrente();
+  if (!giudice) {
+    alert("Inserisci il nome del giudice prima di salvare il risultato.");
+    risGiudice?.focus();
+    return;
+  }
+  localStorage.setItem(RIS_JUDGE_STORAGE_KEY, giudice);
+
   const valore = leggiPerformance();
   if (valore === null || valore <= 0) return;
 
@@ -894,24 +1037,64 @@ risBtnSalva.addEventListener("click", async () => {
 
   const puntiEpi = calcolaEpi(valore, eventoCorrente, atletaCorrente.categoriaId);
   const risId = `${atletaCorrente.id}_${eventoCorrente.id}`;
+  const risultatoRef = doc(db, COL.risultati, risId);
 
-  if (risEsistenteCorrente) {
-    if (!confirm(`Sovrascrivere il risultato esistente per ${atletaCorrente.nome} su E${eventoCorrente.numero} ${eventoCorrente.nome}?\n\nPrecedente: ${formatValoreEsistente(risEsistenteCorrente, eventoCorrente)} (${risEsistenteCorrente.puntiEpi} pt)\nNuovo: ${puntiEpi} pt`)) return;
+  if (puntiEpi > EPI_ANOMALY_THRESHOLD) {
+    const valoreFmt = formatValoreEsistente({ valore }, eventoCorrente);
+    if (!confirm(`⚠️ Punteggio anomalo: ${puntiEpi} punti EPI (oltre 1.8× benchmark).\n\nValore inserito: ${valoreFmt}\nAtleta: ${atletaCorrente.nome} (${NOMI_CATEGORIE[atletaCorrente.categoriaId] || atletaCorrente.categoriaId})\nEvento: E${eventoCorrente.numero} ${eventoCorrente.nome}\n\nConfermi che il valore sia corretto?`)) return;
   }
 
   risBtnSalva.disabled = true;
   risBtnSalva.classList.add("is-loading");
 
   try {
-    await setDoc(doc(db, COL.risultati, risId), {
-      atletaId: atletaCorrente.id,
-      eventoId: eventoCorrente.id,
-      categoriaId: atletaCorrente.categoriaId,
-      valore: valore,
-      valoreSecondario: valoreSecondario,
-      puntiEpi: puntiEpi,
-      inseritoIl: serverTimestamp(),
-      inseritoDa: "admin"
+    let overwriteConfirmed = false;
+    const currentSnap = await getDoc(risultatoRef);
+    if (currentSnap.exists()) {
+      const current = currentSnap.data();
+      if (!confirm(`Sovrascrivere il risultato esistente per ${atletaCorrente.nome} su E${eventoCorrente.numero} ${eventoCorrente.nome}?\n\nPrecedente: ${formatDettaglioRisultato(current, eventoCorrente)}\nNuovo: ${puntiEpi} pt\nGiudice: ${giudice}`)) return;
+      overwriteConfirmed = true;
+    }
+
+    await runTransaction(db, async (transaction) => {
+      const snap = await transaction.get(risultatoRef);
+      if (snap.exists() && !overwriteConfirmed) {
+        const conflict = new Error("Risultato gia salvato da un altro giudice.");
+        conflict.code = "tusk/concurrent-result";
+        conflict.current = snap.data();
+        throw conflict;
+      }
+
+      const previous = snap.exists() ? snap.data() : null;
+      const payload = {
+        atletaId: atletaCorrente.id,
+        eventoId: eventoCorrente.id,
+        categoriaId: atletaCorrente.categoriaId,
+        valore: valore,
+        valoreSecondario: valoreSecondario,
+        puntiEpi: puntiEpi,
+        aggiornatoIl: serverTimestamp(),
+        aggiornatoDa: giudice
+      };
+
+      if (previous) {
+        payload.inseritoIl = previous.inseritoIl || serverTimestamp();
+        payload.inseritoDa = previous.inseritoDa || previous.aggiornatoDa || giudice;
+        payload.sovrascrittoIl = serverTimestamp();
+        payload.sovrascrittoDa = giudice;
+        payload.precedente = {
+          valore: previous.valore ?? null,
+          valoreSecondario: previous.valoreSecondario ?? null,
+          puntiEpi: previous.puntiEpi ?? null,
+          giudice: previous.aggiornatoDa || previous.inseritoDa || "",
+          salvatoIl: previous.aggiornatoIl || previous.inseritoIl || null
+        };
+      } else {
+        payload.inseritoIl = serverTimestamp();
+        payload.inseritoDa = giudice;
+      }
+
+      transaction.set(risultatoRef, payload, { merge: true });
     });
     showToast(`✅ Salvato: ${puntiEpi} pt EPI per ${atletaCorrente.nome}`);
     // Reset form
@@ -928,10 +1111,17 @@ risBtnSalva.addEventListener("click", async () => {
     risSearchAtleta.value = "";
     risSearchAtleta.focus();
   } catch (err) {
+    if (err.code === "tusk/concurrent-result") {
+      risEsistenteCorrente = err.current;
+      risEsistenteDetail.textContent = ` ${formatDettaglioRisultato(err.current, eventoCorrente)}`;
+      risEsistente.hidden = false;
+      alert(`Attenzione: un altro giudice ha appena salvato questo atleta/WOD.\n\nRisultato presente: ${formatDettaglioRisultato(err.current, eventoCorrente)}\n\nVerifica prima di sovrascrivere.`);
+      return;
+    }
     console.error("Errore salvataggio risultato:", err);
     alert(`Errore: ${err.code || err.message}`);
   } finally {
-    risBtnSalva.disabled = false;
+    risBtnSalva.disabled = !atletaCorrente || !eventoCorrente || risAnteprima.hidden;
     risBtnSalva.classList.remove("is-loading");
   }
 });
