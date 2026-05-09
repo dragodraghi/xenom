@@ -20,3 +20,13 @@
   from = "/admin"
   to = "/giudici.html"
   status = 200
+
+[[redirects]]
+  from = "/admin.html"
+  to = "/giudici.html"
+  status = 301
+
+[[redirects]]
+  from = "/podio"
+  to = "/podio.html"
+  status = 200
