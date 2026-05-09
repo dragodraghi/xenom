@@ -58,6 +58,7 @@ assertEqual(calcolaEpi(100, null, "ultimate"), 0, "Evento null -> 0 punti");
 assertEqual(calcolaEpi(100, { benchmarks: null }, "ultimate"), 0, "benchmarks null -> 0 punti");
 assertEqual(calcolaEpi(100, { scoringDirection: "higher", benchmarks: { ultimate: 0 } }, "ultimate"), 0, "Benchmark 0 -> 0 punti");
 assertEqual(calcolaEpi(100, { scoringDirection: "higher", benchmarks: { ultimate: -10 } }, "ultimate"), 0, "Benchmark negativo -> 0 punti");
+assertEqual(calcolaEpi(100, { scoringDirection: "invalid", benchmarks: { ultimate: 100 } }, "ultimate"), 0, "Direzione scoring non valida -> 0 punti");
 assertEqual(calcolaEpi(null, evSnatch, "ultimate"), 0, "Performance null -> 0 punti");
 assertEqual(calcolaEpi(undefined, evSnatch, "ultimate"), 0, "Performance undefined -> 0 punti");
 

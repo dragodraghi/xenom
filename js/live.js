@@ -23,7 +23,7 @@ let risultatiLoaded = false;
 
 // === Listener atleti ===
 const unsubAtleti = onSnapshot(
-  query(collection(db, COL.atleti), orderBy("nome", "asc")),
+  query(collection(db, COL.atletiPubblici), orderBy("nome", "asc")),
   (snap) => {
     atletiCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     atletiLoaded = true;

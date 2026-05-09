@@ -2,7 +2,7 @@
 
 Landing page + presentazione per il collaudo locale del format XENOM Tusk Protocol al box CrossFit Bad Boars di Sassari.
 
-**Evento:** sabato 6 e domenica 7 Giugno 2026 — 10 eventi su 2 giornate, categorie RX / Scaled / Master.
+**Evento:** venerdì 29 e sabato 30 Maggio 2026 — 10 eventi su 2 giornate, 6 categorie TUSK.
 **Lancio mondiale ufficiale del format:** 27 Giugno 2026 (siamo i primi a collaudarlo in anteprima).
 
 ## Deploy

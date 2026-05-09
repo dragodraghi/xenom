@@ -14,6 +14,7 @@ export function calcolaEpi(performance, evento, categoriaId) {
   const benchmark = evento.benchmarks[categoriaId];
   if (!benchmark || benchmark <= 0) return 0;
   if (!performance || performance <= 0) return 0;
+  if (!["higher", "lower"].includes(evento.scoringDirection)) return 0;
 
   const ratio = evento.scoringDirection === "higher"
     ? performance / benchmark

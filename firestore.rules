@@ -79,17 +79,47 @@ service cloud.firestore {
         && request.auth.token.email == "admin@tusk-badboars.com";
     }
 
+    function isValidTuskCategoria(categoriaId) {
+      return categoriaId in [
+        'ultimate',
+        'advanced',
+        'challenge',
+        'essential',
+        'performance',
+        'intermediate'
+      ];
+    }
+
     function isValidTuskIscrizione() {
-      return request.resource.data.keys().hasAll(['nome', 'categoriaId', 'box', 'contatto'])
+      return request.resource.data.keys().hasOnly(['nome', 'categoriaId', 'box', 'contatto', 'note', 'createdAt'])
+        && request.resource.data.keys().hasAll(['nome', 'categoriaId', 'box', 'contatto', 'note', 'createdAt'])
         && request.resource.data.nome is string
         && request.resource.data.nome.size() > 1
-        && request.resource.data.nome.size() < 100
+        && request.resource.data.nome.size() <= 80
         && request.resource.data.categoriaId is string
-        && request.resource.data.categoriaId.size() < 50
+        && isValidTuskCategoria(request.resource.data.categoriaId)
         && request.resource.data.box is string
-        && request.resource.data.box.size() < 100
+        && request.resource.data.box.size() > 1
+        && request.resource.data.box.size() <= 80
         && request.resource.data.contatto is string
-        && request.resource.data.contatto.size() < 100;
+        && request.resource.data.contatto.size() >= 5
+        && request.resource.data.contatto.size() <= 80
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 300
+        && request.resource.data.createdAt == request.time;
+    }
+
+    function isValidTuskAtletaPubblico() {
+      return request.resource.data.keys().hasOnly(['nome', 'categoriaId', 'box'])
+        && request.resource.data.keys().hasAll(['nome', 'categoriaId', 'box'])
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() > 1
+        && request.resource.data.nome.size() <= 80
+        && request.resource.data.categoriaId is string
+        && isValidTuskCategoria(request.resource.data.categoriaId)
+        && request.resource.data.box is string
+        && request.resource.data.box.size() > 1
+        && request.resource.data.box.size() <= 80;
     }
 
     match /games/{gameId} {
@@ -197,8 +227,14 @@ service cloud.firestore {
     }
 
     match /tusk_atleti/{doc} {
-      allow read: if true;
+      allow read: if isTuskAdmin();
       allow write: if isTuskAdmin();
+    }
+
+    match /tusk_atleti_pubblici/{doc} {
+      allow read: if true;
+      allow create, update: if isTuskAdmin() && isValidTuskAtletaPubblico();
+      allow delete: if isTuskAdmin();
     }
 
     match /tusk_risultati/{doc} {

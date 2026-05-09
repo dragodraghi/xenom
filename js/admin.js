@@ -49,8 +49,9 @@ const NOMI_CATEGORIE = {
 
 // === Cache condivise tra tab ===
 let unsubscribers = [];
-let atletiCache = [];   // [{id, nome, categoriaId, box, contatto?}]
+let atletiCache = [];   // [{id, nome, categoriaId, box, contatto?}] - collezione admin privata
 let eventiCache = [];   // [{id, numero, nome, scoringType, scoringDirection, repsPerRound, benchmarks}]
+let syncPubbliciTimer = null;
 
 // === Auth ===
 onAdminAuthChange((user) => {
@@ -180,14 +181,18 @@ async function approvaIscrizione(idPending, dati) {
   if (!confirm(`Approvare l'iscrizione di ${dati.nome}?\n\nCategoria: ${NOMI_CATEGORIE[dati.categoriaId] || dati.categoriaId}\nBox: ${dati.box}`)) return;
   try {
     const atletaId = crypto.randomUUID();
-    await setDoc(doc(db, COL.atleti, atletaId), {
+    const atleta = {
       nome: dati.nome,
       categoriaId: dati.categoriaId,
       box: dati.box,
       contatto: dati.contatto || "",
       createdAt: serverTimestamp()
-    });
-    await deleteDoc(doc(db, COL.iscrizioni, idPending));
+    };
+    const batch = writeBatch(db);
+    batch.set(doc(db, COL.atleti, atletaId), atleta);
+    batch.set(doc(db, COL.atletiPubblici, atletaId), datiAtletaPubblici(atleta));
+    batch.delete(doc(db, COL.iscrizioni, idPending));
+    await batch.commit();
     showToast(`✅ ${dati.nome} approvato`);
   } catch (err) {
     console.error(err);
@@ -204,6 +209,83 @@ async function rifiutaIscrizione(idPending, nome) {
     console.error(err);
     alert(`Errore: ${err.code || err.message}`);
   }
+}
+
+function datiAtletaPubblici(atleta) {
+  return {
+    nome: String(atleta.nome || "").trim(),
+    categoriaId: atleta.categoriaId,
+    box: String(atleta.box || "").trim()
+  };
+}
+
+function atletaPubblicoUguale(esistente, prossimo) {
+  const chiaviConsentite = new Set(["nome", "categoriaId", "box"]);
+  return esistente
+    && Object.keys(esistente).every((k) => chiaviConsentite.has(k))
+    && esistente.nome === prossimo.nome
+    && esistente.categoriaId === prossimo.categoriaId
+    && esistente.box === prossimo.box;
+}
+
+function programmaSyncAtletiPubblici() {
+  clearTimeout(syncPubbliciTimer);
+  syncPubbliciTimer = setTimeout(() => {
+    syncAtletiPubblici({ silent: true }).catch((err) => {
+      console.warn("Sync atleti pubblici:", err.code || err.message);
+    });
+  }, 700);
+}
+
+async function syncAtletiPubblici({ silent = false, outputEl = null } = {}) {
+  if (!atletiCache.length) {
+    const snapPrivati = await getDocs(collection(db, COL.atleti));
+    atletiCache = snapPrivati.docs.map((d) => ({ id: d.id, ...d.data() }));
+  }
+
+  const snapPubblici = await getDocs(collection(db, COL.atletiPubblici));
+  const pubblici = new Map(snapPubblici.docs.map((d) => [d.id, d.data()]));
+  let batch = writeBatch(db);
+  let operazioniBatch = 0;
+  let aggiornati = 0;
+  let rimossi = 0;
+
+  async function commitSePieno(force = false) {
+    if (operazioniBatch === 0) return;
+    if (!force && operazioniBatch < 400) return;
+    await batch.commit();
+    batch = writeBatch(db);
+    operazioniBatch = 0;
+  }
+
+  for (const atleta of atletiCache) {
+    const pubblico = datiAtletaPubblici(atleta);
+    const esistente = pubblici.get(atleta.id);
+    if (!atletaPubblicoUguale(esistente, pubblico)) {
+      batch.set(doc(db, COL.atletiPubblici, atleta.id), pubblico);
+      operazioniBatch++;
+      aggiornati++;
+      await commitSePieno();
+    }
+    pubblici.delete(atleta.id);
+  }
+
+  for (const id of pubblici.keys()) {
+    batch.delete(doc(db, COL.atletiPubblici, id));
+    operazioniBatch++;
+    rimossi++;
+    await commitSePieno();
+  }
+
+  await commitSePieno(true);
+
+  const msg = `Copia pubblica aggiornata: ${aggiornati} scritti, ${rimossi} rimossi, ${atletiCache.length} atleti privati.`;
+  if (!silent) showToast(msg);
+  if (outputEl) {
+    outputEl.classList.add("is-visible");
+    outputEl.textContent = msg;
+  }
+  return { aggiornati, rimossi, totale: atletiCache.length };
 }
 
 // =====================================================
@@ -224,6 +306,7 @@ function initTabAtleti() {
     (snap) => {
       atletiCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       renderAtleti();
+      programmaSyncAtletiPubblici();
     },
     (err) => {
       console.error("Errore atleti:", err);
@@ -315,12 +398,19 @@ formAtleta.addEventListener("submit", async (e) => {
   }
 
   try {
+    const atleta = { nome, categoriaId, box, contatto };
+    const batch = writeBatch(db);
     if (id) {
-      await setDoc(doc(db, COL.atleti, id), { nome, categoriaId, box, contatto }, { merge: true });
+      batch.set(doc(db, COL.atleti, id), atleta, { merge: true });
+      batch.set(doc(db, COL.atletiPubblici, id), datiAtletaPubblici(atleta));
+      await batch.commit();
       showToast(`✅ ${nome} aggiornato`);
     } else {
       const newId = crypto.randomUUID();
-      await setDoc(doc(db, COL.atleti, newId), { nome, categoriaId, box, contatto, createdAt: serverTimestamp() });
+      const nuovoAtleta = { ...atleta, createdAt: serverTimestamp() };
+      batch.set(doc(db, COL.atleti, newId), nuovoAtleta);
+      batch.set(doc(db, COL.atletiPubblici, newId), datiAtletaPubblici(nuovoAtleta));
+      await batch.commit();
       showToast(`✅ ${nome} aggiunto`);
     }
     modalAtleta.hidden = true;
@@ -333,7 +423,10 @@ formAtleta.addEventListener("submit", async (e) => {
 async function eliminaAtleta(a) {
   if (!confirm(`Eliminare ${a.nome}?\n\nNota: eventuali risultati registrati per questo atleta resteranno orfani in tusk_risultati ma non appariranno in classifica.`)) return;
   try {
-    await deleteDoc(doc(db, COL.atleti, a.id));
+    const batch = writeBatch(db);
+    batch.delete(doc(db, COL.atleti, a.id));
+    batch.delete(doc(db, COL.atletiPubblici, a.id));
+    await batch.commit();
     showToast(`✕ ${a.nome} eliminato`, "err");
   } catch (err) {
     console.error(err);
@@ -361,6 +454,7 @@ const risBtnSalva = document.getElementById("ris-btn-salva");
 let atletaCorrente = null;
 let eventoCorrente = null;
 let risEsistenteCorrente = null;
+let formRenderVersion = 0;
 
 function initTabRisultati() {
   // Carica eventi una volta (dovrebbe essere già popolato in setup)
@@ -446,34 +540,39 @@ risEvento.addEventListener("change", () => {
 });
 
 async function aggiornaFormDinamico() {
+  const renderId = ++formRenderVersion;
+  const atleta = atletaCorrente;
+  const evento = eventoCorrente;
+
   risFormDinamico.innerHTML = "";
   risAnteprima.hidden = true;
   risEsistente.hidden = true;
   risBtnSalva.disabled = true;
   risEsistenteCorrente = null;
 
-  if (!atletaCorrente || !eventoCorrente) {
+  if (!atleta || !evento) {
     risFormDinamico.hidden = true;
     return;
   }
   risFormDinamico.hidden = false;
 
   // Verifica se esiste già un risultato
-  const risId = `${atletaCorrente.id}_${eventoCorrente.id}`;
+  const risId = `${atleta.id}_${evento.id}`;
   try {
     const d = await getDoc(doc(db, COL.risultati, risId));
+    if (renderId !== formRenderVersion || atletaCorrente?.id !== atleta.id || eventoCorrente?.id !== evento.id) return;
     if (d.exists()) {
       const r = d.data();
       risEsistenteCorrente = r;
-      risEsistenteDetail.textContent = ` ${formatValoreEsistente(r, eventoCorrente)} → ${r.puntiEpi} punti EPI ${r.inseritoIl ? "(inserito " + formatTimestamp(r.inseritoIl) + ")" : ""}`;
+      risEsistenteDetail.textContent = ` ${formatValoreEsistente(r, evento)} → ${r.puntiEpi} punti EPI ${r.inseritoIl ? "(inserito " + formatTimestamp(r.inseritoIl) + ")" : ""}`;
       risEsistente.hidden = false;
     }
   } catch (err) {
-    console.warn("getDoc risultato esistente:", err.code);
+    if (renderId === formRenderVersion) console.warn("getDoc risultato esistente:", err.code);
   }
 
   // Genera HTML form in base a scoringType
-  const t = eventoCorrente.scoringType;
+  const t = evento.scoringType;
   let html = "";
   if (t === "weight") {
     html = `
@@ -503,13 +602,14 @@ async function aggiornaFormDinamico() {
         </div>
       </div>`;
   } else if (t === "rounds_reps") {
-    const rpr = eventoCorrente.repsPerRound || 0;
+    const rpr = evento.repsPerRound || 0;
+    const maxExtra = rpr > 0 ? ` max="${rpr - 1}"` : "";
     html = `
       <div class="form__field">
         <label>3. Round + reps extra (${rpr} reps per round)</label>
         <div class="form-row">
           <input type="number" id="ris-input-round" min="0" step="1" placeholder="Round completati" data-input inputmode="numeric">
-          <input type="number" id="ris-input-extra" min="0" step="1" placeholder="Reps extra" data-input inputmode="numeric">
+          <input type="number" id="ris-input-extra" min="0"${maxExtra} step="1" placeholder="Reps extra" data-input inputmode="numeric">
         </div>
       </div>`;
   }
@@ -550,28 +650,48 @@ function aggiornaAnteprima() {
   risBtnSalva.disabled = false;
 }
 
+function valoreInput(id) {
+  return String(document.getElementById(id)?.value || "").trim();
+}
+
+function numeroPositivo(id) {
+  const raw = valoreInput(id).replace(",", ".");
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function interoNonNegativo(id, fallback = null) {
+  const raw = valoreInput(id);
+  if (!raw) return fallback;
+  if (!/^\d+$/.test(raw)) return null;
+  return Number(raw);
+}
+
 function leggiPerformance() {
   const t = eventoCorrente.scoringType;
   if (t === "weight") {
-    const v = parseFloat(document.getElementById("ris-input-weight")?.value);
-    return isFinite(v) && v > 0 ? v : null;
+    return numeroPositivo("ris-input-weight");
   }
   if (t === "reps" || t === "calories") {
-    const v = parseInt(document.getElementById("ris-input-num")?.value, 10);
-    return isFinite(v) && v > 0 ? v : null;
+    const v = interoNonNegativo("ris-input-num");
+    return v !== null && v > 0 ? v : null;
   }
   if (t === "time") {
-    const m = document.getElementById("ris-input-min")?.value;
-    const s = document.getElementById("ris-input-sec")?.value;
-    if (!m && !s) return null;
+    if (!valoreInput("ris-input-min") && !valoreInput("ris-input-sec")) return null;
+    const m = interoNonNegativo("ris-input-min", 0);
+    const s = interoNonNegativo("ris-input-sec", 0);
+    if (m === null || s === null || s > 59) return null;
     const sec = tempoASecondi(m, s);
     return sec > 0 ? sec : null;
   }
   if (t === "rounds_reps") {
-    const r = document.getElementById("ris-input-round")?.value;
-    const e = document.getElementById("ris-input-extra")?.value;
-    if (!r && !e) return null;
-    const reps = roundsRepsAReps(r, e, eventoCorrente.repsPerRound);
+    if (!valoreInput("ris-input-round") && !valoreInput("ris-input-extra")) return null;
+    const r = interoNonNegativo("ris-input-round", 0);
+    const e = interoNonNegativo("ris-input-extra", 0);
+    const rpr = Number(eventoCorrente.repsPerRound || 0);
+    if (r === null || e === null || (rpr > 0 && e >= rpr)) return null;
+    const reps = roundsRepsAReps(r, e, rpr);
     return reps > 0 ? reps : null;
   }
   return null;
@@ -605,7 +725,7 @@ risBtnSalva.addEventListener("click", async () => {
 
   const t = eventoCorrente.scoringType;
   const valoreSecondario = t === "rounds_reps"
-    ? (parseInt(document.getElementById("ris-input-extra")?.value, 10) || 0)
+    ? (interoNonNegativo("ris-input-extra", 0) || 0)
     : null;
 
   const puntiEpi = calcolaEpi(valore, eventoCorrente, atletaCorrente.categoriaId);
@@ -700,6 +820,8 @@ function initTabStrumenti() {
   const btnExport = document.getElementById("btn-export");
   const exportCategoria = document.getElementById("export-categoria");
   const btnExportAtleti = document.getElementById("btn-export-atleti");
+  const btnSyncPubblici = document.getElementById("btn-sync-pubblici");
+  const syncPubbliciOutput = document.getElementById("sync-pubblici-output");
   const btnStats = document.getElementById("btn-stats");
   const statsOutput = document.getElementById("stats-output");
 
@@ -823,6 +945,27 @@ function initTabStrumenti() {
       alert("Errore: " + (err.code || err.message));
     }
   };
+
+  // Sincronizza copia pubblica senza contatti
+  if (btnSyncPubblici) {
+    btnSyncPubblici.onclick = async () => {
+      btnSyncPubblici.disabled = true;
+      if (syncPubbliciOutput) {
+        syncPubbliciOutput.classList.add("is-visible");
+        syncPubbliciOutput.textContent = "Sincronizzazione in corso...";
+      }
+      try {
+        await syncAtletiPubblici({ outputEl: syncPubbliciOutput });
+      } catch (err) {
+        if (syncPubbliciOutput) {
+          syncPubbliciOutput.classList.add("is-visible");
+          syncPubbliciOutput.textContent = "Errore: " + (err.code || err.message);
+        }
+      } finally {
+        btnSyncPubblici.disabled = false;
+      }
+    };
+  }
 
   // Statistiche
   btnStats.onclick = async () => {

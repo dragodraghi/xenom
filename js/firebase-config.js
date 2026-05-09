@@ -28,6 +28,7 @@ export const COL = {
   categorie: "tusk_categorie",
   eventi: "tusk_eventi",
   atleti: "tusk_atleti",
+  atletiPubblici: "tusk_atleti_pubblici",
   iscrizioni: "tusk_iscrizioni_pending",
   risultati: "tusk_risultati"
 };
