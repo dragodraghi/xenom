@@ -177,7 +177,7 @@ function slotStatsCategoria(categoriaId) {
   const disponibili = cap > 0 ? Math.max(cap - occupati, 0) : null;
   const ratio = cap > 0 ? occupati / cap : 0;
   const stato = cap <= 0
-    ? "Capienza da impostare"
+    ? "Slot da impostare"
     : disponibili === 0
     ? "Completa"
     : ratio >= 0.8
@@ -194,10 +194,12 @@ function renderSlotDashboard() {
   stats.forEach((s) => {
     const card = document.createElement("div");
     card.className = "slot-card";
+    if (s.cap <= 0) card.classList.add("needs-cap");
     if (s.disponibili === 0) card.classList.add("is-full");
     else if (s.ratio >= 0.8 && s.cap > 0) card.classList.add("is-warning");
     const progress = s.cap > 0 ? Math.min(100, Math.round(s.ratio * 100)) : 0;
-    const disponibiliText = s.disponibili === null ? "Imposta capienza" : String(s.disponibili);
+    const disponibiliText = s.disponibili === null ? "-" : String(s.disponibili);
+    const capText = s.cap > 0 ? `${s.occupati}/${s.cap} occupati` : "Inserisci gli slot totali per attivare il conteggio liberi";
     card.innerHTML = `
       <div class="slot-card__top">
         <strong>${escapeHtml(NOMI_CATEGORIE[s.categoriaId])}</strong>
@@ -209,6 +211,7 @@ function renderSlotDashboard() {
         <div><b>${escapeHtml(disponibiliText)}</b><small>Liberi</small></div>
       </div>
       <div class="slot-card__progress"><span style="width:${progress}%"></span></div>
+      <div class="slot-card__summary">${escapeHtml(capText)}</div>
       <label class="slot-card__cap">
         Slot totali
         <input type="number" min="0" step="1" inputmode="numeric" value="${s.cap > 0 ? s.cap : ""}" data-slot-cap="${escapeAttr(s.categoriaId)}" placeholder="es. 20">

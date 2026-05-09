@@ -135,15 +135,21 @@
 
 .slot-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 0.75rem;
 }
 
 .slot-card {
-  padding: 0.85rem;
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.95rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
+}
+
+.slot-card.needs-cap {
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
 .slot-card.is-warning {
@@ -157,9 +163,13 @@
 
 .slot-card__top,
 .slot-card__numbers {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
   gap: 0.6rem;
+}
+
+.slot-card__top {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
 }
 
 .slot-card__top strong,
@@ -169,16 +179,28 @@
 }
 
 .slot-card__top span {
+  max-width: 8.5rem;
+  padding: 0.18rem 0.45rem;
+  border: 1px solid rgba(212, 168, 67, 0.28);
+  border-radius: 4px;
   color: var(--accent-gold);
+  background: rgba(212, 168, 67, 0.08);
   font-size: 0.85rem;
+  line-height: 1.05;
+  text-align: right;
 }
 
 .slot-card__numbers {
-  margin-top: 0.75rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .slot-card__numbers div {
+  min-height: 4.25rem;
   min-width: 0;
+  padding: 0.65rem 0.35rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.045);
+  text-align: center;
 }
 
 .slot-card__numbers b,
@@ -188,18 +210,22 @@
 
 .slot-card__numbers b {
   color: var(--text-primary);
-  font-size: 1.2rem;
+  font-size: 1.35rem;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .slot-card__numbers small {
+  margin-top: 0.35rem;
   color: var(--text-muted);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
+  line-height: 1.05;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 .slot-card__progress {
   height: 6px;
-  margin: 0.75rem 0;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
@@ -210,6 +236,13 @@
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--accent-primary), var(--accent-gold));
+}
+
+.slot-card__summary {
+  min-height: 1.1rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.25;
 }
 
 .slot-card__cap {
