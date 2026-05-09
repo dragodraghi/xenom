@@ -280,6 +280,8 @@ ANDROID
 
 Se il link si apre dentro WhatsApp/Instagram: apri il menu e scegli "Apri nel browser" prima di salvarlo.
 
+Nota Instagram: usa questo link iscrizione come riferimento ufficiale. Il profilo Instagram Bad Boars va confermato dal coach prima di inserirlo nei messaggi.
+
 Dopo l'invio l'organizzazione approva manualmente la richiesta e ti contatta per conferma.`;
   }
 }

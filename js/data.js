@@ -217,10 +217,10 @@ const XENOM_DATA = {
   ],
 
   contatti: {
-    instagram: "@badboarscrossfit",
+    instagram: "Da confermare con il coach",
     facebook: "Bad Boars CrossFit",
     email: "info@badboarscrossfit.com",
-    telefono: "",
+    telefono: "348 080 1972",
     sito: "badboarscrossfit.com"
   }
 };
