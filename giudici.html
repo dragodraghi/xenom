@@ -71,6 +71,32 @@
         <section class="admin-panel is-active" data-panel="iscrizioni">
           <h2>Iscrizioni in attesa di approvazione</h2>
           <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Lista realtime. Le richieste appaiono qui appena un atleta compila il form pubblico.</p>
+
+          <div class="slot-dashboard" id="slot-dashboard">
+            <div class="slot-dashboard__header">
+              <div>
+                <h3>Stato iscrizioni e slot</h3>
+                <p>Pending + approvati occupano slot. Rifiutare una richiesta o eliminare un atleta libera subito il posto.</p>
+              </div>
+              <button type="button" class="btn btn--ghost btn--small" id="btn-copy-whatsapp">Copia messaggio WhatsApp</button>
+            </div>
+            <div class="slot-grid" id="slot-grid"></div>
+            <div class="share-box">
+              <div class="share-box__row">
+                <label for="link-atleti">Link atleti</label>
+                <input id="link-atleti" type="text" readonly>
+                <button type="button" class="btn btn--ghost btn--small" id="btn-copy-link-atleti">Copia</button>
+              </div>
+              <div class="share-box__row">
+                <label for="link-giudici">Link giudici</label>
+                <input id="link-giudici" type="text" readonly>
+                <button type="button" class="btn btn--ghost btn--small" id="btn-copy-link-giudici">Copia</button>
+              </div>
+              <textarea id="whatsapp-message" class="share-box__message" readonly rows="7"></textarea>
+              <button type="button" class="btn btn--primary btn--small" id="btn-open-whatsapp">Apri WhatsApp</button>
+            </div>
+          </div>
+
           <div id="lista-iscrizioni" class="admin-list">
             <p class="admin-empty">Caricamento...</p>
           </div>

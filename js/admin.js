@@ -46,12 +46,17 @@ const NOMI_CATEGORIE = {
   performance: "Performance (F)",
   intermediate: "Intermediate (F)"
 };
+const CATEGORIE_ORDINATE = Object.keys(NOMI_CATEGORIE);
+const CONFIG_ISCRIZIONI_ID = "_config_iscrizioni";
 
 // === Cache condivise tra tab ===
 let unsubscribers = [];
 let atletiCache = [];   // [{id, nome, categoriaId, box, contatto?}] - collezione admin privata
 let eventiCache = [];   // [{id, numero, nome, scoringType, scoringDirection, repsPerRound, benchmarks}]
+let iscrizioniCache = []; // [{id, nome, categoriaId, box, contatto?, note?}]
+let slotConfig = { caps: {} };
 let syncPubbliciTimer = null;
+let shareControlsInitialized = false;
 
 // === Auth ===
 onAdminAuthChange((user) => {
@@ -111,6 +116,8 @@ tabs.forEach((tab) => {
 // === Init/cleanup ===
 function initAdminApp() {
   cleanupListeners();
+  initSlotConfig();
+  initShareControls();
   initTabIscrizioni();
   initTabAtleti();
   initTabRisultati();
@@ -127,6 +134,141 @@ function cleanupListeners() {
 // =====================================================
 const listaIscrizioni = document.getElementById("lista-iscrizioni");
 const badgeIscrizioni = document.getElementById("badge-iscrizioni");
+const slotGrid = document.getElementById("slot-grid");
+const linkAtleti = document.getElementById("link-atleti");
+const linkGiudici = document.getElementById("link-giudici");
+const whatsappMessage = document.getElementById("whatsapp-message");
+const btnCopyWhatsapp = document.getElementById("btn-copy-whatsapp");
+const btnCopyLinkAtleti = document.getElementById("btn-copy-link-atleti");
+const btnCopyLinkGiudici = document.getElementById("btn-copy-link-giudici");
+const btnOpenWhatsapp = document.getElementById("btn-open-whatsapp");
+
+function initSlotConfig() {
+  const unsub = onSnapshot(
+    doc(db, COL.eventi, CONFIG_ISCRIZIONI_ID),
+    (snap) => {
+      slotConfig = snap.exists() ? { caps: snap.data().caps || {} } : { caps: {} };
+      renderSlotDashboard();
+    },
+    (err) => console.error("Errore config slot:", err)
+  );
+  unsubscribers.push(unsub);
+}
+
+function initShareControls() {
+  if (shareControlsInitialized) return;
+  shareControlsInitialized = true;
+  btnCopyWhatsapp?.addEventListener("click", () => copyText(whatsappMessage?.value || "", "Messaggio WhatsApp copiato"));
+  btnCopyLinkAtleti?.addEventListener("click", () => copyText(linkAtleti?.value || "", "Link atleti copiato"));
+  btnCopyLinkGiudici?.addEventListener("click", () => copyText(linkGiudici?.value || "", "Link giudici copiato"));
+  btnOpenWhatsapp?.addEventListener("click", () => {
+    const msg = whatsappMessage?.value || "";
+    if (!msg) return;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
+  });
+  updateShareText();
+}
+
+function slotStatsCategoria(categoriaId) {
+  const cap = Number(slotConfig.caps?.[categoriaId] || 0);
+  const pending = iscrizioniCache.filter((i) => i.categoriaId === categoriaId).length;
+  const approvati = atletiCache.filter((a) => a.categoriaId === categoriaId).length;
+  const occupati = pending + approvati;
+  const disponibili = cap > 0 ? Math.max(cap - occupati, 0) : null;
+  const ratio = cap > 0 ? occupati / cap : 0;
+  const stato = cap <= 0
+    ? "Capienza da impostare"
+    : disponibili === 0
+    ? "Completa"
+    : ratio >= 0.8
+    ? "Quasi completa"
+    : "Aperta";
+  return { categoriaId, cap, pending, approvati, occupati, disponibili, ratio, stato };
+}
+
+function renderSlotDashboard() {
+  if (!slotGrid) return;
+  const stats = CATEGORIE_ORDINATE.map(slotStatsCategoria);
+  slotGrid.innerHTML = "";
+
+  stats.forEach((s) => {
+    const card = document.createElement("div");
+    card.className = "slot-card";
+    if (s.disponibili === 0) card.classList.add("is-full");
+    else if (s.ratio >= 0.8 && s.cap > 0) card.classList.add("is-warning");
+    const progress = s.cap > 0 ? Math.min(100, Math.round(s.ratio * 100)) : 0;
+    const disponibiliText = s.disponibili === null ? "Imposta capienza" : String(s.disponibili);
+    card.innerHTML = `
+      <div class="slot-card__top">
+        <strong>${escapeHtml(NOMI_CATEGORIE[s.categoriaId])}</strong>
+        <span>${escapeHtml(s.stato)}</span>
+      </div>
+      <div class="slot-card__numbers">
+        <div><b>${s.approvati}</b><small>Approvati</small></div>
+        <div><b>${s.pending}</b><small>Pending</small></div>
+        <div><b>${escapeHtml(disponibiliText)}</b><small>Liberi</small></div>
+      </div>
+      <div class="slot-card__progress"><span style="width:${progress}%"></span></div>
+      <label class="slot-card__cap">
+        Slot totali
+        <input type="number" min="0" step="1" inputmode="numeric" value="${s.cap > 0 ? s.cap : ""}" data-slot-cap="${escapeAttr(s.categoriaId)}" placeholder="es. 20">
+      </label>
+    `;
+    slotGrid.appendChild(card);
+  });
+
+  slotGrid.querySelectorAll("[data-slot-cap]").forEach((input) => {
+    input.addEventListener("change", () => salvaCapCategoria(input.dataset.slotCap, input.value));
+  });
+  updateShareText(stats);
+}
+
+async function salvaCapCategoria(categoriaId, value) {
+  const parsed = parseInt(value, 10);
+  const caps = { ...(slotConfig.caps || {}) };
+  if (Number.isFinite(parsed) && parsed > 0) caps[categoriaId] = parsed;
+  else delete caps[categoriaId];
+
+  try {
+    await setDoc(doc(db, COL.eventi, CONFIG_ISCRIZIONI_ID), {
+      caps,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    showToast("Slot aggiornati");
+  } catch (err) {
+    console.error("Errore salvataggio slot:", err);
+    alert(`Errore salvataggio slot: ${err.code || err.message}`);
+  }
+}
+
+function updateShareText(stats = CATEGORIE_ORDINATE.map(slotStatsCategoria)) {
+  const athleteUrl = `${window.location.origin}/iscriviti.html`;
+  const judgesUrl = `${window.location.origin}/giudici.html`;
+  if (linkAtleti) linkAtleti.value = athleteUrl;
+  if (linkGiudici) linkGiudici.value = judgesUrl;
+
+  const righePosti = stats
+    .filter((s) => s.cap > 0)
+    .map((s) => `${NOMI_CATEGORIE[s.categoriaId]}: ${s.disponibili} posti liberi`);
+  const riepilogo = righePosti.length
+    ? `\n\nPosti disponibili ora:\n${righePosti.join("\n")}`
+    : "";
+
+  if (whatsappMessage) {
+    whatsappMessage.value =
+`TUSK Protocol Bad Boars - iscrizioni aperte.
+
+Compila il form qui:
+${athleteUrl}${riepilogo}
+
+Dal telefono puoi aggiungerlo alla schermata Home:
+1. Apri il link
+2. Menu del browser
+3. "Aggiungi a schermata Home"
+
+Dopo l'invio l'organizzazione approva manualmente la richiesta e ti contatta per conferma.`;
+  }
+}
 
 function initTabIscrizioni() {
   const q = query(collection(db, COL.iscrizioni), orderBy("createdAt", "asc"));
@@ -143,6 +285,8 @@ function initTabIscrizioni() {
 
 function renderIscrizioni(snap) {
   const docs = snap.docs;
+  iscrizioniCache = docs.map((d) => ({ id: d.id, ...d.data() }));
+  renderSlotDashboard();
   if (docs.length === 0) {
     listaIscrizioni.innerHTML = `<p class="admin-empty">Nessuna iscrizione in attesa.</p>`;
     badgeIscrizioni.hidden = true;
@@ -306,6 +450,7 @@ function initTabAtleti() {
     (snap) => {
       atletiCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       renderAtleti();
+      renderSlotDashboard();
       programmaSyncAtletiPubblici();
     },
     (err) => {
@@ -421,7 +566,7 @@ formAtleta.addEventListener("submit", async (e) => {
 });
 
 async function eliminaAtleta(a) {
-  if (!confirm(`Eliminare ${a.nome}?\n\nNota: eventuali risultati registrati per questo atleta resteranno orfani in tusk_risultati ma non appariranno in classifica.`)) return;
+  if (!confirm(`Eliminare ${a.nome}?\n\nLo slot della categoria torna subito disponibile. Nota: eventuali risultati registrati per questo atleta resteranno orfani in tusk_risultati ma non appariranno in classifica.`)) return;
   try {
     const batch = writeBatch(db);
     batch.delete(doc(db, COL.atleti, a.id));
@@ -1041,6 +1186,25 @@ function escapeHtml(str) {
 }
 function escapeAttr(str) {
   return escapeHtml(str);
+}
+
+async function copyText(text, successMsg) {
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(successMsg || "Copiato");
+  } catch (err) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    showToast(successMsg || "Copiato");
+  }
 }
 
 function showToast(msg, kind = "ok") {
