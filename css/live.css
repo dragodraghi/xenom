@@ -87,6 +87,19 @@
   box-shadow: 0 20px 70px rgba(0, 0, 0, 0.4);
 }
 
+.admin-login-warning {
+  margin-bottom: 1.25rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(212, 168, 67, 0.55);
+  border-radius: 4px;
+  color: var(--accent-gold);
+  background: rgba(212, 168, 67, 0.08);
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .form-event-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

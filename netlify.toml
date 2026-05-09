@@ -10,3 +10,13 @@
   from = "/presentazione"
   to = "/presentazione.html"
   status = 200
+
+[[redirects]]
+  from = "/giudici"
+  to = "/giudici.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/giudici.html"
+  status = 200
