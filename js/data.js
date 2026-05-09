@@ -219,8 +219,10 @@ const XENOM_DATA = {
   contatti: {
     instagram: "Da confermare con il coach",
     facebook: "Bad Boars CrossFit",
+    facebookUrl: "https://www.facebook.com/pages/Bad-Boars-CrossFit/480247628798596",
     email: "info@badboarscrossfit.com",
     telefono: "348 080 1972",
-    sito: "badboarscrossfit.com"
+    sito: "badboarscrossfit.com",
+    sitoUrl: "https://www.badboarscrossfit.com/contatti.php"
   }
 };
