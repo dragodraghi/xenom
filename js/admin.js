@@ -1526,6 +1526,43 @@ function creaClassifiche(dati) {
   return { classifiche, eventiOrdinati };
 }
 
+function risultatiOrfani(dati) {
+  return dati.risultati.filter((r) => !dati.atletiMap.has(r.atletaId));
+}
+
+function descriviRisultatiOrfani(orfani, dati, limite = 10) {
+  if (orfani.length === 0) return "Nessun risultato orfano trovato.";
+  const righe = [
+    `Risultati orfani trovati: ${orfani.length}`,
+    `Sono risultati collegati ad atleti eliminati. Non appaiono in live/podio, ma restano in storico e backup.`,
+    ``,
+    `Prime righe:`
+  ];
+  orfani.slice(0, limite).forEach((r, idx) => {
+    const evento = dati.eventiMap.get(r.eventoId);
+    const eventoLabel = evento ? `E${evento.numero} ${evento.nome}` : `Evento ${r.eventoId}`;
+    const categoria = NOMI_CATEGORIE[r.categoriaId] || r.categoriaId || "-";
+    righe.push(`${idx + 1}. ${eventoLabel} · ${categoria} · ${formatValoreRisultato(r, evento)} · ${Number(r.puntiEpi || 0).toFixed(1)} EPI · atletaId ${r.atletaId}`);
+  });
+  if (orfani.length > limite) righe.push(`... altri ${orfani.length - limite} risultati non mostrati.`);
+  return righe.join("\n");
+}
+
+async function eliminaRisultatiOrfani(orfani) {
+  let eliminati = 0;
+  for (let i = 0; i < orfani.length; i += 240) {
+    const batch = writeBatch(db);
+    const chunk = orfani.slice(i, i + 240);
+    chunk.forEach((r) => {
+      batch.delete(doc(db, COL.risultati, r.id));
+      batch.delete(doc(db, COL.risultatiPubblici, r.id));
+    });
+    await batch.commit();
+    eliminati += chunk.length;
+  }
+  return eliminati;
+}
+
 // =====================================================
 // TAB STRUMENTI
 // =====================================================
@@ -1538,6 +1575,9 @@ function initTabStrumenti() {
   const btnExportPodi = document.getElementById("btn-export-podi");
   const btnExportAtleti = document.getElementById("btn-export-atleti");
   const btnExportRisultati = document.getElementById("btn-export-risultati");
+  const btnScanOrfani = document.getElementById("btn-scan-orfani");
+  const btnDeleteOrfani = document.getElementById("btn-delete-orfani");
+  const orfaniOutput = document.getElementById("orfani-output");
   const btnRefreshAudit = document.getElementById("btn-refresh-audit");
   const auditRisultati = document.getElementById("audit-risultati");
   const btnSyncPubblici = document.getElementById("btn-sync-pubblici");
@@ -1829,6 +1869,67 @@ function initTabStrumenti() {
         alert("Errore export risultati: " + (err.code || err.message));
       } finally {
         btnExportRisultati.disabled = false;
+      }
+    };
+  }
+
+  async function aggiornaOutputOrfani() {
+    if (!orfaniOutput) return [];
+    orfaniOutput.classList.add("is-visible");
+    orfaniOutput.textContent = "Controllo risultati orfani in corso...";
+    const dati = await caricaDatiRisultatiAdmin();
+    const orfani = risultatiOrfani(dati);
+    orfaniOutput.textContent = descriviRisultatiOrfani(orfani, dati);
+    return orfani;
+  }
+
+  if (btnScanOrfani) {
+    btnScanOrfani.onclick = async () => {
+      btnScanOrfani.disabled = true;
+      try {
+        await aggiornaOutputOrfani();
+      } catch (err) {
+        if (orfaniOutput) {
+          orfaniOutput.classList.add("is-visible");
+          orfaniOutput.textContent = "Errore controllo orfani: " + (err.code || err.message);
+        }
+      } finally {
+        btnScanOrfani.disabled = false;
+      }
+    };
+  }
+
+  if (btnDeleteOrfani) {
+    btnDeleteOrfani.onclick = async () => {
+      btnDeleteOrfani.disabled = true;
+      try {
+        const dati = await caricaDatiRisultatiAdmin();
+        const orfani = risultatiOrfani(dati);
+        if (orfaniOutput) {
+          orfaniOutput.classList.add("is-visible");
+          orfaniOutput.textContent = descriviRisultatiOrfani(orfani, dati);
+        }
+        if (orfani.length === 0) {
+          showToast("Nessun risultato orfano da eliminare");
+          return;
+        }
+        if (!confirm(`Eliminare definitivamente ${orfani.length} risultati collegati ad atleti eliminati?\n\nPrima di procedere, se ti serve archivio, scarica "Backup risultati completo". Questa operazione rimuove anche la copia pubblica usata da live/podio.`)) return;
+        const eliminati = await eliminaRisultatiOrfani(orfani);
+        if (orfaniOutput) {
+          orfaniOutput.classList.add("is-visible");
+          orfaniOutput.textContent = `Pulizia completata.\nRisultati orfani eliminati: ${eliminati}\nStorico e copia pubblica aggiornati.`;
+        }
+        showToast(`Pulizia completata: ${eliminati} risultati eliminati`);
+        aggiornaAuditRisultati();
+      } catch (err) {
+        console.error(err);
+        if (orfaniOutput) {
+          orfaniOutput.classList.add("is-visible");
+          orfaniOutput.textContent = "Errore pulizia orfani: " + (err.code || err.message);
+        }
+        alert("Errore pulizia orfani: " + (err.code || err.message));
+      } finally {
+        btnDeleteOrfani.disabled = false;
       }
     };
   }
