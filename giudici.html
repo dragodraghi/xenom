@@ -223,6 +223,16 @@
 
           <div class="tools-grid">
 
+            <div class="tool-card tool-card--wide">
+              <h3>Link ufficiali e QR</h3>
+              <p>Da qui copi i link corretti o apri i QR per atleti, pubblico, podio e giudici. Usa questi per WhatsApp, Instagram e stampa al box.</p>
+              <div class="official-links" id="official-links"></div>
+              <div class="official-actions">
+                <button class="btn btn--primary btn--small" id="btn-copy-official-message">Copia messaggio atleti</button>
+                <button class="btn btn--ghost btn--small" id="btn-open-official-whatsapp">Apri WhatsApp</button>
+              </div>
+            </div>
+
             <div class="tool-card">
               <h3>🔁 Ricalcola tutti gli EPI</h3>
               <p>Rilegge tutti i risultati e ricalcola i punti EPI usando i benchmark correnti. Da usare dopo aver modificato un benchmark in <code>tusk_eventi</code>.</p>
@@ -242,6 +252,13 @@
                 <option value="intermediate">Intermediate (F)</option>
               </select>
               <button class="btn btn--primary btn--small" id="btn-export">Scarica CSV</button>
+            </div>
+
+            <div class="tool-card">
+              <h3>Export finale gara</h3>
+              <p>Scarica tutte le classifiche in un solo CSV oppure il podio top 3 di ogni categoria pronto per premiazione e archivio.</p>
+              <button class="btn btn--primary btn--small" id="btn-export-finali">Classifiche complete</button>
+              <button class="btn btn--ghost btn--small" id="btn-export-podi">Podi top 3</button>
             </div>
 
             <div class="tool-card">

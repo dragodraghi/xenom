@@ -3,6 +3,8 @@ import { db, COL } from "./firebase-config.js";
 import {
   collection,
   addDoc,
+  doc,
+  onSnapshot,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -13,26 +15,197 @@ const errorMsg = document.getElementById("iscrizione-error-msg");
 const btnSubmit = document.getElementById("btn-submit");
 const btnRetry = document.getElementById("btn-retry");
 const formStatus = document.getElementById("form-status");
+const categoryStatusGrid = document.getElementById("category-status-grid");
+const categoryStatusUpdated = document.getElementById("category-status-updated");
+const categoriaSelect = form.elements.categoriaId;
 
-const VALID_CATEGORIE = new Set([
-  "ultimate", "advanced", "challenge", "essential", "performance", "intermediate"
-]);
+const CATEGORIE = [
+  ["ultimate", "Ultimate (M)"],
+  ["advanced", "Advanced (M)"],
+  ["challenge", "Challenge (M)"],
+  ["essential", "Essential (M)"],
+  ["performance", "Performance (F)"],
+  ["intermediate", "Intermediate (F)"]
+];
+const VALID_CATEGORIE = new Set(CATEGORIE.map(([id]) => id));
 
 const FIELD_NAMES = ["nome", "categoriaId", "box", "contatto", "note"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 const PHONE_RE = /^[+()\d\s.-]+$/;
 let isSubmitting = false;
+let publicStatus = null;
+let fallbackStatus = null;
+let fallbackCaps = {};
+let fallbackAtleti = [];
+let fallbackCapsLoaded = false;
+let fallbackAtletiLoaded = false;
 
 // === Validazione ===
 function normalizeText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
+function timestampToMillis(ts) {
+  if (!ts) return 0;
+  if (typeof ts.toMillis === "function") return ts.toMillis();
+  if (typeof ts.seconds === "number") return (ts.seconds * 1000) + Math.floor((ts.nanoseconds || 0) / 1000000);
+  return 0;
+}
+
+function formatUpdatedAt(ts) {
+  const millis = timestampToMillis(ts);
+  if (!millis) return "Aggiornamento non disponibile";
+  return `Aggiornato ${new Date(millis).toLocaleString("it-IT", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  })}`;
+}
+
+function getActiveStatus() {
+  return publicStatus || fallbackStatus;
+}
+
+function isCategoryFull(categoriaId) {
+  const s = getActiveStatus()?.categorie?.[categoriaId];
+  return !!s && Number(s.cap || 0) > 0 && Number(s.disponibili || 0) <= 0;
+}
+
+function renderCategoryStatus() {
+  if (!categoryStatusGrid) return;
+  const activeStatus = getActiveStatus();
+  const categorie = activeStatus?.categorie || {};
+  const hasAnyCap = CATEGORIE.some(([id]) => Number(categorie[id]?.cap || 0) > 0);
+
+  if (!activeStatus || !hasAnyCap) {
+    categoryStatusGrid.innerHTML = `<p class="admin-empty">Capienze non ancora pubblicate. Seleziona la categoria: l'organizzazione confermera manualmente la richiesta.</p>`;
+    if (categoryStatusUpdated) categoryStatusUpdated.textContent = "Stato in preparazione";
+    syncCategoryOptions();
+    return;
+  }
+
+  if (categoryStatusUpdated) {
+    categoryStatusUpdated.textContent = activeStatus.isFallback
+      ? "Stato indicativo: non include pending"
+      : formatUpdatedAt(activeStatus.updatedAt);
+  }
+  categoryStatusGrid.innerHTML = CATEGORIE.map(([id, label]) => {
+    const s = categorie[id] || {};
+    const cap = Number(s.cap || 0);
+    const disponibili = cap > 0 ? Math.max(Number(s.disponibili || 0), 0) : null;
+    const quasiCompleta = cap > 0 && disponibili !== null && disponibili <= Math.max(1, Math.ceil(cap * 0.2));
+    const stato = cap <= 0 ? "Da confermare" : disponibili === 0 ? "Completa" : quasiCompleta ? "Quasi completa" : (s.stato || "Aperta");
+    const css = disponibili === 0 ? " is-full" : stato === "Quasi completa" ? " is-warning" : "";
+    const detail = cap > 0
+      ? `${disponibili} liberi su ${cap}`
+      : "Capienza non impostata";
+    return `
+      <div class="category-status-card${css}">
+        <strong>${escapeHtml(label)}</strong>
+        <span>${escapeHtml(stato)}</span>
+        <small>${escapeHtml(detail)}</small>
+      </div>
+    `;
+  }).join("");
+  syncCategoryOptions();
+}
+
+function syncCategoryOptions() {
+  if (!categoriaSelect) return;
+  Array.from(categoriaSelect.options).forEach((option) => {
+    if (!option.value || !VALID_CATEGORIE.has(option.value)) return;
+    if (!option.dataset.baseLabel) option.dataset.baseLabel = option.textContent;
+    const full = isCategoryFull(option.value);
+    option.disabled = full;
+    option.textContent = full ? `${option.dataset.baseLabel} - COMPLETA` : option.dataset.baseLabel;
+  });
+  if (categoriaSelect.value && isCategoryFull(categoriaSelect.value)) {
+    showError("categoriaId", "Categoria completa. Scegli una categoria con posti disponibili.");
+    categoriaSelect.value = "";
+  }
+}
+
+function updateFallbackStatus() {
+  if (!fallbackCapsLoaded || !fallbackAtletiLoaded) return;
+  const categorie = {};
+  CATEGORIE.forEach(([id, label]) => {
+    const cap = Number(fallbackCaps[id] || 0);
+    const approvati = fallbackAtleti.filter((a) => a.categoriaId === id).length;
+    const disponibili = cap > 0 ? Math.max(cap - approvati, 0) : null;
+    const ratio = cap > 0 ? approvati / cap : 0;
+    const stato = cap <= 0
+      ? "Da confermare"
+      : disponibili === 0
+      ? "Completa"
+      : ratio >= 0.8
+      ? "Quasi completa"
+      : "Aperta";
+    categorie[id] = {
+      nome: label,
+      cap,
+      approvati,
+      pending: 0,
+      occupati: approvati,
+      disponibili,
+      stato
+    };
+  });
+  fallbackStatus = { isFallback: true, categorie };
+  if (!publicStatus) renderCategoryStatus();
+}
+
+onSnapshot(
+  doc(db, COL.eventi, "_config_iscrizioni"),
+  (snap) => {
+    fallbackCaps = snap.exists() ? (snap.data().caps || {}) : {};
+    fallbackCapsLoaded = true;
+    updateFallbackStatus();
+  },
+  (err) => console.warn("Capienze pubbliche non disponibili:", err.code || err.message)
+);
+
+onSnapshot(
+  collection(db, COL.atletiPubblici),
+  (snap) => {
+    fallbackAtleti = snap.docs.map((d) => d.data());
+    fallbackAtletiLoaded = true;
+    updateFallbackStatus();
+  },
+  (err) => console.warn("Atleti pubblici non disponibili:", err.code || err.message)
+);
+
+onSnapshot(
+  doc(db, COL.iscrizioniStatoPubblico, "_summary"),
+  (snap) => {
+    publicStatus = snap.exists() ? snap.data() : null;
+    renderCategoryStatus();
+  },
+  (err) => {
+    console.warn("Stato iscrizioni non disponibile:", err.code || err.message);
+    if (fallbackStatus) {
+      renderCategoryStatus();
+    } else if (categoryStatusGrid) {
+      categoryStatusGrid.innerHTML = `<p class="admin-empty">Stato categorie non disponibile. Puoi comunque inviare la richiesta: l'organizzazione confermera manualmente.</p>`;
+    }
+    if (categoryStatusUpdated && !fallbackStatus) categoryStatusUpdated.textContent = "Offline";
+  }
+);
+
 function isValidContact(value) {
   if (EMAIL_RE.test(value)) return true;
 
   const digits = value.replace(/\D/g, "");
   return digits.length >= 8 && PHONE_RE.test(value);
+}
+
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function validateField(name, value) {
@@ -45,6 +218,7 @@ function validateField(name, value) {
       return null;
     case "categoriaId":
       if (!VALID_CATEGORIE.has(v)) return "Seleziona una categoria";
+      if (isCategoryFull(v)) return "Categoria completa. Scegli una categoria con posti disponibili.";
       return null;
     case "box":
       if (v.length < 2) return "Inserisci il box di provenienza";

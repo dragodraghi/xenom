@@ -30,6 +30,7 @@ export const COL = {
   atleti: "tusk_atleti",
   atletiPubblici: "tusk_atleti_pubblici",
   iscrizioni: "tusk_iscrizioni_pending",
+  iscrizioniStatoPubblico: "tusk_iscrizioni_stato",
   risultati: "tusk_risultati",
   risultatiPubblici: "tusk_risultati_pubblici"
 };

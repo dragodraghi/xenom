@@ -49,6 +49,7 @@ const NOMI_CATEGORIE = {
 };
 const CATEGORIE_ORDINATE = Object.keys(NOMI_CATEGORIE);
 const CONFIG_ISCRIZIONI_ID = "_config_iscrizioni";
+const STATO_ISCRIZIONI_ID = "_summary";
 
 // === Cache condivise tra tab ===
 let unsubscribers = [];
@@ -57,7 +58,11 @@ let eventiCache = [];   // [{id, numero, nome, scoringType, scoringDirection, re
 let iscrizioniCache = []; // [{id, nome, categoriaId, box, contatto?, note?}]
 let slotConfig = { caps: {} };
 let syncPubbliciTimer = null;
+let syncIscrizioniStatoTimer = null;
 let shareControlsInitialized = false;
+let slotConfigLoaded = false;
+let atletiLoaded = false;
+let iscrizioniLoaded = false;
 let iscrizioniPrevCount = -1; // -1 = primo render, niente beep
 const NOTIFY_AUDIO_KEY = "tuskNotifyAudio";
 let audioCtx = null;
@@ -167,6 +172,8 @@ function initAdminApp() {
 function cleanupListeners() {
   unsubscribers.forEach((u) => { try { u(); } catch (e) {} });
   unsubscribers = [];
+  clearTimeout(syncPubbliciTimer);
+  clearTimeout(syncIscrizioniStatoTimer);
 }
 
 // =====================================================
@@ -188,6 +195,7 @@ function initSlotConfig() {
     doc(db, COL.eventi, CONFIG_ISCRIZIONI_ID),
     (snap) => {
       slotConfig = snap.exists() ? { caps: snap.data().caps || {} } : { caps: {} };
+      slotConfigLoaded = true;
       renderSlotDashboard();
     },
     (err) => console.error("Errore config slot:", err)
@@ -252,6 +260,40 @@ function slotStatsCategoria(categoriaId) {
   return { categoriaId, cap, pending, approvati, occupati, disponibili, ratio, stato };
 }
 
+function datiStatoIscrizioniPubblico(stats) {
+  const categorie = {};
+  stats.forEach((s) => {
+    categorie[s.categoriaId] = {
+      nome: NOMI_CATEGORIE[s.categoriaId] || s.categoriaId,
+      cap: s.cap,
+      approvati: s.approvati,
+      pending: s.pending,
+      occupati: s.occupati,
+      disponibili: s.disponibili,
+      stato: s.stato
+    };
+  });
+  return {
+    updatedAt: serverTimestamp(),
+    categorie,
+    links: {
+      atleti: `${window.location.origin}/iscriviti.html`,
+      live: `${window.location.origin}/live.html`,
+      podio: `${window.location.origin}/podio.html`
+    }
+  };
+}
+
+function programmaSyncStatoIscrizioniPubblico(stats) {
+  if (!slotConfigLoaded || !atletiLoaded || !iscrizioniLoaded) return;
+  clearTimeout(syncIscrizioniStatoTimer);
+  const payload = datiStatoIscrizioniPubblico(stats);
+  syncIscrizioniStatoTimer = setTimeout(() => {
+    setDoc(doc(db, COL.iscrizioniStatoPubblico, STATO_ISCRIZIONI_ID), payload, { merge: true })
+      .catch((err) => console.warn("Sync stato iscrizioni pubblico:", err.code || err.message));
+  }, 800);
+}
+
 function renderSlotDashboard() {
   if (!slotGrid) return;
   const stats = CATEGORIE_ORDINATE.map(slotStatsCategoria);
@@ -290,6 +332,7 @@ function renderSlotDashboard() {
     input.addEventListener("change", () => salvaCapCategoria(input.dataset.slotCap, input.value));
   });
   updateShareText(stats);
+  programmaSyncStatoIscrizioniPubblico(stats);
 }
 
 async function salvaCapCategoria(categoriaId, value) {
@@ -313,6 +356,8 @@ async function salvaCapCategoria(categoriaId, value) {
 function updateShareText(stats = CATEGORIE_ORDINATE.map(slotStatsCategoria)) {
   const athleteUrl = `${window.location.origin}/iscriviti.html`;
   const judgesUrl = `${window.location.origin}/giudici.html`;
+  const liveUrl = `${window.location.origin}/live.html`;
+  const podioUrl = `${window.location.origin}/podio.html`;
   if (linkAtleti) linkAtleti.value = athleteUrl;
   if (linkGiudici) linkGiudici.value = judgesUrl;
 
@@ -329,6 +374,12 @@ function updateShareText(stats = CATEGORIE_ORDINATE.map(slotStatsCategoria)) {
 
 Compila il form qui:
 ${athleteUrl}${riepilogo}
+
+Classifica live:
+${liveUrl}
+
+Podio:
+${podioUrl}
 
 Salvalo come app sul telefono, cosi lo ritrovi subito:
 
@@ -371,6 +422,7 @@ function initTabIscrizioni() {
 function renderIscrizioni(snap) {
   const docs = snap.docs;
   iscrizioniCache = docs.map((d) => ({ id: d.id, ...d.data() }));
+  iscrizioniLoaded = true;
   renderSlotDashboard();
   // Beep se sono arrivate nuove iscrizioni (skip primo render)
   if (iscrizioniPrevCount >= 0 && docs.length > iscrizioniPrevCount) {
@@ -620,6 +672,7 @@ function initTabAtleti() {
     q,
     (snap) => {
       atletiCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      atletiLoaded = true;
       renderAtleti();
       renderSlotDashboard();
       programmaSyncAtletiPubblici();
@@ -1363,6 +1416,117 @@ function renderAuditRisultati(outputEl, dati) {
   }).join("");
 }
 
+function officialUrl(path) {
+  return `${window.location.origin}/${path}`;
+}
+
+function qrCodeUrl(url) {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&data=${encodeURIComponent(url)}`;
+}
+
+function officialMessage() {
+  const athleteUrl = officialUrl("iscriviti.html");
+  const liveUrl = officialUrl("live.html");
+  const podioUrl = officialUrl("podio.html");
+  return `TUSK Protocol Bad Boars - link ufficiali
+
+Iscrizione atleti:
+${athleteUrl}
+
+Classifica live:
+${liveUrl}
+
+Podio:
+${podioUrl}
+
+Salva l'app sul telefono:
+iPhone: apri il link con Safari, Condividi, Aggiungi a schermata Home.
+Android: apri il link con Chrome, menu tre puntini, Installa app o Aggiungi a schermata Home.
+
+Se il link si apre dentro WhatsApp o Instagram, scegli Apri nel browser.`;
+}
+
+function initOfficialLinks() {
+  const root = document.getElementById("official-links");
+  if (!root || root.dataset.ready === "1") return;
+  root.dataset.ready = "1";
+
+  const links = [
+    { key: "atleti", label: "Atleti", desc: "Form iscrizione", path: "iscriviti.html" },
+    { key: "live", label: "Live", desc: "Classifica pubblica", path: "live.html" },
+    { key: "podio", label: "Podio", desc: "Top 3 premiazione", path: "podio.html" },
+    { key: "giudici", label: "Giudici", desc: "Console riservata", path: "giudici.html" }
+  ];
+
+  root.innerHTML = links.map((item) => {
+    const url = officialUrl(item.path);
+    return `
+      <div class="official-link">
+        <div class="official-link__qr">
+          <img src="${escapeAttr(qrCodeUrl(url))}" alt="QR ${escapeAttr(item.label)}" loading="lazy">
+        </div>
+        <div class="official-link__body">
+          <strong>${escapeHtml(item.label)}</strong>
+          <span>${escapeHtml(item.desc)}</span>
+          <input type="text" readonly value="${escapeAttr(url)}">
+          <div class="official-link__actions">
+            <button type="button" class="btn btn--ghost btn--small" data-copy-link="${escapeAttr(url)}">Copia</button>
+            <a class="btn btn--ghost btn--small" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">Apri</a>
+            <a class="btn btn--ghost btn--small" href="${escapeAttr(qrCodeUrl(url))}" target="_blank" rel="noopener noreferrer">QR</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  root.querySelectorAll("[data-copy-link]").forEach((btn) => {
+    btn.addEventListener("click", () => copyText(btn.dataset.copyLink || "", "Link copiato"));
+  });
+
+  const btnCopyMessage = document.getElementById("btn-copy-official-message");
+  const btnOpenWhatsapp = document.getElementById("btn-open-official-whatsapp");
+  btnCopyMessage?.addEventListener("click", () => copyText(officialMessage(), "Messaggio atleti copiato"));
+  btnOpenWhatsapp?.addEventListener("click", () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(officialMessage())}`, "_blank", "noopener,noreferrer");
+  });
+}
+
+function creaClassifiche(dati) {
+  const eventiOrdinati = [...dati.eventiMap.values()]
+    .filter((e) => Number.isFinite(Number(e.numero)))
+    .sort((a, b) => Number(a.numero) - Number(b.numero));
+  const risultatiPerAtleta = new Map();
+
+  dati.risultati.forEach((r) => {
+    const atleta = dati.atletiMap.get(r.atletaId);
+    if (!atleta || atleta.presente === false) return;
+    const evento = dati.eventiMap.get(r.eventoId);
+    const eventoNum = Number(evento?.numero || r.eventoId || 0);
+    const key = String(eventoNum || r.eventoId);
+    if (!risultatiPerAtleta.has(r.atletaId)) risultatiPerAtleta.set(r.atletaId, {});
+    risultatiPerAtleta.get(r.atletaId)[key] = Number(r.puntiEpi || 0);
+  });
+
+  const classifiche = {};
+  CATEGORIE_ORDINATE.forEach((cat) => {
+    const rows = [...dati.atletiMap.values()]
+      .filter((a) => a.categoriaId === cat && a.presente !== false)
+      .map((atleta) => {
+        const perEvento = risultatiPerAtleta.get(atleta.id) || {};
+        const punti = Object.values(perEvento);
+        const totale = punti.reduce((sum, p) => sum + Number(p || 0), 0);
+        return { atleta, perEvento, totale, eventi: punti.length };
+      })
+      .sort((a, b) => {
+        if (b.totale !== a.totale) return b.totale - a.totale;
+        return String(a.atleta.nome || "").localeCompare(String(b.atleta.nome || ""), "it");
+      });
+    classifiche[cat] = rows;
+  });
+
+  return { classifiche, eventiOrdinati };
+}
+
 // =====================================================
 // TAB STRUMENTI
 // =====================================================
@@ -1371,6 +1535,8 @@ function initTabStrumenti() {
   const ricalcolaOutput = document.getElementById("ricalcola-output");
   const btnExport = document.getElementById("btn-export");
   const exportCategoria = document.getElementById("export-categoria");
+  const btnExportFinali = document.getElementById("btn-export-finali");
+  const btnExportPodi = document.getElementById("btn-export-podi");
   const btnExportAtleti = document.getElementById("btn-export-atleti");
   const btnExportRisultati = document.getElementById("btn-export-risultati");
   const btnRefreshAudit = document.getElementById("btn-refresh-audit");
@@ -1383,6 +1549,7 @@ function initTabStrumenti() {
   const statsOutput = document.getElementById("stats-output");
 
   if (!btnRicalcola) return;
+  initOfficialLinks();
 
   async function aggiornaAuditRisultati() {
     if (!auditRisultati) return;
@@ -1499,6 +1666,80 @@ function initTabStrumenti() {
       alert("Errore export: " + (err.code || err.message));
     }
   };
+
+  if (btnExportFinali) {
+    btnExportFinali.onclick = async () => {
+      btnExportFinali.disabled = true;
+      try {
+        const dati = await caricaDatiRisultatiAdmin();
+        const { classifiche, eventiOrdinati } = creaClassifiche(dati);
+        const headers = ["Categoria", "Pos", "Nome", "Box", "Eventi completati"];
+        eventiOrdinati.forEach((e) => headers.push(`E${e.numero}`));
+        headers.push("EPI Totale");
+
+        let csv = headers.join(";") + "\n";
+        CATEGORIE_ORDINATE.forEach((cat) => {
+          (classifiche[cat] || []).forEach((row, idx) => {
+            const cells = [
+              NOMI_CATEGORIE[cat] || cat,
+              idx + 1,
+              row.atleta.nome || "",
+              row.atleta.box || "",
+              row.eventi
+            ];
+            eventiOrdinati.forEach((e) => {
+              const key = String(Number(e.numero));
+              cells.push(row.perEvento[key] !== undefined ? Number(row.perEvento[key]).toFixed(1) : "");
+            });
+            cells.push(row.totale.toFixed(1));
+            csv += cells.map(csvSafe).join(";") + "\n";
+          });
+        });
+
+        downloadCsv(csv, `classifiche-finali-${nowStr()}.csv`);
+        showToast("Classifiche finali esportate");
+      } catch (err) {
+        console.error(err);
+        alert("Errore export finali: " + (err.code || err.message));
+      } finally {
+        btnExportFinali.disabled = false;
+      }
+    };
+  }
+
+  if (btnExportPodi) {
+    btnExportPodi.onclick = async () => {
+      btnExportPodi.disabled = true;
+      try {
+        const dati = await caricaDatiRisultatiAdmin();
+        const { classifiche } = creaClassifiche(dati);
+        const headers = ["Categoria", "Pos", "Nome", "Box", "Eventi completati", "EPI Totale"];
+        let csv = headers.join(";") + "\n";
+
+        CATEGORIE_ORDINATE.forEach((cat) => {
+          (classifiche[cat] || []).slice(0, 3).forEach((row, idx) => {
+            const cells = [
+              NOMI_CATEGORIE[cat] || cat,
+              idx + 1,
+              row.atleta.nome || "",
+              row.atleta.box || "",
+              row.eventi,
+              row.totale.toFixed(1)
+            ];
+            csv += cells.map(csvSafe).join(";") + "\n";
+          });
+        });
+
+        downloadCsv(csv, `podi-top3-${nowStr()}.csv`);
+        showToast("Podi top 3 esportati");
+      } catch (err) {
+        console.error(err);
+        alert("Errore export podi: " + (err.code || err.message));
+      } finally {
+        btnExportPodi.disabled = false;
+      }
+    };
+  }
 
   // Esporta atleti
   btnExportAtleti.onclick = async () => {

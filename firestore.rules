@@ -270,5 +270,10 @@ service cloud.firestore {
       allow delete: if isTuskAdmin();
       allow update: if false;
     }
+
+    match /tusk_iscrizioni_stato/{doc} {
+      allow read: if true;
+      allow write: if isTuskAdmin();
+    }
   }
 }

@@ -359,6 +359,85 @@
   line-height: 1.35;
 }
 
+.category-status-panel {
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius-md);
+  background: rgba(12, 12, 12, 0.72);
+}
+
+.category-status-panel__header {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.9rem;
+}
+
+.category-status-panel__header h2 {
+  margin: 0.15rem 0 0;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  text-transform: uppercase;
+}
+
+.category-status-panel__header > span {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.category-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.category-status-card {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.category-status-card strong,
+.category-status-card span {
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+}
+
+.category-status-card strong {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.category-status-card span {
+  color: var(--accent-gold);
+  font-size: 0.82rem;
+}
+
+.category-status-card small {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.category-status-card.is-warning {
+  border-color: rgba(212, 168, 67, 0.44);
+}
+
+.category-status-card.is-full {
+  border-color: rgba(255, 68, 68, 0.5);
+  background: rgba(255, 68, 68, 0.08);
+}
+
+.category-status-card.is-full span {
+  color: #ff8888;
+}
+
 /* === Registration form === */
 .form--registration {
   position: relative;
@@ -1227,6 +1306,66 @@
   border-radius: 3px;
   font-size: 0.85em;
 }
+.official-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+.official-link {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: start;
+  padding: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.2);
+}
+.official-link__qr {
+  display: grid;
+  place-items: center;
+  padding: 0.35rem;
+  border-radius: 4px;
+  background: #fff;
+}
+.official-link__qr img {
+  display: block;
+  width: 84px;
+  height: 84px;
+}
+.official-link__body {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.official-link__body strong {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+.official-link__body span {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+.official-link__body input {
+  width: 100%;
+  padding: 0.5rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 0.8rem;
+}
+.official-link__actions,
+.official-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.official-actions {
+  margin-top: 1rem;
+}
 .tool-output {
   margin-top: 1rem;
   padding: 0.75rem;
@@ -1474,6 +1613,16 @@
   .form-event-summary {
     grid-template-columns: 1fr;
   }
+  .category-status-panel__header,
+  .category-status-grid {
+    grid-template-columns: 1fr;
+  }
+  .category-status-panel__header {
+    display: grid;
+  }
+  .category-status-panel__header > span {
+    text-align: left;
+  }
   .form--registration {
     padding: 1rem;
   }
@@ -1499,6 +1648,12 @@
   }
   .admin-card__actions {
     width: 100%;
+  }
+  .official-link {
+    grid-template-columns: 1fr;
+  }
+  .official-link__qr {
+    width: 112px;
   }
   .ris-anteprima__valore {
     font-size: 2.5rem;
