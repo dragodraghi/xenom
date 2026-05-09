@@ -513,8 +513,19 @@ async function syncAtletiPubblici({ silent = false, outputEl = null } = {}) {
   }
 
   for (const atleta of atletiCache) {
-    const pubblico = datiAtletaPubblici(atleta);
     const esistente = pubblici.get(atleta.id);
+    if (atleta.presente === false) {
+      if (esistente) {
+        batch.delete(doc(db, COL.atletiPubblici, atleta.id));
+        operazioniBatch++;
+        rimossi++;
+        await commitSePieno();
+      }
+      pubblici.delete(atleta.id);
+      continue;
+    }
+
+    const pubblico = datiAtletaPubblici(atleta);
     if (!atletaPubblicoUguale(esistente, pubblico)) {
       batch.set(doc(db, COL.atletiPubblici, atleta.id), pubblico);
       operazioniBatch++;
@@ -674,9 +685,17 @@ function renderAtleti() {
 
 async function togglePresenza(a) {
   const wasPresente = a.presente !== false;
+  const nextPresente = !wasPresente;
   try {
-    await setDoc(doc(db, COL.atleti, a.id), { presente: !wasPresente }, { merge: true });
-    showToast(`${a.nome} marcato ${!wasPresente ? "presente ✅" : "assente ⚠️"}`, wasPresente ? "err" : "ok");
+    const batch = writeBatch(db);
+    batch.set(doc(db, COL.atleti, a.id), { presente: nextPresente }, { merge: true });
+    if (nextPresente) {
+      batch.set(doc(db, COL.atletiPubblici, a.id), datiAtletaPubblici(a));
+    } else {
+      batch.delete(doc(db, COL.atletiPubblici, a.id));
+    }
+    await batch.commit();
+    showToast(`${a.nome} marcato ${nextPresente ? "presente ✅" : "assente ⚠️"}`, nextPresente ? "ok" : "err");
   } catch (err) {
     console.error(err);
     alert(`Errore aggiornamento presenza: ${err.code || err.message}`);
@@ -728,8 +747,14 @@ formAtleta.addEventListener("submit", async (e) => {
     const atleta = { nome, categoriaId, box, contatto };
     const batch = writeBatch(db);
     if (id) {
+      const atletaEsistente = atletiCache.find((a) => a.id === id);
+      const isPresente = atletaEsistente?.presente !== false;
       batch.set(doc(db, COL.atleti, id), atleta, { merge: true });
-      batch.set(doc(db, COL.atletiPubblici, id), datiAtletaPubblici(atleta));
+      if (isPresente) {
+        batch.set(doc(db, COL.atletiPubblici, id), datiAtletaPubblici(atleta));
+      } else {
+        batch.delete(doc(db, COL.atletiPubblici, id));
+      }
       await batch.commit();
       showToast(`✅ ${nome} aggiornato`);
     } else {
@@ -1264,6 +1289,80 @@ function initTabEventi() {
     });
 }
 
+function timestampMillis(ts) {
+  if (!ts) return 0;
+  if (typeof ts.toMillis === "function") return ts.toMillis();
+  if (typeof ts.seconds === "number") return (ts.seconds * 1000) + Math.floor((ts.nanoseconds || 0) / 1000000);
+  return 0;
+}
+
+function formatDateTime(ts) {
+  const millis = timestampMillis(ts);
+  if (!millis) return "";
+  const d = new Date(millis);
+  return d.toLocaleString("it-IT", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function formatValoreRisultato(r, evento) {
+  if (!evento) return String(r.valore ?? "");
+  return formatValoreEsistente(r, evento);
+}
+
+async function caricaDatiRisultatiAdmin() {
+  const [atletiSnap, eventiSnap, risSnap] = await Promise.all([
+    getDocs(collection(db, COL.atleti)),
+    getDocs(collection(db, COL.eventi)),
+    getDocs(collection(db, COL.risultati))
+  ]);
+
+  const atletiMap = new Map(atletiSnap.docs.map((d) => [d.id, { id: d.id, ...d.data() }]));
+  const eventiMap = new Map(eventiSnap.docs.map((d) => [d.id, { id: d.id, ...d.data() }]));
+  const risultati = risSnap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => timestampMillis(b.aggiornatoIl || b.inseritoIl) - timestampMillis(a.aggiornatoIl || a.inseritoIl));
+
+  return { atletiMap, eventiMap, risultati };
+}
+
+function renderAuditRisultati(outputEl, dati) {
+  if (!outputEl) return;
+  const ultimi = dati.risultati.slice(0, 12);
+  if (ultimi.length === 0) {
+    outputEl.innerHTML = `<p class="admin-empty">Nessun risultato inserito.</p>`;
+    return;
+  }
+
+  outputEl.innerHTML = ultimi.map((r) => {
+    const atleta = dati.atletiMap.get(r.atletaId);
+    const evento = dati.eventiMap.get(r.eventoId);
+    const nomeAtleta = atleta?.nome || `Atleta eliminato (${r.atletaId})`;
+    const categoria = NOMI_CATEGORIE[r.categoriaId] || r.categoriaId || "-";
+    const eventoLabel = evento ? `E${evento.numero} - ${evento.nome}` : `Evento ${r.eventoId}`;
+    const giudice = r.aggiornatoDa || r.inseritoDa || "giudice non indicato";
+    return `
+      <div class="audit-row">
+        <div class="audit-row__main">
+          <div class="audit-row__athlete">${escapeHtml(nomeAtleta)}</div>
+          <div class="audit-row__event">${escapeHtml(categoria)} · ${escapeHtml(atleta?.box || "-")}</div>
+        </div>
+        <div class="audit-row__meta">
+          <div class="audit-row__event">${escapeHtml(eventoLabel)} · ${escapeHtml(formatValoreRisultato(r, evento))}</div>
+          <div class="audit-row__judge">${escapeHtml(giudice)} · ${escapeHtml(formatDateTime(r.aggiornatoIl || r.inseritoIl) || "ora n.d.")}</div>
+        </div>
+        <div class="audit-row__score">
+          <b>${Number(r.puntiEpi || 0).toFixed(1)}</b>
+          EPI
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
 // =====================================================
 // TAB STRUMENTI
 // =====================================================
@@ -1273,6 +1372,9 @@ function initTabStrumenti() {
   const btnExport = document.getElementById("btn-export");
   const exportCategoria = document.getElementById("export-categoria");
   const btnExportAtleti = document.getElementById("btn-export-atleti");
+  const btnExportRisultati = document.getElementById("btn-export-risultati");
+  const btnRefreshAudit = document.getElementById("btn-refresh-audit");
+  const auditRisultati = document.getElementById("audit-risultati");
   const btnSyncPubblici = document.getElementById("btn-sync-pubblici");
   const syncPubbliciOutput = document.getElementById("sync-pubblici-output");
   const btnSyncRisultatiPubblici = document.getElementById("btn-sync-risultati-pubblici");
@@ -1281,6 +1383,22 @@ function initTabStrumenti() {
   const statsOutput = document.getElementById("stats-output");
 
   if (!btnRicalcola) return;
+
+  async function aggiornaAuditRisultati() {
+    if (!auditRisultati) return;
+    auditRisultati.innerHTML = `<p class="admin-empty">Caricamento ultimi risultati...</p>`;
+    try {
+      const dati = await caricaDatiRisultatiAdmin();
+      renderAuditRisultati(auditRisultati, dati);
+    } catch (err) {
+      auditRisultati.innerHTML = `<p class="admin-empty">Errore: ${escapeHtml(err.code || err.message)}</p>`;
+    }
+  }
+
+  if (btnRefreshAudit) {
+    btnRefreshAudit.onclick = aggiornaAuditRisultati;
+  }
+  aggiornaAuditRisultati();
 
   // Ricalcola EPI
   btnRicalcola.onclick = async () => {
@@ -1402,6 +1520,78 @@ function initTabStrumenti() {
       alert("Errore: " + (err.code || err.message));
     }
   };
+
+  // Backup completo risultati
+  if (btnExportRisultati) {
+    btnExportRisultati.onclick = async () => {
+      btnExportRisultati.disabled = true;
+      try {
+        const dati = await caricaDatiRisultatiAdmin();
+        const ordered = [...dati.risultati].sort((a, b) => {
+          const ea = dati.eventiMap.get(a.eventoId);
+          const eb = dati.eventiMap.get(b.eventoId);
+          const na = Number(ea?.numero || a.eventoId || 0);
+          const nb = Number(eb?.numero || b.eventoId || 0);
+          if (na !== nb) return na - nb;
+          const aa = dati.atletiMap.get(a.atletaId);
+          const ab = dati.atletiMap.get(b.atletaId);
+          return String(aa?.nome || a.atletaId).localeCompare(String(ab?.nome || b.atletaId), "it");
+        });
+
+        const headers = [
+          "Data/Ora",
+          "Evento",
+          "Evento ID",
+          "Atleta",
+          "Categoria",
+          "Box",
+          "Contatto",
+          "Presenza",
+          "Valore",
+          "Valore raw",
+          "Valore secondario",
+          "Punti EPI",
+          "Giudice ultimo update",
+          "Giudice primo inserimento",
+          "Sovrascritto da",
+          "Punti precedenti"
+        ];
+        let csv = headers.join(";") + "\n";
+
+        ordered.forEach((r) => {
+          const atleta = dati.atletiMap.get(r.atletaId);
+          const evento = dati.eventiMap.get(r.eventoId);
+          const cells = [
+            formatDateTime(r.aggiornatoIl || r.inseritoIl),
+            evento ? `E${evento.numero} ${evento.nome}` : `Evento ${r.eventoId}`,
+            r.eventoId,
+            atleta?.nome || `Atleta eliminato (${r.atletaId})`,
+            NOMI_CATEGORIE[r.categoriaId] || r.categoriaId || "",
+            atleta?.box || "",
+            atleta?.contatto || "",
+            atleta ? (atleta.presente === false ? "Assente" : "Presente") : "Atleta eliminato",
+            formatValoreRisultato(r, evento),
+            r.valore ?? "",
+            r.valoreSecondario ?? "",
+            Number(r.puntiEpi || 0).toFixed(1),
+            r.aggiornatoDa || "",
+            r.inseritoDa || "",
+            r.sovrascrittoDa || "",
+            r.precedente?.puntiEpi ?? ""
+          ].map(csvSafe);
+          csv += cells.join(";") + "\n";
+        });
+
+        downloadCsv(csv, `risultati-completi-${nowStr()}.csv`);
+        showToast(`📥 Backup risultati esportato (${ordered.length} righe)`);
+      } catch (err) {
+        console.error(err);
+        alert("Errore export risultati: " + (err.code || err.message));
+      } finally {
+        btnExportRisultati.disabled = false;
+      }
+    };
+  }
 
   // Sincronizza copia pubblica senza contatti
   if (btnSyncPubblici) {

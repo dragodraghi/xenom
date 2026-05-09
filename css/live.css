@@ -1200,6 +1200,9 @@
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
 }
+.tool-card--wide {
+  grid-column: 1 / -1;
+}
 .tool-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1239,6 +1242,59 @@
 }
 .tool-output.is-visible {
   display: block;
+}
+
+.audit-list {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.65rem;
+}
+.audit-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.18);
+}
+.audit-row__main,
+.audit-row__meta {
+  min-width: 0;
+}
+.audit-row__athlete {
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.audit-row__event,
+.audit-row__judge {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-top: 0.2rem;
+}
+.audit-row__score {
+  text-align: right;
+  font-family: var(--font-heading);
+  color: var(--accent-gold);
+  white-space: nowrap;
+}
+.audit-row__score b {
+  display: block;
+  font-size: 1.15rem;
+  color: var(--accent-primary);
+}
+
+@media (max-width: 720px) {
+  .audit-row {
+    grid-template-columns: 1fr;
+  }
+  .audit-row__score {
+    text-align: left;
+  }
 }
 
 /* === Live leaderboard === */

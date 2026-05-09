@@ -251,6 +251,21 @@
             </div>
 
             <div class="tool-card">
+              <h3>💾 Backup risultati completo</h3>
+              <p>CSV unico con tutti i risultati grezzi, punti EPI, atleta, categoria, giudice e ora di inserimento.</p>
+              <button class="btn btn--primary btn--small" id="btn-export-risultati">Scarica risultati.csv</button>
+            </div>
+
+            <div class="tool-card tool-card--wide">
+              <h3>🧾 Ultimi risultati inseriti</h3>
+              <p>Controllo rapido per vedere chi ha inserito cosa e intercettare errori appena succedono.</p>
+              <button class="btn btn--ghost btn--small" id="btn-refresh-audit">Aggiorna lista</button>
+              <div class="audit-list" id="audit-risultati">
+                <p class="admin-empty">Caricamento...</p>
+              </div>
+            </div>
+
+            <div class="tool-card">
               <h3>🔒 Sincronizza atleti pubblici</h3>
               <p>Aggiorna la copia usata dalla classifica live senza email o telefono. Serve dopo import manuali o modifiche da Firebase Console.</p>
               <button class="btn btn--ghost btn--small" id="btn-sync-pubblici">Sincronizza</button>
