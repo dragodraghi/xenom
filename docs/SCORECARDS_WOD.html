@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Scorecards Giudici — TUSK Protocol Bad Boars Edition</title>
+<style>
+  /* === Page setup === */
+  @page { size: A4 portrait; margin: 10mm 12mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 10.5pt;
+    color: #111;
+    background: #fff;
+    line-height: 1.3;
+  }
+
+  /* === Screen only header === */
+  .intro {
+    max-width: 900px;
+    margin: 24px auto;
+    padding: 18px 22px;
+    background: #fff8e1;
+    border-left: 4px solid #ff6f00;
+    border-radius: 4px;
+  }
+  .intro h1 { margin: 0 0 8px; font-size: 20px; }
+  .intro p { margin: 6px 0; }
+  .intro code {
+    background: rgba(0,0,0,0.06);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11pt;
+  }
+  @media print { .intro { display: none; } }
+
+  /* === Scorecard page === */
+  .scorecard {
+    page-break-after: always;
+    page-break-inside: avoid;
+    width: 186mm;          /* A4 - margins */
+    height: 277mm;         /* fits A4 portrait */
+    margin: 0 auto;
+    padding: 0;
+    border: 1px solid #000;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+  }
+  .scorecard:last-child { page-break-after: auto; }
+  @media screen {
+    .scorecard {
+      margin: 14px auto;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+  }
+
+  /* === Header === */
+  .head {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 2px solid #000;
+    background: #ff3c00;
+    color: #fff;
+  }
+  .head img.logo {
+    width: 56px; height: 56px;
+    background: #fff;
+    border-radius: 6px;
+    padding: 4px;
+  }
+  .head .title h1 { margin: 0; font-size: 13pt; letter-spacing: 0.5px; }
+  .head .title .sub { font-size: 9pt; opacity: 0.95; }
+  .head .event {
+    text-align: right;
+    font-size: 11pt;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  .head .event .num { font-size: 22pt; line-height: 1; }
+  .head .event .name { font-size: 11pt; text-transform: uppercase; }
+
+  /* === Section common === */
+  .section { padding: 6px 12px; border-bottom: 1px solid #aaa; }
+  .section h2 {
+    margin: 0 0 4px;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #444;
+  }
+
+  /* === Athlete row === */
+  .athlete-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 0.6fr;
+    gap: 10px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .field label {
+    font-size: 8pt;
+    color: #666;
+    text-transform: uppercase;
+  }
+  .field .line {
+    border-bottom: 1px solid #000;
+    height: 18px;
+    padding: 0 3px;
+  }
+
+  /* === Categoria checkboxes === */
+  .cat-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 9pt;
+    margin-top: 2px;
+  }
+  .cat-row label { display: flex; align-items: center; gap: 4px; }
+  .cat-row input { width: 12px; height: 12px; }
+
+  /* === Format / standard === */
+  .standards {
+    font-size: 9pt;
+    line-height: 1.35;
+  }
+  .standards p { margin: 2px 0; }
+  .standards strong { color: #ff3c00; }
+
+  /* === Score grid (varies per WOD) === */
+  .score {
+    flex: 1;
+    padding: 8px 12px;
+    overflow: hidden;
+  }
+  .score table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+  }
+  .score th, .score td {
+    border: 1px solid #555;
+    padding: 4px 6px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .score th {
+    background: #e8e8e8;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .score .input-cell {
+    height: 22px;
+    background: #fafafa;
+  }
+  .score .small { font-size: 8pt; color: #777; }
+
+  /* === Tally boxes (per rep) === */
+  .tally { display: inline-flex; flex-wrap: wrap; gap: 3px; }
+  .tally .b {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 1px solid #000;
+    background: #fff;
+  }
+  .tally-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 60px;
+    gap: 8px;
+    align-items: center;
+    padding: 3px 0;
+  }
+  .tally-row .label { font-size: 9pt; font-weight: 600; }
+  .tally-row .total {
+    border: 1px solid #000;
+    padding: 1px 4px;
+    background: #fafafa;
+    text-align: center;
+    font-size: 8.5pt;
+  }
+
+  /* === Final score box (always at bottom of score area) === */
+  .final {
+    background: #fff3c0;
+    border: 2px solid #000;
+    padding: 8px 12px;
+    margin-top: 6px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+  }
+  .final .label {
+    font-size: 11pt;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .final .value {
+    border: 2px solid #000;
+    background: #fff;
+    padding: 4px 14px;
+    min-width: 120px;
+    height: 30px;
+    font-size: 14pt;
+    font-weight: 700;
+  }
+  .final .small { font-size: 8pt; color: #555; font-weight: 400; }
+
+  /* === Footer signatures === */
+  .foot {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    padding: 8px 12px;
+    border-top: 2px solid #000;
+    font-size: 9pt;
+  }
+  .foot .sig {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .foot .sig .row {
+    display: grid;
+    grid-template-columns: 75px 1fr;
+    gap: 6px;
+    align-items: end;
+  }
+  .foot .sig .line {
+    border-bottom: 1px solid #000;
+    height: 18px;
+  }
+
+  /* === Specific layouts === */
+  /* E2 ladder side-by-side */
+  .ladder-sidebyside {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .ladder-sidebyside h3 {
+    margin: 0 0 4px;
+    font-size: 10pt;
+    color: #ff3c00;
+    text-align: center;
+    border-bottom: 1px solid #ff3c00;
+    padding-bottom: 2px;
+  }
+
+  /* E4/E10 round columns */
+  .rounds-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .rounds-table th, .rounds-table td {
+    border: 1px solid #555;
+    padding: 4px;
+    font-size: 9pt;
+    text-align: center;
+  }
+
+  /* E9 ladder steps */
+  .clean-ladder {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+  }
+  .clean-ladder th, .clean-ladder td {
+    border: 1px solid #555;
+    padding: 3px 4px;
+    text-align: center;
+  }
+  .clean-ladder th {
+    background: #e8e8e8;
+    font-size: 8pt;
+  }
+  .clean-ladder .step-row td {
+    background: #fafafa;
+  }
+
+  .dnf-block {
+    border-top: 1px dashed #888;
+    margin-top: 6px;
+    padding-top: 4px;
+    font-size: 9pt;
+  }
+
+  .meta-time {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    font-size: 9pt;
+    margin-bottom: 4px;
+  }
+  .meta-time .field .line { height: 16px; }
+
+  /* Compact movement standards */
+  .standards .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 14px;
+    margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     Istruzioni (solo a video, non in stampa)
+     ============================================================ -->
+<div class="intro">
+  <h1>🐗 Scorecards Giudici — TUSK Protocol Bad Boars Edition</h1>
+  <p>10 schede A4 stampabili, una per WOD, già impostate per i giudici di pedana.</p>
+  <p><strong>Per stampare:</strong> apri questo file in Chrome/Edge → <code>Ctrl+P</code> (Mac: <code>Cmd+P</code>) → <em>Salva come PDF</em> oppure stampa direttamente. Ogni WOD finisce su 1 pagina A4 verticale.</p>
+  <p><strong>Suggerimento:</strong> stampa 5-10 copie per ogni WOD prima della gara. Se Firebase va giù il giorno della gara, queste schede sono il backup ufficiale.</p>
+</div>
+
+<!-- ============================================================
+     EVENT 1 — Snatch 1RM
+     ============================================================ -->
+<section class="scorecard">
+  <header class="head">
+    <img class="logo" src="../assets/icons/tusk-icon-512.png" alt="TUSK">
+    <div class="title">
+      <h1>TUSK PROTOCOL — BAD BOARS EDITION</h1>
+      <div class="sub">29-30 Maggio 2026 · Bad Boars CrossFit Sassari</div>
+    </div>
+    <div class="event">
+      <div class="num">E1</div>
+      <div class="name">Snatch 1RM</div>
+    </div>
+  </header>
+
+  <div class="section">
+    <h2>Atleta</h2>
+    <div class="athlete-row">
+      <div class="field"><label>Nome e Cognome</label><div class="line"></div></div>
+      <div class="field"><label>Box</label><div class="line"></div></div>
+      <div class="field"><label>Pettorale #</label><div class="line"></div></div>
+    </div>
+    <div class="cat-row">
+      <strong>Categoria:</strong>
+      <label><input type="checkbox"> Ultimate (M)</label>
+      <label><input type="checkbox"> Advanced (M)</label>
+      <label><input type="checkbox"> Challenge (M)</label>
+      <label><input type="checkbox"> Essential (M)</label>
+      <label><input type="checkbox"> Performance (F)</label>
+      <label><input type="checkbox"> Intermediate (F)</label>
+    </div>
+  </div>
+
+  <div class="section standards">
+    <h2>Format & Standard</h2>
+    <p><strong>Cap totale 10'.</strong> 4 tentativi: <strong>1:30 di lavoro + 1:00 di loading/rest</strong> tra i tentativi. <strong>Any style</strong> (squat, power, split). Score = miglior alzata valida (kg).</p>
+    <p class="small">Standard: bilanciere da terra a sopra la testa con braccia distese, piedi in linea, controllo finale. T.B. = ultimo tentativo riuscito (peso massimo).</p>
+  </div>
+
+  <div class="score">
+    <table>
+      <thead>
+        <tr><th style="width:8%;">#</th><th style="width:25%;">Tempo inizio</th><th style="width:22%;">Peso (kg)</th><th style="width:25%;">Esito</th><th>Note</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td class="input-cell"></td><td class="input-cell"></td><td>☐ Valida ☐ No Lift</td><td class="input-cell"></td></tr>
+        <tr><td>2</td><td class="input-cell"></td><td class="input-cell"></td><td>☐ Valida ☐ No Lift</td><td class="input-cell"></td></tr>
+        <tr><td>3</td><td class="input-cell"></td><td class="input-cell"></td><td>☐ Valida ☐ No Lift</td><td class="input-cell"></td></tr>
+        <tr><td>4</td><td class="input-cell"></td><td class="input-cell"></td><td>☐ Valida ☐ No Lift</td><td class="input-cell"></td></tr>
+      </tbody>
+    </table>
+
+    <div class="final">
+      <div class="label">Score finale (miglior valida)</div>
+      <div class="value"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="sig">
+      <div class="row"><span>Giudice:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+    <div class="sig">
+      <div class="row"><span>Atleta:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+  </footer>
+</section>
+
+<!-- ============================================================
+     EVENT 2 — Ascending Ladder
+     ============================================================ -->
+<section class="scorecard">
+  <header class="head">
+    <img class="logo" src="../assets/icons/tusk-icon-512.png" alt="TUSK">
+    <div class="title">
+      <h1>TUSK PROTOCOL — BAD BOARS EDITION</h1>
+      <div class="sub">29-30 Maggio 2026 · Bad Boars CrossFit Sassari</div>
+    </div>
+    <div class="event">
+      <div class="num">E2</div>
+      <div class="name">Ascending Ladder</div>
+    </div>
+  </header>
+
+  <div class="section">
+    <h2>Atleta</h2>
+    <div class="athlete-row">
+      <div class="field"><label>Nome e Cognome</label><div class="line"></div></div>
+      <div class="field"><label>Box</label><div class="line"></div></div>
+      <div class="field"><label>Pettorale #</label><div class="line"></div></div>
+    </div>
+    <div class="cat-row">
+      <strong>Modalità:</strong>
+      <label><input type="checkbox"> <strong>RX</strong> (Ult / Adv / Cha M)</label>
+      <label><input type="checkbox"> <strong>Scaled</strong> (Ess M / Perf F / Int F)</label>
+    </div>
+  </div>
+
+  <div class="section standards">
+    <h2>Format & Standard</h2>
+    <p><strong>AMRAP 8'.</strong> Ladder ascendente. Score = reps totali. T.B. = dopo l'ultima Rope Climb (RX) o dopo i Burpees Over Line (Scaled).</p>
+    <div class="grid2">
+      <p><strong>RX:</strong> 2 Wall Walk + 1 Rope Climb (15ft, any style touch target), poi 4+2, 6+3, 8+4, 10+5, 12+6, 14+7…</p>
+      <p><strong>Scaled:</strong> 2 Scaled Wall Walk + 4 Burpees Over Line, poi 4+8, 6+12, 8+16, 10+20…</p>
+    </div>
+  </div>
+
+  <div class="score">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:8%;">Round</th>
+          <th>RX: WW reps</th>
+          <th>RX: RC reps</th>
+          <th>Scaled: WW reps</th>
+          <th>Scaled: BOL reps</th>
+          <th style="width:14%;">Sub-totale round</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>2</td><td>1</td><td>2</td><td>4</td><td class="input-cell"></td></tr>
+        <tr><td>2</td><td>4</td><td>2</td><td>4</td><td>8</td><td class="input-cell"></td></tr>
+        <tr><td>3</td><td>6</td><td>3</td><td>6</td><td>12</td><td class="input-cell"></td></tr>
+        <tr><td>4</td><td>8</td><td>4</td><td>8</td><td>16</td><td class="input-cell"></td></tr>
+        <tr><td>5</td><td>10</td><td>5</td><td>10</td><td>20</td><td class="input-cell"></td></tr>
+        <tr><td>6</td><td>12</td><td>6</td><td>12</td><td>24</td><td class="input-cell"></td></tr>
+        <tr><td>7</td><td>14</td><td>7</td><td>14</td><td>28</td><td class="input-cell"></td></tr>
+      </tbody>
+    </table>
+
+    <div class="dnf-block">
+      <strong>Ultimo round completato:</strong> ______ &nbsp;&nbsp; <strong>Reps parziali round corrente:</strong> WW ____ + (RC|BOL) ____
+    </div>
+
+    <div class="final">
+      <div class="label">Score finale (reps totali)</div>
+      <div class="value"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="sig">
+      <div class="row"><span>Giudice:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+    <div class="sig">
+      <div class="row"><span>Atleta:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+  </footer>
+</section>
+
+<!-- ============================================================
+     EVENT 3 — Max Cal Assault Bike
+     ============================================================ -->
+<section class="scorecard">
+  <header class="head">
+    <img class="logo" src="../assets/icons/tusk-icon-512.png" alt="TUSK">
+    <div class="title">
+      <h1>TUSK PROTOCOL — BAD BOARS EDITION</h1>
+      <div class="sub">29-30 Maggio 2026 · Bad Boars CrossFit Sassari</div>
+    </div>
+    <div class="event">
+      <div class="num">E3</div>
+      <div class="name">Max Cal Assault Bike</div>
+    </div>
+  </header>
+
+  <div class="section">
+    <h2>Atleta</h2>
+    <div class="athlete-row">
+      <div class="field"><label>Nome e Cognome</label><div class="line"></div></div>
+      <div class="field"><label>Box</label><div class="line"></div></div>
+      <div class="field"><label>Pettorale #</label><div class="line"></div></div>
+    </div>
+    <div class="cat-row">
+      <strong>Categoria:</strong>
+      <label><input type="checkbox"> Ult (M)</label>
+      <label><input type="checkbox"> Adv (M)</label>
+      <label><input type="checkbox"> Cha (M)</label>
+      <label><input type="checkbox"> Ess (M)</label>
+      <label><input type="checkbox"> Perf (F)</label>
+      <label><input type="checkbox"> Int (F)</label>
+    </div>
+  </div>
+
+  <div class="section standards">
+    <h2>Format & Standard</h2>
+    <p><strong>60 secondi sprint.</strong> Massime calorie possibili. <strong>Stesso format per tutte le categorie.</strong> Reset display prima della partenza.</p>
+    <p class="small">Standard: l'atleta inizia al "GO" del giudice. Calorie lette al display al "STOP" 60s dopo. Niente piedi a terra durante lo sprint.</p>
+  </div>
+
+  <div class="score">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:25%;">Tempo inizio sprint</th>
+          <th style="width:25%;">Tempo fine (60s dopo)</th>
+          <th>Note giudice</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="input-cell" style="height:30px;"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:14px;">
+      <table>
+        <thead>
+          <tr><th colspan="3">Lettura display Assault Bike</th></tr>
+          <tr><th style="width:33%;">Calorie totali (display)</th><th style="width:33%;">Doppia lettura (controllo)</th><th>Differenza?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="input-cell" style="height:32px; font-size:18pt;"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="final">
+      <div class="label">Score finale (cal totali)</div>
+      <div class="value"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="sig">
+      <div class="row"><span>Giudice:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+    <div class="sig">
+      <div class="row"><span>Atleta:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+  </footer>
+</section>
+
+<!-- ============================================================
+     EVENT 4 — Barbell Sprint
+     ============================================================ -->
+<section class="scorecard">
+  <header class="head">
+    <img class="logo" src="../assets/icons/tusk-icon-512.png" alt="TUSK">
+    <div class="title">
+      <h1>TUSK PROTOCOL — BAD BOARS EDITION</h1>
+      <div class="sub">29-30 Maggio 2026 · Bad Boars CrossFit Sassari</div>
+    </div>
+    <div class="event">
+      <div class="num">E4</div>
+      <div class="name">Barbell Sprint</div>
+    </div>
+  </header>
+
+  <div class="section">
+    <h2>Atleta</h2>
+    <div class="athlete-row">
+      <div class="field"><label>Nome e Cognome</label><div class="line"></div></div>
+      <div class="field"><label>Box</label><div class="line"></div></div>
+      <div class="field"><label>Pettorale #</label><div class="line"></div></div>
+    </div>
+    <div class="cat-row">
+      <strong>Categoria + carico:</strong>
+      <label><input type="checkbox"> Ult 70 kg</label>
+      <label><input type="checkbox"> Adv 60 kg</label>
+      <label><input type="checkbox"> Cha 50 kg</label>
+      <label><input type="checkbox"> Ess 40 kg</label>
+      <label><input type="checkbox"> Perf 45 kg</label>
+      <label><input type="checkbox"> Int 30 kg</label>
+    </div>
+  </div>
+
+  <div class="section standards">
+    <h2>Format & Standard</h2>
+    <p><strong>AMRAP 5'.</strong> Round = <strong>12 Deadlift + 9 Front Squat + 6 Shoulder-to-Overhead + 3 Thrusters</strong> = 30 reps/round. T.B. = dopo i Thrusters.</p>
+    <p class="small">Standard: bilanciere unico, carichi NON modificabili durante l'AMRAP. DL bilanciere a terra fra reps. FS dal front rack, ginocchia e anche estese sopra. S2OH qualsiasi (push press / push jerk / strict). Thrusters dal front squat full a sopra la testa.</p>
+  </div>
+
+  <div class="score">
+    <table class="rounds-table">
+      <thead>
+        <tr>
+          <th style="width:14%;">Round</th>
+          <th>DL (12)</th>
+          <th>FS (9)</th>
+          <th>S2OH (6)</th>
+          <th>THR (3)</th>
+          <th style="width:14%;">Round completo? (✓)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>2</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>3</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>4</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>5</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>6</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>7+</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+      </tbody>
+    </table>
+
+    <div class="dnf-block">
+      <strong>Round completi:</strong> ____ &nbsp;×&nbsp; 30 reps = ____ &nbsp;&nbsp; <strong>Reps extra round corrente:</strong> ____ &nbsp;→&nbsp; <strong>TOTALE:</strong> ______ reps
+    </div>
+
+    <div class="final">
+      <div class="label">Score finale (round + reps)</div>
+      <div class="value"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="sig">
+      <div class="row"><span>Giudice:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+    <div class="sig">
+      <div class="row"><span>Atleta:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+  </footer>
+</section>
+
+<!-- ============================================================
+     EVENT 5 — Engine Test
+     ============================================================ -->
+<section class="scorecard">
+  <header class="head">
+    <img class="logo" src="../assets/icons/tusk-icon-512.png" alt="TUSK">
+    <div class="title">
+      <h1>TUSK PROTOCOL — BAD BOARS EDITION</h1>
+      <div class="sub">29-30 Maggio 2026 · Bad Boars CrossFit Sassari</div>
+    </div>
+    <div class="event">
+      <div class="num">E5</div>
+      <div class="name">Engine Test</div>
+    </div>
+  </header>
+
+  <div class="section">
+    <h2>Atleta</h2>
+    <div class="athlete-row">
+      <div class="field"><label>Nome e Cognome</label><div class="line"></div></div>
+      <div class="field"><label>Box</label><div class="line"></div></div>
+      <div class="field"><label>Pettorale #</label><div class="line"></div></div>
+    </div>
+    <div class="cat-row">
+      <strong>Modalità:</strong>
+      <label><input type="checkbox"> <strong>RX</strong> 1000m row + 2000m run (Ult / Adv / Cha M / Perf F / Int F)</label>
+      <label><input type="checkbox"> <strong>Essential</strong> 750m row + 1500m run (Ess M)</label>
+    </div>
+  </div>
+
+  <div class="section standards">
+    <h2>Format & Standard</h2>
+    <p><strong>For Time, cap 15'.</strong> Row prima, run dopo, no pausa tra le due. Score = tempo totale. T.B. = dopo il row.</p>
+    <p class="small">Standard: row distance lock al display, atleta non lascia il rower prima del completamento. Run all'aperto secondo percorso indicato. DNF al cap → conta i metri totali completati.</p>
+  </div>
+
+  <div class="score">
+    <table>
+      <thead>
+        <tr>
+          <th>Tempo START (row)</th>
+          <th>Tempo END row</th>
+          <th>Tempo END run (= score)</th>
+          <th>T.B. tempo row</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="input-cell" style="height:30px; font-size:13pt;"></td>
+          <td class="input-cell" style="font-size:13pt;"></td>
+          <td class="input-cell" style="font-size:13pt; background:#fff8c4;"></td>
+          <td class="input-cell" style="font-size:13pt;"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="dnf-block">
+      <strong>DNF (oltre il cap di 15'):</strong>
+      ☐ <strong>Sì</strong> → Metri completati al cap: ______ / <span style="font-size:8pt;">3000 RX (1000+2000) — 2250 Ess (750+1500)</span><br>
+      <span class="small">N.B. in caso di DNF, sull'app spunta la checkbox <em>DNF</em> e inserisci i metri totali completati. NON inserire un tempo oltre il cap.</span>
+    </div>
+
+    <div class="final">
+      <div class="label">Score finale (tempo o metri DNF)</div>
+      <div class="value"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="sig">
+      <div class="row"><span>Giudice:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+    <div class="sig">
+      <div class="row"><span>Atleta:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+  </footer>
+</section>
+
+<!-- ============================================================
+     EVENT 6 — Ground Zero
+     ============================================================ -->
+<section class="scorecard">
+  <header class="head">
+    <img class="logo" src="../assets/icons/tusk-icon-512.png" alt="TUSK">
+    <div class="title">
+      <h1>TUSK PROTOCOL — BAD BOARS EDITION</h1>
+      <div class="sub">29-30 Maggio 2026 · Bad Boars CrossFit Sassari</div>
+    </div>
+    <div class="event">
+      <div class="num">E6</div>
+      <div class="name">Ground Zero</div>
+    </div>
+  </header>
+
+  <div class="section">
+    <h2>Atleta</h2>
+    <div class="athlete-row">
+      <div class="field"><label>Nome e Cognome</label><div class="line"></div></div>
+      <div class="field"><label>Box</label><div class="line"></div></div>
+      <div class="field"><label>Pettorale #</label><div class="line"></div></div>
+    </div>
+    <div class="cat-row">
+      <strong>Cat + Sandbag/Box:</strong>
+      <label><input type="checkbox"> Ult M (SB 70 / Box 24")</label>
+      <label><input type="checkbox"> Adv M (SB 70 / Box 24")</label>
+      <label><input type="checkbox"> Cha M (SB 50 / Box 20")</label>
+      <label><input type="checkbox"> Ess M (SB 50 / Box 20")</label>
+      <label><input type="checkbox"> Perf F (SB 50 / Box 24")</label>
+      <label><input type="checkbox"> Int F (SB 30 / Box 24")</label>
+    </div>
+  </div>
+
+  <div class="section standards">
+    <h2>Format & Standard</h2>
+    <p><strong>For Time, cap 10'.</strong> Chipper: 9 SOB → 15 BJO → 12 G2S → 15m carry → 15 G2S → 15m carry → 12 G2S → 15 BJO → 9 SOB. <strong>Total: 87 movements + 30m carry</strong>. T.B. = dopo il primo blocco di Sandbag G2S.</p>
+    <p class="small">Standard: SOB=Sandbag Over Bar (alto barra). BJO=Box Jump Over (atterra entrambi i piedi). G2S=Ground to Shoulder (spalla, qualsiasi tecnica). Carry=15m con sandbag in mano/spalla.</p>
+  </div>
+
+  <div class="score">
+    <table>
+      <thead>
+        <tr><th>Movimento</th><th>Reps target</th><th>Tick reps (1 box = 1 rep)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>SOB</td><td>9</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
+        <tr><td>BJO</td><td>15</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
+        <tr><td>G2S</td><td>12</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
+        <tr><td>Carry</td><td>15m</td><td><div class="tally"><span class="b"></span> <strong style="margin:0 8px;">→ T.B. ufficiale dopo il blocco G2S precedente</strong></div></td></tr>
+        <tr><td>G2S</td><td>15</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
+        <tr><td>Carry</td><td>15m</td><td><div class="tally"><span class="b"></span></div></td></tr>
+        <tr><td>G2S</td><td>12</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
+        <tr><td>BJO</td><td>15</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
+        <tr><td>SOB</td><td>9</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
+      </tbody>
+    </table>
+
+    <div class="dnf-block">
+      <strong>Tempo finale (se completato):</strong> ______ <span class="small">(cap 10:00)</span> &nbsp;|&nbsp; <strong>DNF?</strong> ☐ Sì → reps completate al cap: ____ / 87
+    </div>
+
+    <div class="final">
+      <div class="label">Score finale (tempo o reps DNF)</div>
+      <div class="value"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="sig">
+      <div class="row"><span>Giudice:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+    <div class="sig">
+      <div class="row"><span>Atleta:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+  </footer>
+</section>
+
+<!-- ============================================================
+     EVENT 7 — Barbell Version
+     ============================================================ -->
+<section class="scorecard">
+  <header class="head">
+    <img class="logo" src="../assets/icons/tusk-icon-512.png" alt="TUSK">
+    <div class="title">
+      <h1>TUSK PROTOCOL — BAD BOARS EDITION</h1>
+      <div class="sub">29-30 Maggio 2026 · Bad Boars CrossFit Sassari</div>
+    </div>
+    <div class="event">
+      <div class="num">E7</div>
+      <div class="name">Barbell Version</div>
+    </div>
+  </header>
+
+  <div class="section">
+    <h2>Atleta</h2>
+    <div class="athlete-row">
+      <div class="field"><label>Nome e Cognome</label><div class="line"></div></div>
+      <div class="field"><label>Box</label><div class="line"></div></div>
+      <div class="field"><label>Pettorale #</label><div class="line"></div></div>
+    </div>
+    <div class="cat-row">
+      <strong>Categoria:</strong>
+      <label><input type="checkbox"> Ult: T2B+BMU @50kg, final RMU</label>
+      <label><input type="checkbox"> Adv: T2B+BMU @45kg, final RMU</label>
+      <label><input type="checkbox"> Cha: CTB @40kg, final BMU</label>
+      <label><input type="checkbox"> Ess: Pull-up @35kg, final CTB</label>
+      <label><input type="checkbox"> Perf: CTB @37.5kg, final BMU</label>
+      <label><input type="checkbox"> Int: Pull-up @25kg, final CTB</label>
+    </div>
+  </div>
+
+  <div class="section standards">
+    <h2>Format & Standard</h2>
+    <p><strong>Cap 7'.</strong> 3 round con schema reps <strong>15 / 15 / 10</strong> di gymnastics + Hang Power Snatch (HPS), poi <strong>MAX REPS skill ginnastica finale</strong> nel tempo restante. <strong>Score = SOLO le reps finali.</strong> T.B. ufficiale = fine round 3.</p>
+    <p class="small">Standard HPS: bilanciere dall'hang fino sopra la testa (power snatch dall'hang, no full squat). Skill ginnastica finale: cf. carico per categoria sopra.</p>
+  </div>
+
+  <div class="score">
+    <table>
+      <thead>
+        <tr>
+          <th>Round</th>
+          <th>Reps target</th>
+          <th>Gymnastics (✓/✗)</th>
+          <th>HPS (✓/✗)</th>
+          <th>Tempo end round</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>15 + 15</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>2</td><td>15 + 15</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>3</td><td>10 + 10</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:10px; padding:6px 8px; background:#fff8c4; border:1px dashed #ff3c00;">
+      <strong style="font-size:10pt;">MAX REPS skill ginnastica finale (= score):</strong>
+      <div class="tally" style="margin-top:4px; gap:2px;">
+        <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
+        <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
+        <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
+        <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
+        <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
+        <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
+      </div>
+      <p class="small" style="margin:6px 0 0;">Conta solo queste reps. I 3 round non contano nel punteggio (solo per arrivare al final skill). Se l'atleta non chiude i 3 round entro il cap, score = 0.</p>
+    </div>
+
+    <div class="final">
+      <div class="label">Score finale (reps skill finale)</div>
+      <div class="value"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="sig">
+      <div class="row"><span>Giudice:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+    <div class="sig">
+      <div class="row"><span>Atleta:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+  </footer>
+</section>
+
+<!-- ============================================================
+     EVENT 8 — Engine Chaos
+     ============================================================ -->
+<section class="scorecard">
+  <header class="head">
+    <img class="logo" src="../assets/icons/tusk-icon-512.png" alt="TUSK">
+    <div class="title">
+      <h1>TUSK PROTOCOL — BAD BOARS EDITION</h1>
+      <div class="sub">29-30 Maggio 2026 · Bad Boars CrossFit Sassari</div>
+    </div>
+    <div class="event">
+      <div class="num">E8</div>
+      <div class="name">Engine Chaos</div>
+    </div>
+  </header>
+
+  <div class="section">
+    <h2>Atleta</h2>
+    <div class="athlete-row">
+      <div class="field"><label>Nome e Cognome</label><div class="line"></div></div>
+      <div class="field"><label>Box</label><div class="line"></div></div>
+      <div class="field"><label>Pettorale #</label><div class="line"></div></div>
+    </div>
+    <div class="cat-row">
+      <strong>Cal:</strong>
+      <label><input type="checkbox"> 30 cal (M)</label>
+      <label><input type="checkbox"> 24 cal (F)</label>
+      <span class="small">Stesso format tutte le categorie.</span>
+    </div>
+  </div>
+
+  <div class="section standards">
+    <h2>Format & Standard</h2>
+    <p><strong>AMRAP 12'.</strong> <strong>Blocco 1:</strong> 30 BOL + 30/24 cal Ski + 30/24 cal Bike. <strong>Blocco 2:</strong> 30 BOL + 30/24 cal Bike + 30/24 cal Ski. Poi <strong>MAX BURPEES standard</strong> nel tempo restante. T.B. = dopo gli ergometri (fine blocco 2).</p>
+  </div>
+
+  <div class="score">
+    <table>
+      <thead>
+        <tr><th style="width:18%;">Blocco</th><th>Movimento</th><th style="width:18%;">Target</th><th style="width:14%;">Done? (✓)</th><th style="width:18%;">Tempo end</th></tr>
+      </thead>
+      <tbody>
+        <tr><td rowspan="3">1</td><td>BOL</td><td>30</td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>Ski</td><td>30/24 cal</td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>Bike</td><td>30/24 cal</td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td rowspan="3">2</td><td>BOL</td><td>30</td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>Bike</td><td>30/24 cal</td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr style="background:#fff8c4;"><td>Ski</td><td>30/24 cal</td><td class="input-cell"></td><td class="input-cell"><strong>= T.B.</strong></td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:8px; padding:6px 8px; background:#fff3c0; border:1px solid #000;">
+      <strong>MAX BURPEES (tempo restante dopo blocco 2):</strong>
+      <div class="tally" style="margin-top:4px; gap:2px;">
+        <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
+        <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
+        <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
+        <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
+        <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
+        <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
+      </div>
+      <span class="small">Burpees count: ____</span>
+    </div>
+
+    <div class="dnf-block">
+      <strong>Reps blocchi fissi: 60 BOL + ~108-120 cal ergo = ~168-180.</strong> Aggiungi i burpees → TOTALE: ______ reps
+    </div>
+
+    <div class="final">
+      <div class="label">Score finale (reps totali)</div>
+      <div class="value"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="sig">
+      <div class="row"><span>Giudice:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+    <div class="sig">
+      <div class="row"><span>Atleta:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+  </footer>
+</section>
+
+<!-- ============================================================
+     EVENT 9 — Heavy Clean Ladder
+     ============================================================ -->
+<section class="scorecard">
+  <header class="head">
+    <img class="logo" src="../assets/icons/tusk-icon-512.png" alt="TUSK">
+    <div class="title">
+      <h1>TUSK PROTOCOL — BAD BOARS EDITION</h1>
+      <div class="sub">29-30 Maggio 2026 · Bad Boars CrossFit Sassari</div>
+    </div>
+    <div class="event">
+      <div class="num">E9</div>
+      <div class="name">Heavy Clean Ladder</div>
+    </div>
+  </header>
+
+  <div class="section">
+    <h2>Atleta</h2>
+    <div class="athlete-row">
+      <div class="field"><label>Nome e Cognome</label><div class="line"></div></div>
+      <div class="field"><label>Box</label><div class="line"></div></div>
+      <div class="field"><label>Pettorale #</label><div class="line"></div></div>
+    </div>
+    <div class="cat-row">
+      <strong>Categoria:</strong>
+      <label><input type="checkbox"> Ult (M)</label>
+      <label><input type="checkbox"> Adv (M)</label>
+      <label><input type="checkbox"> Cha (M)</label>
+      <label><input type="checkbox"> Ess (M)</label>
+      <label><input type="checkbox"> Perf (F)</label>
+      <label><input type="checkbox"> Int (F)</label>
+    </div>
+  </div>
+
+  <div class="section standards">
+    <h2>Format & Standard</h2>
+    <p><strong>AMRAP 8'.</strong> Ladder: 10 → 8 → 6 → 4 → 2 cleans a carichi crescenti, poi AMRAP cleans al carico finale. <strong>Any clean</strong> (power / squat / split). Score = reps totali (es. 10+8+6+4+2+7 = 37).</p>
+    <p class="small">Standard: ogni clean parte da terra, finisce sul front rack con anche/ginocchia estese. T.B. (parità) = ultimo step clean completato interamente.</p>
+  </div>
+
+  <div class="score">
+    <table class="clean-ladder">
+      <thead>
+        <tr>
+          <th rowspan="2">Step</th>
+          <th rowspan="2">Reps</th>
+          <th colspan="6">Carichi (kg) per categoria — riempi solo la cat dell'atleta</th>
+          <th rowspan="2">Done? (✓)</th>
+          <th rowspan="2">Tempo end step</th>
+        </tr>
+        <tr>
+          <th>Ult</th><th>Adv</th><th>Cha</th><th>Ess</th><th>Perf</th><th>Int</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="step-row"><td>1</td><td>10</td><td>60</td><td>50</td><td>40</td><td>20</td><td>35</td><td>20</td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr class="step-row"><td>2</td><td>8</td><td>70</td><td>60</td><td>50</td><td>30</td><td>40</td><td>25</td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr class="step-row"><td>3</td><td>6</td><td>80</td><td>70</td><td>60</td><td>40</td><td>45</td><td>30</td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr class="step-row"><td>4</td><td>4</td><td>90</td><td>80</td><td>70</td><td>50</td><td>50</td><td>35</td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr class="step-row"><td>5</td><td>2</td><td>100</td><td>90</td><td>80</td><td>60</td><td>55</td><td>40</td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr style="background:#fff8c4;"><td>AMRAP</td><td>—</td><td>110</td><td>100</td><td>90</td><td>70</td><td>60</td><td>45</td><td colspan="2"><strong>Cleans extra al carico finale: ______</strong></td></tr>
+      </tbody>
+    </table>
+
+    <div class="dnf-block">
+      <strong>Ultimo step intero completato:</strong> ____ (T.B. parità) &nbsp;&nbsp; <strong>Cleans extra AMRAP:</strong> ____ &nbsp;&nbsp; <strong>TOTALE REPS:</strong> ______ <span class="small">(es. 10+8+6+4+2+7 = 37)</span>
+    </div>
+
+    <div class="final">
+      <div class="label">Score finale (reps totali)</div>
+      <div class="value"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="sig">
+      <div class="row"><span>Giudice:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+    <div class="sig">
+      <div class="row"><span>Atleta:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+  </footer>
+</section>
+
+<!-- ============================================================
+     EVENT 10 — The Finale
+     ============================================================ -->
+<section class="scorecard">
+  <header class="head">
+    <img class="logo" src="../assets/icons/tusk-icon-512.png" alt="TUSK">
+    <div class="title">
+      <h1>TUSK PROTOCOL — BAD BOARS EDITION</h1>
+      <div class="sub">29-30 Maggio 2026 · Bad Boars CrossFit Sassari</div>
+    </div>
+    <div class="event">
+      <div class="num">E10</div>
+      <div class="name">The Finale</div>
+    </div>
+  </header>
+
+  <div class="section">
+    <h2>Atleta</h2>
+    <div class="athlete-row">
+      <div class="field"><label>Nome e Cognome</label><div class="line"></div></div>
+      <div class="field"><label>Box</label><div class="line"></div></div>
+      <div class="field"><label>Pettorale #</label><div class="line"></div></div>
+    </div>
+    <div class="cat-row" style="font-size:8.5pt;">
+      <strong>Categoria:</strong>
+      <label><input type="checkbox"> Ult: HSPU std + C2B + 60kg</label>
+      <label><input type="checkbox"> Adv: HSPU std + C2B + 50kg</label>
+      <label><input type="checkbox"> Cha: HSPU+1 AbMat + C2B + 40kg</label>
+      <label><input type="checkbox"> Ess: Push-up + Pull-up + 35kg</label>
+      <label><input type="checkbox"> Perf F: HSPU+1 AbMat + C2B + 40kg</label>
+      <label><input type="checkbox"> Int F: Push-up + Pull-up + 25kg</label>
+    </div>
+  </div>
+
+  <div class="section standards">
+    <h2>Format & Standard</h2>
+    <p><strong>AMRAP 12'.</strong> Round = <strong>6 HSPU + 8 C2B Pull-up + 12 Front Rack Barbell Lunges</strong> = 26 reps/round. <strong>Solo top 5/6 per categoria.</strong> T.B. = fine round completo.</p>
+    <p class="small">Standard Lunges: <strong>alternati, in place, totale affondi, bilanciere da terra, front rack obbligatorio, contatto ginocchio a terra, no split recovery.</strong></p>
+  </div>
+
+  <div class="score">
+    <table class="rounds-table">
+      <thead>
+        <tr>
+          <th style="width:14%;">Round</th>
+          <th>HSPU / Push-up (6)</th>
+          <th>C2B / Pull-up (8)</th>
+          <th>FR Lunges (12)</th>
+          <th style="width:18%;">Round completo? (26 reps)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>2</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>3</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>4</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>5</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>6</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>7</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>8+</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+      </tbody>
+    </table>
+
+    <div class="dnf-block">
+      <strong>Round completi:</strong> ____ × 26 = ____ &nbsp;&nbsp; <strong>Reps extra round corrente:</strong> ____ &nbsp;→&nbsp; <strong>TOTALE:</strong> ______ reps
+    </div>
+
+    <div class="final">
+      <div class="label">Score finale (round + reps)</div>
+      <div class="value"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="sig">
+      <div class="row"><span>Giudice:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+    <div class="sig">
+      <div class="row"><span>Atleta:</span><span class="line"></span></div>
+      <div class="row"><span>Firma:</span><span class="line"></span></div>
+    </div>
+  </footer>
+</section>
+
+</body>
+</html>
