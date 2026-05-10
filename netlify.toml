@@ -45,3 +45,8 @@
   from = "/health"
   to = "/health.html"
   status = 200
+
+[[redirects]]
+  from = "/tusk"
+  to = "/invito.html"
+  status = 200
