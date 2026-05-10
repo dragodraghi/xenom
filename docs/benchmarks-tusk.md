@@ -44,8 +44,8 @@ Legenda colonne:
 | 6  | Ground Zero (cap 10')          | 2   | time         | lower  | —   |     |     |     |     |     |     |
 | 7  | Barbell Version (cap 7')       | 2   | reps         | higher | —   |     |     |     |     |     |     |
 | 8  | Engine Chaos (AMRAP 12')       | 2   | reps         | higher | —   |     |     |     |     |     |     |
-| 9  | Heavy Clean Ladder             | 2   | weight       | higher | —   |     |     |     |     |     |     |
-| 10 | The Finale (AMRAP 16')         | 2   | reps         | higher | —   |     |     |     |     |     |     |
+| 9  | Heavy Clean Ladder (AMRAP 8')  | 2   | reps         | higher | —   |     |     |     |     |     |     |
+| 10 | The Finale (AMRAP 12')         | 2   | rounds_reps  | higher | 26  |     |     |     |     |     |     |
 
 ## Note sui formati eventi
 
@@ -118,16 +118,32 @@ Legenda colonne:
 - T.B. dopo gli ergometri
 - Score = reps totali
 
-### Evento 9 — Heavy Clean Ladder
-- DA DEFINIRE col coach (in arrivo)
-- Ipotesi: carichi crescenti, ogni "scalino" 90s, 1 rep per scalino
-- Score = ultimo peso sollevato con successo
+### Evento 9 — Heavy Clean Ladder (AMRAP 8')
+- AMRAP 8' con ladder a carichi crescenti: **10 → 8 → 6 → 4 → 2 cleans** (ogni step a peso più pesante), poi **AMRAP cleans** al carico finale per il tempo restante
+- Any clean allowed (power / squat / split)
+- Score = **reps totali** (es. 10+8+6+4+2+7 = 37)
+- T.B. (solo in caso di parità) = ultimo step clean completato interamente
+- Carichi (kg) — step: 10 / 8 / 6 / 4 / 2 / AMRAP top:
+  - Ultimate M:     60 / 70 / 80 / 90 / 100 / 110
+  - Advanced M:     50 / 60 / 70 / 80 / 90 / 100
+  - Challenge M:    40 / 50 / 60 / 70 / 80 / 90
+  - Essential M:    20 / 30 / 40 / 50 / 60 / 70
+  - Performance F:  35 / 40 / 45 / 50 / 55 / 60
+  - Intermediate F: 20 / 25 / 30 / 35 / 40 / 45
 
-### Evento 10 — The Finale
-- DA DEFINIRE col coach (in arrivo)
-- Ipotesi precedente: AMRAP 16' HSPU + CTB + DB Lunges
+### Evento 10 — The Finale (AMRAP 12')
+- AMRAP 12 minuti, round = **6 HSPU + 8 C2B + 12 Front Rack Barbell Lunges** (26 reps/round)
+- Lunges standard: alternati, in place, totale affondi, bilanciere da terra, front rack obbligatorio, contatto ginocchio a terra, no split recovery
+- Score = reps totali (rounds × 26 + reps_extra)
 - Solo top 5/6 per categoria
-- Score = reps totali
+- T.B. (in caso di parità) = fine round completo
+- Per categoria:
+  - Ultimate M:     HSPU standard + C2B + 60 kg
+  - Advanced M:     HSPU standard + C2B + 50 kg
+  - Challenge M:    HSPU + 1 AbMat + C2B + 40 kg
+  - Essential M:    Push-up + Pull-up + 35 kg
+  - Performance F:  HSPU + 1 AbMat + C2B + 40 kg
+  - Intermediate F: Push-up + Pull-up + 25 kg
 
 ## Riferimenti benchmark CrossFit (per orientamento)
 

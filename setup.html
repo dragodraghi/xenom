@@ -237,26 +237,26 @@ const EVENTI = [
     numero: 9,
     nome: "Heavy Clean Ladder",
     nomeIT: "Scala di Girate Pesanti",
-    descrizione: "Ladder a pesi crescenti nel Clean. Score = peso massimo sollevato con successo.",
-    formato: "Ladder progressiva (90s per scalino)",
-    scoringType: "weight",
+    descrizione: "AMRAP 8'. Ladder: 10 → 8 → 6 → 4 → 2 cleans a carichi crescenti, poi AMRAP cleans al carico finale per il tempo restante. Any clean (power/squat/split). Carichi top M (Ult/Adv/Cha/Ess): 110/100/90/70 kg. Carichi top F (Perf/Int): 60/45 kg. Score = reps totali (es. 10+8+6+4+2+7 = 37). T.B. (solo in caso di parità) = ultimo step clean completato interamente.",
+    formato: "AMRAP 8' — ladder 10/8/6/4/2 + AMRAP top weight",
+    scoringType: "reps",
     scoringDirection: "higher",
     giorno: 2,
     repsPerRound: null,
-    benchmarks: { ultimate: 140, advanced: 110, challenge: 85, essential: 65, performance: 80, intermediate: 60 }
+    benchmarks: { ultimate: 40, advanced: 40, challenge: 40, essential: 40, performance: 40, intermediate: 40 }
   },
   {
     id: "10",
     numero: 10,
     nome: "The Finale",
     nomeIT: "La Finale",
-    descrizione: "AMRAP 16 min: HSPU + Chest-to-Bar Pull-up + DB Lunges. Solo top 5/6 per categoria.",
-    formato: "AMRAP 16 minuti",
-    scoringType: "reps",
+    descrizione: "AMRAP 12'. Round = 6 HSPU + 8 C2B Pull-up + 12 Front Rack Barbell Lunges (alternati, in place, bilanciere da terra, front rack obbligatorio, contatto ginocchio a terra, no split recovery) = 26 reps/round. Per categoria — Ult: HSPU std + C2B @60kg. Adv: HSPU std + C2B @50kg. Cha: HSPU+1 AbMat + C2B @40kg. Ess: Push-up + Pull-up @35kg. Perf F: HSPU+1 AbMat + C2B @40kg. Int F: Push-up + Pull-up @25kg. Solo top 5/6 per categoria. T.B. = fine round completo.",
+    formato: "AMRAP 12' — 6 HSPU + 8 C2B + 12 FR Lunges (26 reps/round)",
+    scoringType: "rounds_reps",
     scoringDirection: "higher",
     giorno: 2,
-    repsPerRound: null,
-    benchmarks: { ultimate: 200, advanced: 160, challenge: 120, essential: 90, performance: 160, intermediate: 120 }
+    repsPerRound: 26,
+    benchmarks: { ultimate: 156, advanced: 130, challenge: 104, essential: 78, performance: 130, intermediate: 104 }
   }
 ];
 
