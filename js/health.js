@@ -107,10 +107,16 @@ async function executeCheck(id) {
   }
 
   if (id === "eventi") {
-    const n = await countCollection(COL.eventi, 30);
-    return n >= 10
-      ? { status: "ok", message: `${n} eventi leggibili` }
-      : { status: "fail", message: `${n}/10 eventi leggibili` };
+    // Esclude i doc di config (es. _config_iscrizioni) — solo doc con numero 1-10 sono eventi reali
+    const snap = await getDocs(query(collection(db, COL.eventi), limit(30)));
+    const eventi = snap.docs.filter((d) => {
+      const data = d.data();
+      return Number.isFinite(data.numero) && data.numero >= 1 && data.numero <= 10;
+    });
+    const n = eventi.length;
+    return n === 10
+      ? { status: "ok", message: `${n} eventi leggibili (numero 1-10)` }
+      : { status: "fail", message: `${n}/10 eventi numerati (esclusi doc config). Atteso esattamente 10.` };
   }
 
   if (id === "live") {
