@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TUSK Protocol — Generatore anteprima social</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --orange: #ff3c00;
+      --gold: #d4a843;
+      --bg: #0a0a0a;
+      --text: #f5f5f5;
+      --muted: #b0b0b0;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 2rem 1rem 4rem;
+      min-height: 100vh;
+    }
+    .page-head {
+      max-width: 980px;
+      margin: 0 auto 2.5rem;
+      text-align: center;
+    }
+    .page-head h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      letter-spacing: 2px;
+      color: var(--orange);
+    }
+    .page-head p {
+      color: var(--muted);
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+    }
+    .grid {
+      display: grid;
+      gap: 2rem;
+      max-width: 1280px;
+      margin: 0 auto;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    }
+    .preset {
+      background: #222;
+      border-radius: 8px;
+      padding: 1.25rem;
+      border: 1px solid #333;
+    }
+    .preset header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1rem;
+    }
+    .preset h2 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .preset .size {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-family: ui-monospace, monospace;
+    }
+    .preset .hint {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .preset .actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .btn {
+      padding: 0.6rem 1.1rem;
+      background: var(--orange);
+      color: #000;
+      border: 0;
+      border-radius: 4px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Oswald', sans-serif;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+    .btn:hover { filter: brightness(1.1); }
+    .btn--ghost { background: transparent; color: var(--muted); border: 1px solid #444; }
+    .btn--ghost:hover { color: #fff; border-color: #888; }
+
+    /* === Card preview wrapper: scaled-down view of full-size card === */
+    .preview-wrap {
+      position: relative;
+      overflow: hidden;
+      border-radius: 4px;
+      background: #000;
+      width: 100%;
+    }
+    .preview-wrap[data-ratio="1:1"]   { aspect-ratio: 1 / 1; }
+    .preview-wrap[data-ratio="9:16"]  { aspect-ratio: 9 / 16; }
+    .preview-wrap[data-ratio="16:9"]  { aspect-ratio: 1200 / 630; }
+
+    .preview-wrap .card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: top left;
+    }
+
+    /* === CARD COMMON === */
+    .card {
+      background:
+        radial-gradient(circle at 14% 12%, rgba(255, 60, 0, 0.30), transparent 38%),
+        radial-gradient(circle at 88% 88%, rgba(212, 168, 67, 0.18), transparent 42%),
+        linear-gradient(180deg, #0a0a0a 0%, #050505 100%);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: linear-gradient(180deg, transparent, rgba(0,0,0,0.8) 60%, transparent);
+      -webkit-mask-image: linear-gradient(180deg, transparent, rgba(0,0,0,0.8) 60%, transparent);
+      pointer-events: none;
+    }
+    .card .brand {
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 0.4em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .card .brand span { color: var(--orange); }
+    .card .title {
+      font-family: 'Bebas Neue', sans-serif;
+      color: var(--text);
+      text-transform: uppercase;
+      line-height: 0.9;
+      letter-spacing: 1px;
+    }
+    .card .title b {
+      background: linear-gradient(90deg, var(--orange), var(--gold));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 900;
+    }
+    .card .slogan {
+      font-family: 'Oswald', sans-serif;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .card .meta {
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+    .card .pill {
+      display: inline-block;
+      padding: 0.4em 0.95em;
+      border: 1px solid rgba(212, 168, 67, 0.45);
+      border-radius: 99px;
+      color: var(--gold);
+      font-family: 'Oswald', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-size: 0.7em;
+    }
+    .card .cta {
+      background: var(--orange);
+      color: #000;
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border-radius: 6px;
+      padding: 0.45em 0.9em;
+    }
+    .card .qr {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 6px;
+      display: inline-block;
+      line-height: 0;
+    }
+    .card .qr svg { display: block; }
+
+    /* === SQUARE 1080×1080 === */
+    .card.square {
+      width: 1080px;
+      height: 1080px;
+      padding: 78px 80px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    .card.square .brand { font-size: 28px; }
+    .card.square .title {
+      font-size: 200px;
+      margin: 28px 0 12px;
+    }
+    .card.square .slogan { font-size: 30px; margin-top: 18px; }
+    .card.square .meta-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 36px;
+    }
+    .card.square .pill { font-size: 18px; }
+    .card.square .footer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: end;
+      margin-top: auto;
+    }
+    .card.square .info { font-size: 24px; line-height: 1.45; }
+    .card.square .info strong { color: var(--text); display: block; font-size: 32px; margin-bottom: 8px; font-family: 'Oswald', sans-serif; letter-spacing: 0.05em; }
+    .card.square .cta { font-size: 36px; margin-top: 18px; }
+    .card.square .qr { padding: 12px; }
+    .card.square .qr svg { width: 180px; height: 180px; }
+
+    /* === STORY 1080×1920 === */
+    .card.story {
+      width: 1080px;
+      height: 1920px;
+      padding: 110px 90px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    .card.story .brand { font-size: 32px; text-align: center; }
+    .card.story .title {
+      font-size: 280px;
+      text-align: center;
+      margin: 60px 0 20px;
+    }
+    .card.story .slogan { font-size: 44px; text-align: center; margin-top: 30px; }
+    .card.story .center-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 36px;
+      margin: auto 0;
+    }
+    .card.story .pills {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .card.story .pill { font-size: 22px; }
+    .card.story .info {
+      font-family: 'Oswald', sans-serif;
+      font-size: 36px;
+      line-height: 1.5;
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+    .card.story .info strong { color: var(--gold); display: block; font-size: 56px; margin-bottom: 10px; }
+    .card.story .footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      margin-top: auto;
+      text-align: center;
+    }
+    .card.story .cta { font-size: 50px; padding: 0.5em 1.2em; }
+    .card.story .qr svg { width: 220px; height: 220px; }
+    .card.story .url { font-family: ui-monospace, 'Courier New', monospace; color: var(--muted); font-size: 24px; }
+
+    /* === LANDSCAPE 1200×630 === */
+    .card.landscape {
+      width: 1200px;
+      height: 630px;
+      padding: 60px 70px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 50px;
+      align-items: center;
+    }
+    .card.landscape .left { display: grid; gap: 14px; }
+    .card.landscape .brand { font-size: 22px; }
+    .card.landscape .title { font-size: 130px; line-height: 0.95; }
+    .card.landscape .slogan { font-size: 22px; }
+    .card.landscape .meta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .card.landscape .pill { font-size: 14px; }
+    .card.landscape .info {
+      font-family: 'Oswald', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.05em;
+      margin-top: 14px;
+    }
+    .card.landscape .info strong { color: var(--gold); }
+    .card.landscape .right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+    .card.landscape .cta { font-size: 28px; }
+    .card.landscape .qr svg { width: 200px; height: 200px; }
+    .card.landscape .url { font-family: ui-monospace, 'Courier New', monospace; font-size: 14px; color: var(--muted); }
+
+    .toolbar {
+      max-width: 1280px;
+      margin: 0 auto 2rem;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .toolbar input {
+      padding: 0.55rem 0.8rem;
+      border: 1px solid #444;
+      border-radius: 4px;
+      background: #0a0a0a;
+      color: #fff;
+      font-family: ui-monospace, monospace;
+      font-size: 0.85rem;
+      min-width: 280px;
+    }
+    .toolbar label { display: flex; gap: 0.5rem; align-items: center; color: var(--muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+  <div class="page-head">
+    <h1>🐗 TUSK Protocol — Generatore Anteprima Social</h1>
+    <p>Tre formati pronti per Instagram e WhatsApp. Click "Scarica PNG", incolla nel post.</p>
+  </div>
+
+  <div class="toolbar">
+    <label>
+      Link iscrizione (per QR + URL):
+      <input id="link-url" type="url" value="https://benevolent-narwhal-1c8444.netlify.app/iscriviti.html">
+    </label>
+    <button class="btn btn--ghost" onclick="rigeneraQr()">Aggiorna QR</button>
+    <button class="btn" onclick="scaricaTutti()">⬇️ Scarica tutti e 3</button>
+  </div>
+
+  <div class="grid">
+
+    <!-- =================== SQUARE =================== -->
+    <section class="preset">
+      <header>
+        <h2>Square — feed IG, chat WhatsApp</h2>
+        <span class="size">1080×1080</span>
+      </header>
+      <p class="hint">Per post Instagram nel feed e condivisioni in chat WhatsApp/Telegram.</p>
+
+      <div class="preview-wrap" data-ratio="1:1">
+        <div class="card square" id="card-square">
+          <div>
+            <div class="brand">TUSK <span>PROTOCOL</span> · BAD BOARS EDITION</div>
+          </div>
+          <div>
+            <div class="title">29<br><b>30</b><br>MAG</div>
+            <div class="slogan">10 Events · 2 Days · Zero Excuses</div>
+            <div class="meta-row">
+              <span class="pill">Ultimate M</span>
+              <span class="pill">Advanced M</span>
+              <span class="pill">Challenge M</span>
+              <span class="pill">Essential M</span>
+              <span class="pill">Performance F</span>
+              <span class="pill">Intermediate F</span>
+            </div>
+          </div>
+          <div class="footer">
+            <div class="info">
+              <strong>BAD BOARS CROSSFIT — SASSARI</strong>
+              Quota 10€ in contanti al box · Iscrizioni online aperte<br>
+              <span class="cta">ISCRIVITI →</span>
+            </div>
+            <div class="qr" data-qr="qr-square"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" onclick="scarica('card-square', 'tusk-square-1080.png')">⬇️ Scarica PNG</button>
+      </div>
+    </section>
+
+    <!-- =================== STORY =================== -->
+    <section class="preset">
+      <header>
+        <h2>Story — IG story, WhatsApp status</h2>
+        <span class="size">1080×1920</span>
+      </header>
+      <p class="hint">Verticale 9:16 per Instagram story e stato WhatsApp.</p>
+
+      <div class="preview-wrap" data-ratio="9:16">
+        <div class="card story" id="card-story">
+          <div>
+            <div class="brand">TUSK <span>PROTOCOL</span></div>
+          </div>
+          <div class="center-block">
+            <div class="title"><b>29-30</b><br>MAG<br>2026</div>
+            <div class="slogan">10 Events · 2 Days · 6 Categorie</div>
+            <div class="pills">
+              <span class="pill">Uomini ×4</span>
+              <span class="pill">Donne ×2</span>
+              <span class="pill">10€ al box</span>
+            </div>
+            <div class="info">
+              <strong>BAD BOARS CROSSFIT</strong>
+              Sassari — Predda Niedda Sud<br>
+              Iscrizioni online aperte
+            </div>
+          </div>
+          <div class="footer">
+            <span class="cta">ISCRIVITI ORA</span>
+            <div class="qr" data-qr="qr-story"></div>
+            <span class="url">benevolent-narwhal-1c8444.netlify.app/iscriviti</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" onclick="scarica('card-story', 'tusk-story-1080x1920.png')">⬇️ Scarica PNG</button>
+      </div>
+    </section>
+
+    <!-- =================== LANDSCAPE =================== -->
+    <section class="preset">
+      <header>
+        <h2>Landscape — anteprima link OG</h2>
+        <span class="size">1200×630</span>
+      </header>
+      <p class="hint">Anteprima quando incolli il link su WhatsApp/Telegram/Twitter (genera anche se sostituisci og:image del sito).</p>
+
+      <div class="preview-wrap" data-ratio="16:9">
+        <div class="card landscape" id="card-landscape">
+          <div class="left">
+            <div class="brand">TUSK <span>PROTOCOL</span> · BAD BOARS</div>
+            <div class="title">29-30 MAG <b>2026</b></div>
+            <div class="slogan">10 Events · 2 Days · Zero Excuses</div>
+            <div class="meta-row">
+              <span class="pill">6 Categorie</span>
+              <span class="pill">10€ al box</span>
+              <span class="pill">Sassari</span>
+            </div>
+            <div class="info">
+              <strong>Bad Boars CrossFit</strong> — Iscrizioni aperte online · Classifica EPI live realtime
+            </div>
+          </div>
+          <div class="right">
+            <span class="cta">ISCRIVITI</span>
+            <div class="qr" data-qr="qr-landscape"></div>
+            <span class="url">benevolent-narwhal-1c8444.netlify.app</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" onclick="scarica('card-landscape', 'tusk-og-1200x630.png')">⬇️ Scarica PNG (per og:image)</button>
+      </div>
+      <p class="hint" style="margin-top:0.75rem;">
+        Salva in <code style="background:#0a0a0a;padding:2px 6px;border-radius:3px;">assets/social/tusk-og-1200x630.png</code> — è il path già cablato nei meta-tag OG delle pagine.
+      </p>
+    </section>
+
+  </div>
+
+  <script>
+    // ---- Adatta scale-down delle preview alla larghezza disponibile ----
+    function adattaPreview() {
+      document.querySelectorAll('.preview-wrap').forEach((wrap) => {
+        const card = wrap.querySelector('.card');
+        if (!card) return;
+        const realW = card.offsetWidth;  // 1080 o 1200
+        const wrapW = wrap.clientWidth;
+        const scale = wrapW / realW;
+        card.style.transform = `scale(${scale})`;
+        const realH = card.offsetHeight;
+        wrap.style.height = (realH * scale) + 'px';
+      });
+    }
+    window.addEventListener('resize', adattaPreview);
+    document.fonts.ready.then(adattaPreview).catch(adattaPreview);
+    setTimeout(adattaPreview, 100);
+    setTimeout(adattaPreview, 600);
+
+    // ---- QR code ----
+    function rigeneraQr() {
+      const url = document.getElementById('link-url').value.trim() ||
+                  'https://benevolent-narwhal-1c8444.netlify.app/iscriviti.html';
+      const qr = qrcode(0, 'M');
+      qr.addData(url);
+      qr.make();
+      const tag = qr.createSvgTag({ scalable: true, margin: 0 });
+      document.querySelectorAll('[data-qr]').forEach((el) => { el.innerHTML = tag; });
+      adattaPreview();
+    }
+    rigeneraQr();
+
+    // ---- Download singolo ----
+    async function scarica(elementId, filename) {
+      const el = document.getElementById(elementId);
+      // Salva il transform corrente, ripristina dimensioni reali per render full-res
+      const wrap = el.parentElement;
+      const oldTransform = el.style.transform;
+      const oldWrapH = wrap.style.height;
+      el.style.transform = 'none';
+      wrap.style.height = 'auto';
+      wrap.style.overflow = 'visible';
+
+      try {
+        const canvas = await html2canvas(el, {
+          backgroundColor: null,
+          scale: 1,
+          logging: false,
+          useCORS: true,
+          width: el.offsetWidth,
+          height: el.offsetHeight
+        });
+        const a = document.createElement('a');
+        a.download = filename;
+        a.href = canvas.toDataURL('image/png');
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } catch (err) {
+        alert('Errore generazione immagine: ' + err.message);
+        console.error(err);
+      } finally {
+        el.style.transform = oldTransform;
+        wrap.style.height = oldWrapH;
+        wrap.style.overflow = 'hidden';
+        adattaPreview();
+      }
+    }
+
+    async function scaricaTutti() {
+      await scarica('card-square', 'tusk-square-1080.png');
+      await new Promise((r) => setTimeout(r, 400));
+      await scarica('card-story', 'tusk-story-1080x1920.png');
+      await new Promise((r) => setTimeout(r, 400));
+      await scarica('card-landscape', 'tusk-og-1200x630.png');
+    }
+  </script>
+</body>
+</html>
