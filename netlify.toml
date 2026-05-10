@@ -40,3 +40,8 @@
   from = "/podio"
   to = "/podio.html"
   status = 200
+
+[[redirects]]
+  from = "/health"
+  to = "/health.html"
+  status = 200

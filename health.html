@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Health Check - TUSK Protocol</title>
+  <link rel="stylesheet" href="css/health.css">
+</head>
+<body>
+  <main class="health-shell">
+    <header class="health-header">
+      <div>
+        <p class="eyebrow">TUSK Protocol</p>
+        <h1>Control Check</h1>
+      </div>
+      <div class="health-actions">
+        <button type="button" id="btn-run" class="health-btn health-btn--primary">Riesegui</button>
+        <button type="button" id="btn-copy" class="health-btn">Copia report</button>
+        <a href="giudici.html" class="health-btn">Admin</a>
+        <a href="live.html" class="health-btn">Live</a>
+      </div>
+    </header>
+
+    <section class="status-strip" aria-live="polite">
+      <div>
+        <span class="status-label">Stato</span>
+        <strong id="health-summary">Pronto al controllo</strong>
+      </div>
+      <div>
+        <span class="status-label">Ultimo check</span>
+        <strong id="health-time">-</strong>
+      </div>
+      <div>
+        <span class="status-label">Progetto</span>
+        <strong>schedinone-2026</strong>
+      </div>
+    </section>
+
+    <section class="check-grid" id="check-grid"></section>
+
+    <section class="health-log">
+      <div class="health-log__head">
+        <h2>Report</h2>
+        <span id="health-latency">-</span>
+      </div>
+      <pre id="health-report">Premi Riesegui per verificare connessione, Firestore, dati pubblici e sessione admin.</pre>
+    </section>
+  </main>
+
+  <script type="module" src="js/health.js"></script>
+</body>
+</html>

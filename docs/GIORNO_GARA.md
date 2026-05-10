@@ -14,6 +14,7 @@
 | Classifica live | `/live.html` | Pubblico |
 | Area giudici | `/giudici.html` | Riservata (login) |
 | Setup iniziale | `/setup.html` | Riservata (login) |
+| Health-check | `/health.html` | Operativa |
 
 ## Credenziali admin
 
@@ -42,9 +43,10 @@
 1. Tab **Atleti** → **+ Aggiungi atleta** → compila → Salva
 
 ### 4. Test classifica live
-1. Apri `live.html` su un secondo browser/dispositivo
-2. Inserisci un risultato di prova in admin
-3. Verifica che la classifica si aggiorni automaticamente
+1. Apri `health.html` e verifica che non ci siano errori rossi
+2. Apri `live.html` su un secondo browser/dispositivo
+3. Inserisci un risultato di prova in admin
+4. Verifica che la classifica si aggiorni automaticamente
 
 ### 5. Stampa cose utili
 - Lista atleti per categoria (Tab Strumenti → Esporta atleti CSV → stampa)
@@ -68,6 +70,7 @@
    - Eventi `weight`: 1 campo kg
    - Eventi `reps` / `calories`: 1 campo numerico
    - Eventi `time`: 2 campi minuti+secondi
+   - Eventi `time` con cap: se l'atleta non chiude entro cap, spunta **DNF** e inserisci reps/work unit completate al cap. Non inserire un tempo oltre cap.
    - Eventi `rounds_reps`: 2 campi round + reps extra
 5. **Anteprima EPI** appare in tempo reale (riquadro dorato)
 6. Click **"Salva risultato"**

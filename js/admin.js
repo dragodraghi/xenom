@@ -442,6 +442,10 @@ function renderIscrizioni(snap) {
     const card = document.createElement("div");
     card.className = "admin-card";
     const noteHtml = data.note ? `<br><em style="color: var(--text-muted);">${escapeHtml(data.note)}</em>` : "";
+    const duplicati = trovaDuplicatiAtleta(data);
+    const duplicatiHtml = duplicati.length
+      ? `<br><strong style="color: var(--danger);">Possibile duplicato:</strong> ${escapeHtml(duplicati.slice(0, 2).map((dup) => dup.atleta.nome).join(", "))}`
+      : "";
     card.innerHTML = `
       <div class="admin-card__info">
         <div class="admin-card__title">${escapeHtml(data.nome)}</div>
@@ -450,6 +454,7 @@ function renderIscrizioni(snap) {
           ${escapeHtml(data.box)} ·
           <span style="opacity: 0.85;">${escapeHtml(data.contatto)}</span>
           ${noteHtml}
+          ${duplicatiHtml}
         </div>
       </div>
       <div class="admin-card__actions">
@@ -475,26 +480,47 @@ async function approvaIscrizione(idPending, dati) {
     const ricap = cap > 0 ? ` (${approvati + 1}/${cap} dopo l'approvazione)` : "";
     confirmMsg = `Approvare l'iscrizione di ${dati.nome}?\n\nCategoria: ${catLabel}${ricap}\nBox: ${dati.box}`;
   }
+  const duplicati = trovaDuplicatiAtleta(dati);
+  if (duplicati.length) {
+    confirmMsg += `\n\nPossibile duplicato nella stessa categoria:\n${descriviDuplicati(duplicati)}`;
+  }
   if (!confirm(confirmMsg)) return;
   try {
     const atletaId = crypto.randomUUID();
-    const atleta = {
-      nome: dati.nome,
-      categoriaId: dati.categoriaId,
-      box: dati.box,
-      contatto: dati.contatto || "",
-      presente: true,
-      createdAt: serverTimestamp()
-    };
-    const batch = writeBatch(db);
-    batch.set(doc(db, COL.atleti, atletaId), atleta);
-    batch.set(doc(db, COL.atletiPubblici, atletaId), datiAtletaPubblici(atleta));
-    batch.delete(doc(db, COL.iscrizioni, idPending));
-    await batch.commit();
-    showToast(`✅ ${dati.nome} approvato`);
+    const pendingRef = doc(db, COL.iscrizioni, idPending);
+    let atletaNome = dati.nome;
+
+    await runTransaction(db, async (transaction) => {
+      const pendingSnap = await transaction.get(pendingRef);
+      if (!pendingSnap.exists()) {
+        const err = new Error("Iscrizione gia gestita da un altro admin.");
+        err.code = "tusk/pending-already-handled";
+        throw err;
+      }
+
+      const pending = pendingSnap.data();
+      const atleta = {
+        nome: pending.nome,
+        categoriaId: pending.categoriaId,
+        box: pending.box,
+        contatto: pending.contatto || "",
+        presente: true,
+        createdAt: serverTimestamp()
+      };
+      atletaNome = atleta.nome;
+
+      transaction.set(doc(db, COL.atleti, atletaId), atleta);
+      transaction.set(doc(db, COL.atletiPubblici, atletaId), datiAtletaPubblici(atleta));
+      transaction.delete(pendingRef);
+    });
+    showToast(`✅ ${atletaNome} approvato`);
   } catch (err) {
     console.error(err);
-    alert(`Errore approvazione: ${err.code || err.message}`);
+    if (err.code === "tusk/pending-already-handled") {
+      showToast("Iscrizione gia gestita da un altro admin", "err");
+    } else {
+      alert(`Errore approvazione: ${err.code || err.message}`);
+    }
   }
 }
 
@@ -524,6 +550,63 @@ function datiRisultatoPubblico(r) {
     categoriaId: String(r.categoriaId || "").trim(),
     puntiEpi: Number(r.puntiEpi || 0)
   };
+}
+
+function normalizzaChiaveDuplicati(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function tokenNome(value) {
+  return normalizzaChiaveDuplicati(value)
+    .split(" ")
+    .filter((x) => x.length > 1);
+}
+
+function stessoNomeProbabile(a, b) {
+  const na = tokenNome(a);
+  const nb = tokenNome(b);
+  if (na.length === 0 || nb.length === 0) return false;
+  const sa = [...na].sort().join(" ");
+  const sb = [...nb].sort().join(" ");
+  if (sa === sb) return true;
+  const setB = new Set(nb);
+  const comuni = na.filter((x) => setB.has(x)).length;
+  return Math.min(na.length, nb.length) >= 2 && comuni >= 2;
+}
+
+function trovaDuplicatiAtleta(atleta, ignoreId = "") {
+  const contatto = normalizzaChiaveDuplicati(atleta.contatto || "");
+  return atletiCache
+    .filter((a) => a.id !== ignoreId && a.categoriaId === atleta.categoriaId)
+    .map((a) => {
+      const stessoNome = stessoNomeProbabile(a.nome, atleta.nome);
+      const stessoContatto = contatto && contatto === normalizzaChiaveDuplicati(a.contatto || "");
+      if (!stessoNome && !stessoContatto) return null;
+      return {
+        atleta: a,
+        motivo: stessoNome && stessoContatto ? "nome e contatto simili" : stessoNome ? "nome simile" : "stesso contatto"
+      };
+    })
+    .filter(Boolean);
+}
+
+function descriviDuplicati(duplicati) {
+  return duplicati
+    .slice(0, 5)
+    .map((d) => `- ${d.atleta.nome} (${NOMI_CATEGORIE[d.atleta.categoriaId] || d.atleta.categoriaId}, ${d.atleta.box || "box n.d."}) - ${d.motivo}`)
+    .join("\n");
+}
+
+function confermaDuplicatiAtleta(atleta, ignoreId = "") {
+  const duplicati = trovaDuplicatiAtleta(atleta, ignoreId);
+  if (duplicati.length === 0) return true;
+  return confirm(`Possibile atleta duplicato nella stessa categoria:\n\n${descriviDuplicati(duplicati)}\n\nVuoi continuare comunque?`);
 }
 
 function atletaPubblicoUguale(esistente, prossimo) {
@@ -809,6 +892,7 @@ formAtleta.addEventListener("submit", async (e) => {
 
   try {
     const atleta = { nome, categoriaId, box, contatto };
+    if (!confermaDuplicatiAtleta(atleta, id)) return;
     const batch = writeBatch(db);
     if (id) {
       const atletaEsistente = atletiCache.find((a) => a.id === id);
@@ -886,30 +970,14 @@ function eventoSupportaDnf(evento, categoriaId) {
     && capRepsPerCategoria(evento, categoriaId) > 0;
 }
 
-function isDnfMode() {
-  return document.querySelector('input[name="ris-score-mode"][value="dnf"]')?.checked === true;
-}
-
-function syncDnfFields() {
-  const dnf = isDnfMode();
-  const timeFields = document.getElementById("ris-time-fields");
-  const dnfFields = document.getElementById("ris-dnf-fields");
-  if (timeFields) timeFields.hidden = dnf;
-  if (dnfFields) dnfFields.hidden = !dnf;
-}
-
-function calcolaPuntiDaPerformance(performance, evento, categoriaId) {
-  if (!performance) return 0;
-  if (performance.isDnf) {
-    return calcolaEpiDnf(performance.valoreSecondario, evento, categoriaId);
-  }
-  return calcolaEpi(performance.valore, evento, categoriaId);
+function isDnfRisultato(r) {
+  return r?.dnf === true || r?.isDnf === true;
 }
 
 function calcolaPuntiDaRisultato(r, evento) {
   if (!r || !evento) return 0;
-  if (r.isDnf) {
-    return calcolaEpiDnf(r.valoreSecondario, evento, r.categoriaId);
+  if (isDnfRisultato(r)) {
+    return calcolaEpiDnf(r.valore, evento, r.categoriaId);
   }
   return calcolaEpi(r.valore, evento, r.categoriaId);
 }
@@ -1069,7 +1137,8 @@ async function aggiornaFormDinamico() {
         <input type="number" id="ris-input-num" min="0" step="1" placeholder="Es. 32" data-input inputmode="numeric">
       </div>`;
   } else if (t === "time") {
-    const supportsDnf = !!(evento.capRepsBenchmark && evento.capSecondi);
+    const supportsDnf = eventoSupportaDnf(evento, atleta.categoriaId);
+    const repsBm = capRepsPerCategoria(evento, atleta.categoriaId);
     html = `
       <div class="form__field">
         <label>3. Tempo di completamento</label>
@@ -1086,8 +1155,8 @@ async function aggiornaFormDinamico() {
           <span>DNF — non finito entro il cap (${secondiATempo(evento.capSecondi)}). Scoring per reps completate.</span>
         </label>
         <div id="ris-dnf-reps-row" hidden style="margin-top: 0.6rem;">
-          <label for="ris-input-dnfreps">Reps completate al cap (benchmark categoria: ${evento.capRepsBenchmark[atletaCorrente?.categoriaId] ?? "—"})</label>
-          <input type="number" id="ris-input-dnfreps" min="0" step="1" placeholder="Es. 50" data-input inputmode="numeric">
+          <label for="ris-input-dnfreps">Reps/work unit completate al cap (lavoro completo: ${repsBm})</label>
+          <input type="number" id="ris-input-dnfreps" min="0" max="${repsBm}" step="1" placeholder="Es. ${Math.max(1, Math.floor(repsBm * 0.6))}" data-input inputmode="numeric">
         </div>
       </div>`;
     }
@@ -1139,6 +1208,33 @@ async function aggiornaFormDinamico() {
 
 function aggiornaAnteprima() {
   if (!atletaCorrente || !eventoCorrente) return;
+
+  // Pre-check: tempo inserito oltre il cap → mostra warning chiaro invece di rifiuto silenzioso
+  const dnfCheck = document.getElementById("ris-dnf-check");
+  const isDnfActive = !!(dnfCheck && dnfCheck.checked);
+  if (eventoCorrente.scoringType === "time"
+      && !isDnfActive
+      && eventoSupportaDnf(eventoCorrente, atletaCorrente.categoriaId)) {
+    const m = interoNonNegativo("ris-input-min", 0);
+    const s = interoNonNegativo("ris-input-sec", 0);
+    const cap = Number(eventoCorrente.capSecondi || 0);
+    if (m !== null && s !== null && s <= 59 && cap > 0) {
+      const sec = tempoASecondi(m, s);
+      if (sec > cap) {
+        risAnteprimaValore.textContent = "—";
+        risAnteprimaHint.textContent = "";
+        risAnteprima.classList.remove("is-anomalous");
+        if (risAnteprimaAlert) {
+          risAnteprimaAlert.textContent = `⚠️ Tempo ${secondiATempo(sec)} oltre il cap (${secondiATempo(cap)}). Attiva la checkbox DNF qui sotto e inserisci le reps completate al cap, oppure correggi il tempo.`;
+          risAnteprimaAlert.hidden = false;
+        }
+        risAnteprima.hidden = false;
+        risBtnSalva.disabled = true;
+        return;
+      }
+    }
+  }
+
   const valore = leggiPerformance();
   if (valore === null || valore <= 0) {
     risAnteprima.hidden = true;
@@ -1146,7 +1242,7 @@ function aggiornaAnteprima() {
     return;
   }
   const dnfCheckPreview = document.getElementById("ris-dnf-check");
-  const isDnfPreview = !!(dnfCheckPreview && dnfCheckPreview.checked);
+  const isDnfPreview = !!(dnfCheckPreview && dnfCheckPreview.checked && eventoSupportaDnf(eventoCorrente, atletaCorrente.categoriaId));
   const punti = isDnfPreview
     ? calcolaEpiDnf(valore, eventoCorrente, atletaCorrente.categoriaId)
     : calcolaEpi(valore, eventoCorrente, atletaCorrente.categoriaId);
@@ -1216,13 +1312,18 @@ function leggiPerformance() {
     const dnfCheck = document.getElementById("ris-dnf-check");
     if (dnfCheck && dnfCheck.checked) {
       const reps = interoNonNegativo("ris-input-dnfreps");
-      return reps !== null && reps > 0 ? reps : null;
+      const repsBm = capRepsPerCategoria(eventoCorrente, atletaCorrente?.categoriaId);
+      if (reps === null || reps <= 0) return null;
+      if (repsBm > 0 && reps > repsBm) return null;
+      return reps;
     }
     if (!valoreInput("ris-input-min") && !valoreInput("ris-input-sec")) return null;
     const m = interoNonNegativo("ris-input-min", 0);
     const s = interoNonNegativo("ris-input-sec", 0);
     if (m === null || s === null || s > 59) return null;
     const sec = tempoASecondi(m, s);
+    if (eventoSupportaDnf(eventoCorrente, atletaCorrente?.categoriaId)
+      && sec > Number(eventoCorrente.capSecondi || 0)) return null;
     return sec > 0 ? sec : null;
   }
   if (t === "rounds_reps") {
@@ -1243,7 +1344,12 @@ function formatValoreEsistente(r, evento) {
   if (t === "reps") return `${r.valore} reps`;
   if (t === "calories") return `${r.valore} cal`;
   if (t === "time") {
-    if (r.dnf) return `DNF · ${r.valore} reps al cap`;
+    if (isDnfRisultato(r)) {
+      const repsBm = capRepsPerCategoria(evento, r.categoriaId);
+      const repsInfo = repsBm > 0 ? `${r.valore}/${repsBm}` : String(r.valore);
+      const capInfo = evento.capSecondi ? ` ${secondiATempo(evento.capSecondi)}` : "";
+      return `DNF · ${repsInfo} reps al cap${capInfo}`;
+    }
     return secondiATempo(r.valore);
   }
   if (t === "rounds_reps") {
@@ -1282,7 +1388,7 @@ function firmaRisultato(r) {
   return JSON.stringify({
     valore: r?.valore ?? null,
     valoreSecondario: r?.valoreSecondario ?? null,
-    dnf: r?.dnf ?? false,
+    dnf: isDnfRisultato(r),
     puntiEpi: r?.puntiEpi ?? null,
     aggiornatoDa: r?.aggiornatoDa || r?.inseritoDa || "",
     aggiornatoIl: timestampKey(r?.aggiornatoIl || r?.inseritoIl)
@@ -1308,7 +1414,7 @@ risBtnSalva.addEventListener("click", async () => {
     : null;
 
   const dnfCheckSave = document.getElementById("ris-dnf-check");
-  const isDnf = !!(dnfCheckSave && dnfCheckSave.checked);
+  const isDnf = !!(dnfCheckSave && dnfCheckSave.checked && eventoSupportaDnf(eventoCorrente, atletaCorrente.categoriaId));
   const puntiEpi = isDnf
     ? calcolaEpiDnf(valore, eventoCorrente, atletaCorrente.categoriaId)
     : calcolaEpi(valore, eventoCorrente, atletaCorrente.categoriaId);
@@ -1371,6 +1477,7 @@ risBtnSalva.addEventListener("click", async () => {
         payload.precedente = {
           valore: previous.valore ?? null,
           valoreSecondario: previous.valoreSecondario ?? null,
+          dnf: isDnfRisultato(previous),
           puntiEpi: previous.puntiEpi ?? null,
           giudice: previous.aggiornatoDa || previous.inseritoDa || "",
           salvatoIl: previous.aggiornatoIl || previous.inseritoIl || null
@@ -1747,9 +1854,7 @@ function initTabStrumenti() {
             mancantiBenchmark++;
             return;
           }
-          const nuovi = r.dnf
-            ? calcolaEpiDnf(r.valore, evento, r.categoriaId)
-            : calcolaEpi(r.valore, evento, r.categoriaId);
+          const nuovi = calcolaPuntiDaRisultato(r, evento);
           if (Math.abs(nuovi - (r.puntiEpi || 0)) > 0.05) {
             batch.update(doc(db, COL.risultati, d.id), { puntiEpi: nuovi });
             batch.set(doc(db, COL.risultatiPubblici, d.id), datiRisultatoPubblico({ ...r, puntiEpi: nuovi }));
@@ -1941,6 +2046,7 @@ function initTabStrumenti() {
           "Contatto",
           "Presenza",
           "Valore",
+          "DNF",
           "Valore raw",
           "Valore secondario",
           "Punti EPI",
@@ -1964,6 +2070,7 @@ function initTabStrumenti() {
             atleta?.contatto || "",
             atleta ? (atleta.presente === false ? "Assente" : "Presente") : "Atleta eliminato",
             formatValoreRisultato(r, evento),
+            isDnfRisultato(r) ? "SI" : "",
             r.valore ?? "",
             r.valoreSecondario ?? "",
             Number(r.puntiEpi || 0).toFixed(1),

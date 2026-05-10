@@ -43,6 +43,9 @@ Salvalo come icona sul telefono il giorno prima.
 **Punteggio anomalo** (banner rosso, oltre 1.8× benchmark)
 → Probabilmente hai inserito un valore sbagliato (es. 1000kg invece di 100kg). Il sistema chiede conferma. Verifica e correggi.
 
+**DNF su eventi a tempo con cap**
+→ Spunta **DNF** e inserisci reps/work unit completate al cap. Non inserire un tempo oltre cap: falserebbe la classifica.
+
 **Atleta non trovato nella search**
 → Non è stato approvato/iscritto. Chiama l'organizzatore: probabilmente serve aggiunta manuale.
 
