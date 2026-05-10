@@ -2,12 +2,33 @@
 // Tutte le funzioni sono pure: stesso input -> stesso output, no side effects.
 // Testate in tests/epi-formulas.test.mjs
 
+// Parametri della curva di potenza EPI (stile decathlon IAAF).
+// Per ogni scoringType, definiscono:
+//  - thresholdRatio (higher): la "soglia zero" come frazione del benchmark.
+//    Sotto questa soglia il punteggio è 0 (es. weight: serve almeno 20% del bm per avere punti).
+//  - ceilingRatio (lower=time): il "tetto temporale" come multiplo del benchmark.
+//    Oltre questo tempo il punteggio è 0 (es. time: a 2.5x il bm = 0 punti).
+//  - exponent (C): esponente della curva. C < 1 produce saturazione realistica:
+//    record straordinari (≥ 2x elite) saturano a ~1300-1500 pt invece di esplodere.
+//
+// Calibrato per: benchmark esatto = 1000 pt, oltre elite cresce sub-linearmente,
+// sotto elite scende in modo gentile (no zeri a 50% benchmark).
+const EPI_CURVE_PARAMS = {
+  weight:      { thresholdRatio: 0.20, exponent: 0.55 },
+  reps:        { thresholdRatio: 0.00, exponent: 0.65 },
+  calories:    { thresholdRatio: 0.10, exponent: 0.60 },
+  rounds_reps: { thresholdRatio: 0.00, exponent: 0.65 },
+  time:        { ceilingRatio:   2.50, exponent: 0.55 }
+};
+
 /**
- * Calcola i punti EPI per una performance.
+ * Calcola i punti EPI per una performance usando una curva di potenza decathlon-style.
+ * Formula: punti = A * (perf - B)^C  (higher) oppure A * (B - time)^C  (lower)
+ * con A calibrato in modo che bm = 1000 pt esatti.
  * @param {number} performance - Valore numerico (kg, secondi, reps, calorie)
- * @param {Object} evento - Documento evento Firestore con scoringDirection e benchmarks
+ * @param {Object} evento - Documento evento Firestore con scoringType, scoringDirection, benchmarks
  * @param {string} categoriaId - ID categoria atleta (es. "ultimate", "performance")
- * @returns {number} Punti EPI con 1 decimale, 0 se input invalido
+ * @returns {number} Punti EPI con 1 decimale, 0 se input invalido o sotto/sopra la soglia
  */
 export function calcolaEpi(performance, evento, categoriaId) {
   if (!evento || !evento.benchmarks) return 0;
@@ -16,11 +37,26 @@ export function calcolaEpi(performance, evento, categoriaId) {
   if (!performance || performance <= 0) return 0;
   if (!["higher", "lower"].includes(evento.scoringDirection)) return 0;
 
-  const ratio = evento.scoringDirection === "higher"
-    ? performance / benchmark
-    : benchmark / performance;
+  const params = EPI_CURVE_PARAMS[evento.scoringType] || EPI_CURVE_PARAMS.reps;
+  const C = params.exponent;
 
-  return Math.round(ratio * 1000 * 10) / 10;
+  let gain, normalizer;
+  if (evento.scoringDirection === "higher") {
+    const B = benchmark * (params.thresholdRatio || 0);
+    if (performance <= B) return 0;
+    gain = performance - B;
+    normalizer = benchmark - B;
+  } else {
+    // time / lower-is-better: B = tetto temporale; oltre B = 0 punti (DNF di fatto)
+    const B = benchmark * (params.ceilingRatio || 2.5);
+    if (performance >= B) return 0;
+    gain = B - performance;
+    normalizer = B - benchmark;
+  }
+
+  if (normalizer <= 0) return 0;
+  const punti = 1000 * Math.pow(gain / normalizer, C);
+  return Math.round(punti * 10) / 10;
 }
 
 /**
