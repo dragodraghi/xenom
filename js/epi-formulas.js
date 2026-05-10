@@ -60,6 +60,42 @@ export function calcolaEpi(performance, evento, categoriaId) {
 }
 
 /**
+ * Calcola i punti EPI per un atleta DNF (Did Not Finish) su un evento di tipo "time" con cap.
+ * Convenzione CrossFit: i DNF si scorano per reps completate al cap, e devono sempre
+ * classificarsi sotto i finisher. Implementazione: il punteggio massimo possibile per un DNF
+ * è quello che otterrebbe un atleta che completa esattamente al tempo di cap; le reps
+ * completate scalano questo massimo con la curva reps.
+ *
+ * Richiede sull'evento i campi: capSecondi (tempo limite in s), capRepsBenchmark[cat]
+ * (reps che corrispondono al "100% del lavoro" per quella categoria, tipicamente le reps
+ * totali del WOD).
+ *
+ * @param {number} repsCompletate - Ripetizioni completate dall'atleta entro il cap
+ * @param {Object} evento - Documento evento con scoringType="time", capSecondi, capRepsBenchmark
+ * @param {string} categoriaId - ID categoria atleta
+ * @returns {number} Punti EPI con 1 decimale, 0 se input invalido o evento non supporta DNF
+ */
+export function calcolaEpiDnf(repsCompletate, evento, categoriaId) {
+  if (!evento || !evento.benchmarks) return 0;
+  if (evento.scoringType !== "time") return 0;
+  if (!evento.capSecondi || evento.capSecondi <= 0) return 0;
+  if (!evento.capRepsBenchmark) return 0;
+  const repsBm = evento.capRepsBenchmark[categoriaId];
+  if (!repsBm || repsBm <= 0) return 0;
+  if (!repsCompletate || repsCompletate <= 0) return 0;
+
+  // Tetto: punti che otterrebbe un atleta che chiude esattamente al cap (formula time standard)
+  const puntiAlCap = calcolaEpi(evento.capSecondi, evento, categoriaId);
+  if (puntiAlCap <= 0) return 0;
+
+  // Scala il tetto con la frazione di reps completate, usando la stessa curva dei reps events
+  const ratio = Math.min(1, repsCompletate / repsBm);
+  const C = EPI_CURVE_PARAMS.reps.exponent;
+  const punti = puntiAlCap * Math.pow(ratio, C);
+  return Math.round(punti * 10) / 10;
+}
+
+/**
  * Converte minuti+secondi in secondi totali.
  * @param {number} min - Minuti (>= 0)
  * @param {number} sec - Secondi (0-59)

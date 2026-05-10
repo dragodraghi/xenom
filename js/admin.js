@@ -25,6 +25,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import {
   calcolaEpi,
+  calcolaEpiDnf,
   tempoASecondi,
   secondiATempo,
   roundsRepsAReps
@@ -463,7 +464,18 @@ function renderIscrizioni(snap) {
 }
 
 async function approvaIscrizione(idPending, dati) {
-  if (!confirm(`Approvare l'iscrizione di ${dati.nome}?\n\nCategoria: ${NOMI_CATEGORIE[dati.categoriaId] || dati.categoriaId}\nBox: ${dati.box}`)) return;
+  // Slot cap hard-stop: warn esplicito se approvare sfora il cap della categoria
+  const cap = Number(slotConfig.caps?.[dati.categoriaId] || 0);
+  const approvati = atletiCache.filter((a) => a.categoriaId === dati.categoriaId).length;
+  const catLabel = NOMI_CATEGORIE[dati.categoriaId] || dati.categoriaId;
+  let confirmMsg;
+  if (cap > 0 && approvati >= cap) {
+    confirmMsg = `⚠️ CATEGORIA AL CAP\n\nCategoria ${catLabel} è già al cap (${approvati}/${cap} approvati). Approvare ${dati.nome} sforerà il limite impostato.\n\nBox: ${dati.box}\n\nForzare approvazione comunque?`;
+  } else {
+    const ricap = cap > 0 ? ` (${approvati + 1}/${cap} dopo l'approvazione)` : "";
+    confirmMsg = `Approvare l'iscrizione di ${dati.nome}?\n\nCategoria: ${catLabel}${ricap}\nBox: ${dati.box}`;
+  }
+  if (!confirm(confirmMsg)) return;
   try {
     const atletaId = crypto.randomUUID();
     const atleta = {
@@ -864,6 +876,44 @@ let eventoCorrente = null;
 let risEsistenteCorrente = null;
 let formRenderVersion = 0;
 
+function capRepsPerCategoria(evento, categoriaId) {
+  return Number(evento?.capRepsBenchmark?.[categoriaId] || 0);
+}
+
+function eventoSupportaDnf(evento, categoriaId) {
+  return evento?.scoringType === "time"
+    && Number(evento.capSecondi || 0) > 0
+    && capRepsPerCategoria(evento, categoriaId) > 0;
+}
+
+function isDnfMode() {
+  return document.querySelector('input[name="ris-score-mode"][value="dnf"]')?.checked === true;
+}
+
+function syncDnfFields() {
+  const dnf = isDnfMode();
+  const timeFields = document.getElementById("ris-time-fields");
+  const dnfFields = document.getElementById("ris-dnf-fields");
+  if (timeFields) timeFields.hidden = dnf;
+  if (dnfFields) dnfFields.hidden = !dnf;
+}
+
+function calcolaPuntiDaPerformance(performance, evento, categoriaId) {
+  if (!performance) return 0;
+  if (performance.isDnf) {
+    return calcolaEpiDnf(performance.valoreSecondario, evento, categoriaId);
+  }
+  return calcolaEpi(performance.valore, evento, categoriaId);
+}
+
+function calcolaPuntiDaRisultato(r, evento) {
+  if (!r || !evento) return 0;
+  if (r.isDnf) {
+    return calcolaEpiDnf(r.valoreSecondario, evento, r.categoriaId);
+  }
+  return calcolaEpi(r.valore, evento, r.categoriaId);
+}
+
 function initTabRisultati() {
   initGiudiceInput();
 
@@ -1019,6 +1069,7 @@ async function aggiornaFormDinamico() {
         <input type="number" id="ris-input-num" min="0" step="1" placeholder="Es. 32" data-input inputmode="numeric">
       </div>`;
   } else if (t === "time") {
+    const supportsDnf = !!(evento.capRepsBenchmark && evento.capSecondi);
     html = `
       <div class="form__field">
         <label>3. Tempo di completamento</label>
@@ -1027,6 +1078,19 @@ async function aggiornaFormDinamico() {
           <input type="number" id="ris-input-sec" min="0" max="59" step="1" placeholder="Secondi" data-input inputmode="numeric">
         </div>
       </div>`;
+    if (supportsDnf) {
+      html += `
+      <div class="form__field" id="ris-dnf-block">
+        <label class="form-row" style="align-items: center; gap: 0.6rem; cursor: pointer;">
+          <input type="checkbox" id="ris-dnf-check" data-input>
+          <span>DNF — non finito entro il cap (${secondiATempo(evento.capSecondi)}). Scoring per reps completate.</span>
+        </label>
+        <div id="ris-dnf-reps-row" hidden style="margin-top: 0.6rem;">
+          <label for="ris-input-dnfreps">Reps completate al cap (benchmark categoria: ${evento.capRepsBenchmark[atletaCorrente?.categoriaId] ?? "—"})</label>
+          <input type="number" id="ris-input-dnfreps" min="0" step="1" placeholder="Es. 50" data-input inputmode="numeric">
+        </div>
+      </div>`;
+    }
   } else if (t === "rounds_reps") {
     const rpr = evento.repsPerRound || 0;
     const maxExtra = rpr > 0 ? ` max="${rpr - 1}"` : "";
@@ -1043,6 +1107,31 @@ async function aggiornaFormDinamico() {
   risFormDinamico.querySelectorAll("[data-input]").forEach((input) => {
     input.addEventListener("input", aggiornaAnteprima);
   });
+  // Listener DNF checkbox: toggla visibility input reps + abilitazione input time
+  const dnfCheck = document.getElementById("ris-dnf-check");
+  if (dnfCheck) {
+    dnfCheck.addEventListener("change", () => {
+      const repsRow = document.getElementById("ris-dnf-reps-row");
+      const minInput = document.getElementById("ris-input-min");
+      const secInput = document.getElementById("ris-input-sec");
+      const isDnf = dnfCheck.checked;
+      if (repsRow) repsRow.hidden = !isDnf;
+      if (minInput) {
+        minInput.disabled = isDnf;
+        if (isDnf) minInput.value = "";
+      }
+      if (secInput) {
+        secInput.disabled = isDnf;
+        if (isDnf) secInput.value = "";
+      }
+      const dnfRepsInput = document.getElementById("ris-input-dnfreps");
+      if (dnfRepsInput) {
+        if (isDnf) dnfRepsInput.focus();
+        else dnfRepsInput.value = "";
+      }
+      aggiornaAnteprima();
+    });
+  }
   // Focus primo input
   const first = risFormDinamico.querySelector("[data-input]");
   if (first) first.focus();
@@ -1056,12 +1145,19 @@ function aggiornaAnteprima() {
     risBtnSalva.disabled = true;
     return;
   }
-  const punti = calcolaEpi(valore, eventoCorrente, atletaCorrente.categoriaId);
+  const dnfCheckPreview = document.getElementById("ris-dnf-check");
+  const isDnfPreview = !!(dnfCheckPreview && dnfCheckPreview.checked);
+  const punti = isDnfPreview
+    ? calcolaEpiDnf(valore, eventoCorrente, atletaCorrente.categoriaId)
+    : calcolaEpi(valore, eventoCorrente, atletaCorrente.categoriaId);
   risAnteprimaValore.textContent = punti;
 
   // Hint contestuale (es. "100kg / benchmark 130kg")
   const bm = eventoCorrente.benchmarks ? eventoCorrente.benchmarks[atletaCorrente.categoriaId] : null;
-  if (bm) {
+  if (isDnfPreview) {
+    const repsBm = eventoCorrente.capRepsBenchmark?.[atletaCorrente.categoriaId];
+    risAnteprimaHint.textContent = `DNF: ${valore} reps al cap · Benchmark reps "1000": ${repsBm ?? "—"}`;
+  } else if (bm) {
     const t = eventoCorrente.scoringType;
     let valStr = String(valore);
     if (t === "time") valStr = secondiATempo(valore);
@@ -1116,6 +1212,12 @@ function leggiPerformance() {
     return v !== null && v > 0 ? v : null;
   }
   if (t === "time") {
+    // DNF mode: legge reps invece di tempo
+    const dnfCheck = document.getElementById("ris-dnf-check");
+    if (dnfCheck && dnfCheck.checked) {
+      const reps = interoNonNegativo("ris-input-dnfreps");
+      return reps !== null && reps > 0 ? reps : null;
+    }
     if (!valoreInput("ris-input-min") && !valoreInput("ris-input-sec")) return null;
     const m = interoNonNegativo("ris-input-min", 0);
     const s = interoNonNegativo("ris-input-sec", 0);
@@ -1140,7 +1242,10 @@ function formatValoreEsistente(r, evento) {
   if (t === "weight") return `${r.valore} kg`;
   if (t === "reps") return `${r.valore} reps`;
   if (t === "calories") return `${r.valore} cal`;
-  if (t === "time") return secondiATempo(r.valore);
+  if (t === "time") {
+    if (r.dnf) return `DNF · ${r.valore} reps al cap`;
+    return secondiATempo(r.valore);
+  }
   if (t === "rounds_reps") {
     const rpr = evento.repsPerRound || 1;
     const round = Math.floor(r.valore / rpr);
@@ -1177,6 +1282,7 @@ function firmaRisultato(r) {
   return JSON.stringify({
     valore: r?.valore ?? null,
     valoreSecondario: r?.valoreSecondario ?? null,
+    dnf: r?.dnf ?? false,
     puntiEpi: r?.puntiEpi ?? null,
     aggiornatoDa: r?.aggiornatoDa || r?.inseritoDa || "",
     aggiornatoIl: timestampKey(r?.aggiornatoIl || r?.inseritoIl)
@@ -1201,7 +1307,11 @@ risBtnSalva.addEventListener("click", async () => {
     ? (interoNonNegativo("ris-input-extra", 0) || 0)
     : null;
 
-  const puntiEpi = calcolaEpi(valore, eventoCorrente, atletaCorrente.categoriaId);
+  const dnfCheckSave = document.getElementById("ris-dnf-check");
+  const isDnf = !!(dnfCheckSave && dnfCheckSave.checked);
+  const puntiEpi = isDnf
+    ? calcolaEpiDnf(valore, eventoCorrente, atletaCorrente.categoriaId)
+    : calcolaEpi(valore, eventoCorrente, atletaCorrente.categoriaId);
   const risId = `${atletaCorrente.id}_${eventoCorrente.id}`;
   const risultatoRef = doc(db, COL.risultati, risId);
   const risultatoPubblicoRef = doc(db, COL.risultatiPubblici, risId);
@@ -1247,6 +1357,7 @@ risBtnSalva.addEventListener("click", async () => {
         categoriaId: atletaCorrente.categoriaId,
         valore: valore,
         valoreSecondario: valoreSecondario,
+        dnf: isDnf,
         puntiEpi: puntiEpi,
         aggiornatoIl: serverTimestamp(),
         aggiornatoDa: giudice
@@ -1636,7 +1747,9 @@ function initTabStrumenti() {
             mancantiBenchmark++;
             return;
           }
-          const nuovi = calcolaEpi(r.valore, evento, r.categoriaId);
+          const nuovi = r.dnf
+            ? calcolaEpiDnf(r.valore, evento, r.categoriaId)
+            : calcolaEpi(r.valore, evento, r.categoriaId);
           if (Math.abs(nuovi - (r.puntiEpi || 0)) > 0.05) {
             batch.update(doc(db, COL.risultati, d.id), { puntiEpi: nuovi });
             batch.set(doc(db, COL.risultatiPubblici, d.id), datiRisultatoPubblico({ ...r, puntiEpi: nuovi }));
