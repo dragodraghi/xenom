@@ -7,6 +7,9 @@
 /css/*
   Cache-Control: no-cache, no-store, must-revalidate
 
+/assets/social/*
+  Cache-Control: public, max-age=300
+
 /manifest.webmanifest
   Content-Type: application/manifest+json
   Cache-Control: no-cache, no-store, must-revalidate

@@ -7,6 +7,16 @@
   status = 200
 
 [[redirects]]
+  from = "/iscriviti"
+  to = "/iscriviti.html"
+  status = 200
+
+[[redirects]]
+  from = "/live"
+  to = "/live.html"
+  status = 200
+
+[[redirects]]
   from = "/presentazione"
   to = "/presentazione.html"
   status = 200
