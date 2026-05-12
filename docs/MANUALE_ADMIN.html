@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manuale Admin — TUSK Protocol Bad Boars Edition</title>
+<style>
+  :root {
+    --bg: #0e0e10;
+    --panel: #161618;
+    --panel-2: #1d1d20;
+    --border: #2a2a2d;
+    --text: #f3f3f3;
+    --muted: #a4a4ab;
+    --accent: #ff3c00;
+    --accent-soft: rgba(255, 60, 0, 0.12);
+    --ok: #2ecc71;
+    --warn: #ffb547;
+    --bad: #ff5260;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    font-size: 15px;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* === Layout === */
+  .wrap {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+  }
+  @media (max-width: 900px) {
+    .wrap { grid-template-columns: 1fr; }
+    .sidebar { position: static !important; height: auto !important; }
+  }
+
+  /* === Sidebar === */
+  .sidebar {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 24px 18px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .brand .logo {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: grid; place-items: center;
+    font-weight: 900; font-size: 18px;
+    color: #fff;
+  }
+  .brand .label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .brand .title { font-weight: 800; font-size: 16px; }
+  .sidebar nav { display: flex; flex-direction: column; gap: 4px; }
+  .sidebar nav a {
+    display: block;
+    padding: 8px 10px;
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 14px;
+    border-left: 3px solid transparent;
+  }
+  .sidebar nav a:hover { background: var(--panel-2); text-decoration: none; }
+  .sidebar nav a.depth { padding-left: 26px; color: var(--muted); font-size: 13px; }
+  .sidebar nav .group {
+    margin: 14px 6px 4px;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+  }
+
+  /* === Content === */
+  main {
+    padding: 36px 48px 80px;
+    max-width: 1000px;
+  }
+  @media (max-width: 700px) {
+    main { padding: 24px 18px 60px; }
+  }
+  h1 {
+    font-size: 30px;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  h2 {
+    font-size: 22px;
+    margin: 40px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent);
+    display: inline-block;
+  }
+  h3 {
+    font-size: 17px;
+    margin: 28px 0 8px;
+    color: var(--accent);
+  }
+  h4 {
+    font-size: 14px;
+    margin: 18px 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  p { margin: 6px 0 10px; }
+  code {
+    background: var(--panel-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.92em;
+    border: 1px solid var(--border);
+  }
+  ul, ol { padding-left: 22px; margin: 6px 0 12px; }
+  li { margin: 3px 0; }
+  hr { border: 0; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  /* === Card components === */
+  .lead {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 14px 0 20px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 14px 0;
+  }
+  .card.example {
+    border-left: 4px solid var(--ok);
+  }
+  .card.warning {
+    border-left: 4px solid var(--warn);
+    background: rgba(255, 181, 71, 0.06);
+  }
+  .card.danger {
+    border-left: 4px solid var(--bad);
+    background: rgba(255, 82, 96, 0.06);
+  }
+  .card.tip {
+    border-left: 4px solid var(--accent);
+  }
+  .card .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 99px;
+    margin-bottom: 6px;
+  }
+  .card.example .tag { background: rgba(46, 204, 113, 0.15); color: var(--ok); }
+  .card.warning .tag { background: rgba(255, 181, 71, 0.15); color: var(--warn); }
+  .card.danger .tag { background: rgba(255, 82, 96, 0.15); color: var(--bad); }
+  .card.tip .tag { background: var(--accent-soft); color: var(--accent); }
+
+  /* === KBD === */
+  kbd {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.85em;
+    font-family: ui-monospace, Menlo, monospace;
+  }
+
+  /* === Step list === */
+  ol.steps {
+    counter-reset: step;
+    list-style: none;
+    padding-left: 0;
+  }
+  ol.steps > li {
+    counter-increment: step;
+    position: relative;
+    padding: 8px 10px 8px 44px;
+    margin: 6px 0;
+    background: var(--panel-2);
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+  }
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 800;
+    font-size: 12px;
+    display: grid; place-items: center;
+  }
+
+  /* === Tables === */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: var(--panel-2);
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+
+  /* === Top bar === */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .meta {
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .meta strong { color: var(--text); }
+
+  /* === Quick-find chips === */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 14px; }
+  .chip {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .chip strong { color: var(--accent); }
+
+  /* === Emergency banner === */
+  .emergency {
+    background: linear-gradient(90deg, rgba(255, 82, 96, 0.18), transparent 60%);
+    border: 1px solid var(--bad);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 18px 0;
+  }
+  .emergency h3 { color: var(--bad); margin-top: 0; }
+
+  /* === Print === */
+  @media print {
+    .sidebar { display: none; }
+    .wrap { grid-template-columns: 1fr; }
+    body { background: #fff; color: #000; }
+    .card { border-color: #999; background: #fff; }
+    main { max-width: none; }
+    h2 { color: #000; border-bottom-color: #000; }
+    h3 { color: #c43500; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">T</div>
+      <div>
+        <div class="label">Manuale operativo</div>
+        <div class="title">TUSK Admin</div>
+      </div>
+    </div>
+    <nav aria-label="Indice manuale">
+      <div class="group">Inizio</div>
+      <a href="#intro">Come si usa il manuale</a>
+      <a href="#login">1. Accesso al pannello</a>
+
+      <div class="group">Tab principali</div>
+      <a href="#iscrizioni">2. Iscrizioni</a>
+      <a href="#atleti">3. Atleti</a>
+      <a href="#risultati">4. Inserisci Risultato</a>
+      <a href="#tip-weight" class="depth">— evento weight (E1)</a>
+      <a href="#tip-reps" class="depth">— evento reps (E2/E7/E8/E9)</a>
+      <a href="#tip-calories" class="depth">— evento calories (E3)</a>
+      <a href="#tip-rounds" class="depth">— evento rounds_reps (E4/E10)</a>
+      <a href="#tip-time" class="depth">— evento time (E5/E6)</a>
+      <a href="#eventi">5. Eventi e benchmark</a>
+      <a href="#strumenti">6. Strumenti</a>
+
+      <div class="group">Emergenze</div>
+      <a href="#emergenze">7. Problemi durante la gara</a>
+      <a href="#flow-pedana">8. Flusso scorecard → admin</a>
+    </nav>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main>
+
+    <div class="topbar">
+      <div>
+        <h1>Manuale Admin — TUSK Protocol</h1>
+        <div class="meta">Bad Boars Edition · 29-30 Maggio 2026 · <strong>giudici.html</strong></div>
+      </div>
+      <div class="chips">
+        <span class="chip">Versione gara <strong>v1</strong></span>
+        <span class="chip">6 tab admin</span>
+        <span class="chip">10 WOD</span>
+      </div>
+    </div>
+
+    <section id="intro" class="lead">
+      <strong>Come si usa questo manuale.</strong> Apri la sezione che ti serve dal menu a sinistra. Ogni sezione ha 3 blocchi fissi:
+      <ul style="margin: 8px 0 0;">
+        <li><strong>Cosa fa</strong> — la funzione in 1-2 righe.</li>
+        <li><strong>Come si usa</strong> — passi numerati.</li>
+        <li><strong>Esempio pratico</strong> — un caso reale "se succede X, fai Y".</li>
+      </ul>
+    </section>
+
+    <!-- ============ 1. LOGIN ============ -->
+    <h2 id="login">1. Accesso al pannello</h2>
+    <p><strong>Cosa fa:</strong> protegge la pagina giudici con una password. Senza password nessuno vede iscrizioni, atleti o pulsanti di salvataggio.</p>
+
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Apri <code>giudici.html</code> sul tablet/telefono della pedana o sul portatile admin.</li>
+      <li>Inserisci la password giudici. La password te la dà l'organizzazione, NON è scritta da nessuna parte sul sito.</li>
+      <li>Clicca <strong>Entra nel pannello approvazioni</strong>. Compaiono le 5 tab in alto.</li>
+      <li>Quando hai finito o passi il dispositivo a un altro giudice → <strong>Logout</strong> in alto a destra.</li>
+    </ol>
+
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      <strong>Apri la pedana sabato mattina.</strong> Tablet sulla lane 1, prendi il tablet, apri <code>giudici.html</code>, password, vai sulla tab <em>Inserisci Risultato</em>, compili il campo <em>Giudice di pedana → "Marco — lane 1"</em>. Da ora ogni risultato salvato porta scritto "Marco — lane 1".
+    </div>
+
+    <div class="card warning">
+      <span class="tag">Attenzione</span>
+      La password giudici NON va inviata in chat pubbliche né scritta sulle scorecard. Se sospetti che sia uscita: cambia la password in Firebase Console PRIMA dell'inizio gara.
+    </div>
+
+    <!-- ============ 2. ISCRIZIONI ============ -->
+    <h2 id="iscrizioni">2. Tab Iscrizioni</h2>
+    <p><strong>Cosa fa:</strong> mostra in tempo reale le richieste di iscrizione che arrivano dal form pubblico. Ti permette di approvare o rifiutare. Mostra anche quanti slot sono liberi per categoria e il messaggio WhatsApp pronto da copiare per invitare atleti.</p>
+
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>La sezione si aggiorna da sola: quando un atleta invia il form, compare qui senza dover ricaricare.</li>
+      <li>Guarda <strong>Stato iscrizioni e slot</strong>: griglia con tutte le categorie, posti liberi/occupati.</li>
+      <li>Sotto trovi la lista delle iscrizioni pending. Per ognuna: <em>Approva</em> o <em>Rifiuta</em>.</li>
+      <li><strong>Approva</strong> → l'atleta diventa ufficiale, compare nella tab Atleti e occupa uno slot.</li>
+      <li><strong>Rifiuta</strong> → la richiesta sparisce, lo slot torna libero.</li>
+      <li>Per condividere i link gara: usa <em>Copia messaggio WhatsApp</em> o <em>Apri WhatsApp</em>.</li>
+    </ol>
+
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      <strong>Mario Rossi compila il form alle 18:32.</strong> Sulla tab Iscrizioni vedi comparire la card <em>Mario Rossi — Advanced M — CrossFit Sassari</em> con badge "Pending". Clicchi <strong>Approva</strong>. Lo slot Advanced M scende da 12/20 a 13/20. Mario riceve la conferma (gestita lato app) e da ora compare nella tab Atleti.
+    </div>
+
+    <div class="card tip">
+      <span class="tag">Suggerimento</span>
+      Il <strong>badge numerico</strong> accanto a "Iscrizioni" nelle tab mostra quante richieste sono in attesa. Se è acceso → c'è qualcosa da approvare.
+    </div>
+
+    <!-- ============ 3. ATLETI ============ -->
+    <h2 id="atleti">3. Tab Atleti</h2>
+    <p><strong>Cosa fa:</strong> elenco di tutti gli atleti approvati. Da qui puoi cercare, aggiungere manualmente, modificare o eliminare un atleta.</p>
+
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Usa la barra di ricerca per filtrare per <strong>nome</strong> o <strong>box</strong>.</li>
+      <li>Clicca su un atleta per vedere il dettaglio.</li>
+      <li><strong>+ Aggiungi atleta</strong> (in alto a destra) → modale con Nome, Categoria, Box, Contatto. Salva.</li>
+      <li>Per modificare → clicca atleta → modifica nei campi → Salva.</li>
+      <li>Per eliminare → usa la X (o pulsante elimina nel dettaglio). Lo slot torna libero immediatamente.</li>
+    </ol>
+
+    <div class="card example">
+      <span class="tag">Esempio: aggiunta last-minute</span>
+      <strong>Luca si presenta al check-in senza essersi iscritto online.</strong>
+      Tab Atleti → <em>+ Aggiungi atleta</em> → Nome "Luca Bianchi", Categoria "Challenge M", Box "Tonara CF", Contatto "3479..." → Salva. Da ora Luca compare in cerca atleta nella tab Inserisci Risultato.
+    </div>
+
+    <div class="card danger">
+      <span class="tag">Pericolo</span>
+      <strong>Non eliminare un atleta che ha già risultati inseriti.</strong> Se elimini, i risultati restano "orfani" in archivio. Per pulirli dopo la gara → <em>Strumenti → Pulizia storico eliminati</em>.
+    </div>
+
+    <!-- ============ 4. INSERISCI RISULTATO ============ -->
+    <h2 id="risultati">4. Tab Inserisci Risultato</h2>
+    <p><strong>Cosa fa:</strong> è il <strong>cuore operativo della gara</strong>. Qui il giudice trasferisce dalla scorecard cartacea al sistema il risultato di un atleta per un evento. Il sistema calcola in automatico i punti EPI.</p>
+
+    <h4>Come si usa — flusso base</h4>
+    <ol class="steps">
+      <li><strong>Giudice di pedana</strong>: scrivi il tuo nome + lane (es. "Marco — lane 1"). Resta salvato sul dispositivo finché non fai Logout.</li>
+      <li><strong>1. Cerca atleta</strong>: inizia a digitare il nome. Selezionalo dai suggerimenti. Compare la "pillola" col nome.</li>
+      <li><strong>2. Seleziona evento</strong>: dal menu a tendina scegli l'evento da inserire (E1, E2, …, E10).</li>
+      <li><strong>Form dinamico</strong>: i campi cambiano in base al tipo di evento (vedi sotto i 5 casi).</li>
+      <li><strong>Tie-break (campo 4, opzionale)</strong>: cronometro al checkpoint T.B. del WOD (es. dopo l'ultima Rope Climb di E2, dopo i Thrusters di E4, fine row di E5). In mm:ss. Lascialo vuoto se l'atleta non ha raggiunto il checkpoint o se l'evento non ha T.B. designato. Usato per spareggi automatici in classifica.</li>
+      <li><strong>Punteggio EPI calcolato</strong>: appare in tempo reale appena compili i campi. Se è strano → ricontrolla.</li>
+      <li>Se il risultato esiste già → compare il warning <em>"Risultato già presente"</em>. Salvando, sovrascrivi.</li>
+      <li><strong>Salva risultato</strong>: il bottone si abilita solo quando hai compilato tutto. Conferma → il risultato è in Firebase.</li>
+    </ol>
+
+    <h3 id="tip-weight">Caso A — Evento <code>weight</code>: E1 Snatch 1RM</h3>
+    <p>Il giudice scrive un singolo valore: i <strong>kg dell'alzata migliore valida</strong>.</p>
+    <table>
+      <tr><th>Campo admin</th><th>Da scorecard</th><th>Esempio</th></tr>
+      <tr><td>Peso (kg)</td><td>Riga "Score finale (miglior valida)"</td><td><strong>87.5</strong></td></tr>
+    </table>
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      Scorecard di Mario (Advanced M): 4 tentativi, valida la #3 a 87.5 kg, no lift la #4 a 90. Score finale: 87.5. → Inserisci <strong>87.5</strong>. EPI compare in anteprima (es. 0.875 → 875 punti EPI). Salva.
+    </div>
+
+    <h3 id="tip-reps">Caso B — Evento <code>reps</code>: E2 / E7 / E8 / E9</h3>
+    <p>Il giudice inserisce un <strong>numero singolo</strong>: le reps totali calcolate sulla scorecard.</p>
+    <table>
+      <tr><th>WOD</th><th>Cosa conta</th><th>Esempio scorecard → admin</th></tr>
+      <tr><td>E2 Ascending Ladder</td><td>Reps totali (WW + RC/BOL)</td><td>"Score finale: 27" → <strong>27</strong></td></tr>
+      <tr><td>E7 Barbell Version</td><td>Solo reps skill finale</td><td>"MAX REPS skill finale: 14" → <strong>14</strong></td></tr>
+      <tr><td>E8 Engine Chaos</td><td>Reps totali (BOL + cal + burpees)</td><td>"TOTALE: 182" → <strong>182</strong></td></tr>
+      <tr><td>E9 Heavy Clean Ladder</td><td>Reps totali cleans</td><td>"TOTALE REPS: 37" → <strong>37</strong></td></tr>
+    </table>
+    <div class="card warning">
+      <span class="tag">Attenzione E7</span>
+      Se l'atleta NON ha chiuso i 3 round buy-in entro il cap → <strong>score = 0</strong>. Inserisci 0, non lasciare vuoto.
+    </div>
+
+    <h3 id="tip-calories">Caso C — Evento <code>calories</code>: E3 Max Cal Assault Bike</h3>
+    <p>Il giudice inserisce le <strong>calorie sul display</strong> al 60° secondo.</p>
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      Display: 32 cal. → Inserisci <strong>32</strong>. Non arrotondare. Se il display segna 32.7 → scrivi 32 (Assault Bike mostra interi, ma se trovi un decimale taglialo, non arrotondare per eccesso).
+    </div>
+
+    <h3 id="tip-rounds">Caso D — Evento <code>rounds_reps</code>: E4 / E10</h3>
+    <p>Qui i campi sono <strong>2</strong>: round completi <em>più</em> reps extra del round in corso. Il sistema calcola il totale = <code>round × repsPerRound + extra</code>.</p>
+    <table>
+      <tr><th>WOD</th><th>repsPerRound</th><th>Esempio scorecard</th><th>Admin</th></tr>
+      <tr><td>E4 Barbell Sprint</td><td>30</td><td>5 round + 18 reps extra</td><td>Round = <strong>5</strong>, Extra = <strong>18</strong> → 168 totali</td></tr>
+      <tr><td>E10 The Finale</td><td>26</td><td>6 round + 11 reps extra</td><td>Round = <strong>6</strong>, Extra = <strong>11</strong> → 167 totali</td></tr>
+    </table>
+    <div class="card warning">
+      <span class="tag">Errore tipico</span>
+      L'atleta ha fatto "6 round e mezzo". <strong>NON</strong> inserire Round = 6.5. Inserisci Round = 6 + Extra = (metà di un round in reps). Esempio E10: metà round = 13 reps → Round 6, Extra 13.
+    </div>
+
+    <h3 id="tip-time">Caso E — Evento <code>time</code>: E5 / E6</h3>
+    <p>Qui ci sono <strong>due strade</strong>: l'atleta finisce entro il cap (= tempo), oppure no (= DNF + lavoro completato).</p>
+    <h4>E5.1 — Atleta finisce entro il cap</h4>
+    <ul>
+      <li>Compila il campo <strong>Tempo finale</strong> in <code>mm:ss</code>.</li>
+      <li>Lascia DNF deselezionato.</li>
+    </ul>
+    <h4>E5.2 — Atleta NON finisce (DNF)</h4>
+    <ul>
+      <li>Spunta la <strong>checkbox DNF</strong>.</li>
+      <li>Inserisci il <strong>lavoro completato al cap</strong>: per E5 sono metri totali (max 3000 RX, 2250 Essential); per E6 sono reps totali (max <strong>91</strong> — carry conta 2 reps, 1 ogni 7,5m).</li>
+      <li>NON inserire un tempo oltre il cap. Il sistema lo rifiuta.</li>
+    </ul>
+    <div class="card example">
+      <span class="tag">Esempio E5 con DNF</span>
+      Scorecard: "DNF Sì → Metri completati al cap: 2400 / 3000". Admin: spunta DNF, scrivi <strong>2400</strong>. EPI lo calcola come parziale rispetto al benchmark.
+    </div>
+    <div class="card example">
+      <span class="tag">Esempio E6 finito</span>
+      Scorecard: "Tempo finale 8:47, DNF No". Admin: tempo finale <code>8:47</code>. Tieni il formato <code>mm:ss</code> (no decimali, no <code>0:08:47</code>).
+    </div>
+
+    <h3>Conferma e sovrascrittura</h3>
+    <div class="card warning">
+      <span class="tag">Warning duplicato</span>
+      Se per quell'atleta + evento c'è già un risultato → compare la box gialla <em>"Risultato già presente"</em> con il valore precedente. Se salvi, <strong>sovrascrivi</strong>. Usalo solo se hai certezza che il valore vecchio era sbagliato. Per correzioni controllate, prima parla con il responsabile gara.
+    </div>
+
+    <!-- ============ 5. EVENTI ============ -->
+    <h2 id="eventi">5. Tab Eventi e benchmark</h2>
+    <p><strong>Cosa fa:</strong> elenco dei 10 eventi configurati con i benchmark EPI per ogni categoria. È in <strong>sola lettura</strong> dal pannello. Per modificare un benchmark devi entrare in Firebase Console.</p>
+
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Apri la tab → scorri i 10 eventi.</li>
+      <li>Per ogni evento vedi: tipo (weight/time/reps/calories/rounds_reps), direzione (higher/lower), benchmark per le 6 categorie.</li>
+      <li>Per modificare un benchmark: <strong>Firebase Console → Firestore → tusk_eventi → {numero evento}</strong> → modifica il campo → Salva.</li>
+      <li>Dopo aver modificato → torna in admin → <em>Strumenti → Ricalcola tutti gli EPI</em>.</li>
+    </ol>
+
+    <div class="card danger">
+      <span class="tag">Rischio gara</span>
+      <strong>Non modificare benchmark a gara in corso</strong> se non è una correzione concordata. Cambiando il benchmark, TUTTI i punteggi EPI già inseriti per quell'evento si ricalcolano e la classifica può ribaltarsi.
+    </div>
+
+    <!-- ============ 6. STRUMENTI ============ -->
+    <h2 id="strumenti">6. Tab Strumenti</h2>
+    <p><strong>Cosa fa:</strong> raccoglie tutti i comandi "amministrativi" che servono prima, durante e dopo la gara. Sono organizzati in card una accanto all'altra (su mobile vanno in colonna). Sotto vedi ogni strumento con: <em>cosa fa, come si usa, esempio pratico, eventuali avvertenze</em>.</p>
+
+    <div class="card tip">
+      <span class="tag">Mappa rapida</span>
+      <ul style="margin: 4px 0 0;">
+        <li><strong>Pre-gara</strong>: 6.1 Link/QR · 6.3 Health-check · 6.6 Lista atleti</li>
+        <li><strong>Durante la gara</strong>: 6.9 Audit · 6.12 Conteggi · 6.2 Ricalcola EPI (solo se cambi un benchmark)</li>
+        <li><strong>Premiazione</strong>: 6.4 Classifica per categoria · 6.5 Podi top 3</li>
+        <li><strong>Fine giornata</strong>: 6.7 Backup risultati · 6.5 Classifiche complete</li>
+        <li><strong>Post-gara / cleanup</strong>: 6.8 Pulizia orfani · 6.10/6.11 Sync pubblici</li>
+      </ul>
+    </div>
+
+    <h3>6.1 Link ufficiali e QR</h3>
+    <p><strong>Cosa fa:</strong> raccoglie in un'unica card i link ufficiali per atleti, pubblico, podio e giudici, con i relativi QR. Genera anche un messaggio WhatsApp pronto con tutti i link.</p>
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Apri <em>Strumenti</em> → cerca la card <strong>Link ufficiali e QR</strong>.</li>
+      <li>Visualizza i 4 link ufficiali con il rispettivo QR sotto.</li>
+      <li>Per condividere subito → <em>Copia messaggio atleti</em>: il testo finisce in clipboard.</li>
+      <li>Per WhatsApp diretto → <em>Apri WhatsApp</em>: si apre WhatsApp Web/desktop con il messaggio già scritto.</li>
+      <li>Per stampare il QR al box → clicca-destro sul QR → <em>Salva immagine</em> → stampa.</li>
+    </ol>
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      Mercoledì pre-gara devi spedire il link classifica live ai box partecipanti. Apri Strumenti → <em>Copia messaggio atleti</em> → vai sul gruppo WhatsApp "TUSK Gara 2026" → incolla. Il messaggio contiene già link pubblico + podio + presentazione gara.
+    </div>
+
+    <h3>6.2 🔁 Ricalcola tutti gli EPI</h3>
+    <p><strong>Cosa fa:</strong> rilegge tutti i risultati salvati e rifà il calcolo dei punti EPI usando i benchmark <em>attuali</em>. Serve solo dopo aver cambiato un benchmark.</p>
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Modifica il benchmark che ti serve in <strong>Firebase Console → tusk_eventi → {numero}</strong>.</li>
+      <li>Torna in admin → <em>Strumenti</em> → card <strong>Ricalcola tutti gli EPI</strong>.</li>
+      <li>Clicca <em>Ricalcola tutti</em>.</li>
+      <li>Aspetta il messaggio di conferma in <em>ricalcola-output</em> (es. "Ricalcolati 87 risultati su 3 eventi").</li>
+      <li>Apri la classifica live per verificare visivamente che i punteggi siano cambiati come previsto.</li>
+    </ol>
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      Ti accorgi durante il warm-up che il benchmark Snatch Ultimate M è 130 invece di 140 (errore di battitura). Vai in Firebase, cambi a 140. In admin → <em>Ricalcola tutti</em>. I 3 atleti Ultimate M che hanno già fatto E1 ora hanno EPI ricalcolato sul nuovo benchmark.
+    </div>
+    <div class="card danger">
+      <span class="tag">Mai a gara aperta</span>
+      <strong>Non ricalcolare mentre i giudici stanno inserendo risultati</strong>. Aspetta un momento di pausa fra heat: i salvataggi in corso potrebbero confondersi col ricalcolo.
+    </div>
+
+    <h3>6.3 Health-check</h3>
+    <p><strong>Cosa fa:</strong> apre <code>health.html</code>, una pagina diagnostica che in un colpo solo controlla: connessione Firebase, dati pubblici, eventi configurati, iscrizioni, sessione admin. Ogni controllo è verde/giallo/rosso.</p>
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Apri <em>Strumenti</em> → card <strong>Health-check</strong> → <em>Apri controllo</em>.</li>
+      <li>Si apre <code>health.html</code> in una nuova scheda.</li>
+      <li>Leggi tutti i pallini: verde = ok, giallo = warning, rosso = problema.</li>
+      <li>Se qualcosa è rosso → clicca il pallino per vedere il dettaglio errore.</li>
+      <li>Risolvi prima di aprire le pedane (mai gara con health-check rosso).</li>
+    </ol>
+    <div class="card tip">
+      <span class="tag">Quando usarlo</span>
+      <strong>30 minuti prima dell'inizio gara</strong>. E ogni volta che sospetti un problema di rete o di accesso. È il tuo "sento qualcosa che non va, vediamo".
+    </div>
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      Sabato 8:30, briefing giudici. Apri Health-check. Tutto verde tranne "Sessione admin" giallo: significa che sei loggato ma la sessione sta scadendo. Fai logout/login per rinfrescarla prima dell'inizio gara alle 9:00.
+    </div>
+
+    <h3>6.4 📊 Esporta classifica CSV (per categoria)</h3>
+    <p><strong>Cosa fa:</strong> scarica un CSV con la classifica completa di <em>una</em> categoria. È il file più usato per le premiazioni.</p>
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Strumenti → card <strong>Esporta classifica CSV</strong>.</li>
+      <li>Scegli la categoria nella tendina (Ultimate M, Advanced M, …).</li>
+      <li>Clicca <em>Scarica CSV</em>: il file finisce nei Download del browser con nome tipo <code>classifica_ultimate_m_2026-05-30.csv</code>.</li>
+      <li>Aprilo con Excel / Numbers / Google Sheets.</li>
+      <li>Verifica la top 3 prima di andare al podio (è facile fare confusione fra "punti EPI" e "posizione").</li>
+    </ol>
+    <div class="card example">
+      <span class="tag">Esempio premiazione</span>
+      Premiazione Ultimate M alle 19:00. Alle 18:45 esporti CSV Ultimate M, lo apri, leggi: 1° Mario Rossi 8742, 2° Luca Bianchi 8530, 3° Marco Verdi 8412. Stampi il foglio o lo passi allo speaker.
+    </div>
+
+    <h3>6.5 Export finale gara (classifiche complete + podi)</h3>
+    <p><strong>Cosa fa:</strong> due bottoni nella stessa card. <em>Classifiche complete</em> = CSV unico con tutte le 6 categorie. <em>Podi top 3</em> = CSV solo con i primi 3 di ogni categoria, in formato pronto per archivio/social.</p>
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>A fine gara, dopo che tutti gli EPI sono stati inseriti e ricalcolati.</li>
+      <li>Strumenti → card <strong>Export finale gara</strong>.</li>
+      <li><em>Classifiche complete</em>: scarica <code>classifiche_tusk_2026.csv</code> con tutte le categorie. Tienilo come archivio ufficiale.</li>
+      <li><em>Podi top 3</em>: scarica <code>podi_tusk_2026.csv</code> con 18 righe (6 categorie × 3 atleti). Da usare per Instagram/sito.</li>
+    </ol>
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      Domenica sera, gara chiusa. Scarichi <em>Classifiche complete</em> → carichi su Google Drive condiviso del comitato gara. Scarichi <em>Podi top 3</em> → lo giri al social media manager per le storie Instagram di lunedì.
+    </div>
+
+    <h3>6.6 📋 Esporta lista atleti</h3>
+    <p><strong>Cosa fa:</strong> CSV con tutti gli atleti approvati: nome, categoria, box, contatto. È la "lista presenze" cartacea che ti serve al check-in.</p>
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Strumenti → card <strong>Esporta lista atleti</strong> → <em>Scarica atleti.csv</em>.</li>
+      <li>Apri il CSV in Excel/Numbers.</li>
+      <li>Ordina per Categoria (o per Box, a seconda di come fai il check-in).</li>
+      <li>Stampa. Tieni una copia al check-in per spuntare i presenti.</li>
+    </ol>
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      Sabato 8:00, check-in. Hai stampato la lista ordinata per Categoria. Ogni atleta che arriva: spunti il nome, gli consegni pettorale e gadget. A fine check-in vedi a colpo d'occhio chi non si è presentato.
+    </div>
+
+    <h3>6.7 💾 Backup risultati completo</h3>
+    <p><strong>Cosa fa:</strong> CSV unico con TUTTI i risultati grezzi: atleta, categoria, evento, valore inserito, punti EPI calcolati, giudice, timestamp. È il tuo backup ufficiale.</p>
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Strumenti → card <strong>Backup risultati completo</strong>.</li>
+      <li>Clicca <em>Scarica risultati.csv</em>.</li>
+      <li>Salva il file in una cartella locale (e copialo subito su cloud o pendrive).</li>
+      <li>Rinomina con la data: <code>risultati_tusk_2026-05-30_FINALE.csv</code>.</li>
+    </ol>
+    <div class="card tip">
+      <span class="tag">Quando usarlo</span>
+      <strong>Tre momenti</strong>: (1) a fine giornata 1 (dopo gli E1-E4), (2) a fine giornata 2 prima delle premiazioni, (3) prima di chiudere il computer. Se Firebase domani non ti risponde, hai sempre tutto.
+    </div>
+
+    <h3>6.8 Pulizia storico eliminati</h3>
+    <p><strong>Cosa fa:</strong> trova risultati che restano "orfani" perché legati ad atleti già eliminati. Due bottoni: <em>Controlla orfani</em> (anteprima senza modifiche) e <em>Elimina orfani</em> (rimuove davvero).</p>
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Strumenti → card <strong>Pulizia storico eliminati</strong> → <em>Controlla orfani</em>.</li>
+      <li>Leggi in <em>orfani-output</em> la lista dei risultati orfani (atleta inesistente, evento, valore).</li>
+      <li>Verifica che siano davvero da buttare (es. test pre-gara, doppioni).</li>
+      <li>Se OK → <em>Elimina orfani</em> (pulsante rosso, conferma).</li>
+      <li>Ricarica e rifai <em>Controlla orfani</em>: deve dire "0 orfani".</li>
+    </ol>
+    <div class="card warning">
+      <span class="tag">Ordine giusto</span>
+      <strong>Sempre Controlla prima di Elimina.</strong> Mai cliccare Elimina alla cieca.
+    </div>
+    <div class="card example">
+      <span class="tag">Esempio post-test</span>
+      Venerdì sera hai fatto test con "Atleta Demo" su E1, E5, E6. Sabato mattina elimini "Atleta Demo" dalla tab Atleti. Restano 3 risultati orfani. <em>Controlla</em> → vedi i 3 risultati demo → <em>Elimina</em> → orfani = 0.
+    </div>
+
+    <h3>6.9 🧾 Ultimi risultati inseriti (audit)</h3>
+    <p><strong>Cosa fa:</strong> mostra in ordine di tempo gli ultimi risultati salvati, con nome giudice e timestamp. È il tuo radar per intercettare errori appena succedono.</p>
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Strumenti → card <strong>Ultimi risultati inseriti</strong>.</li>
+      <li>Clicca <em>Aggiorna lista</em>: vedi le ultime ~20 inserzioni con atleta, evento, valore, giudice, ora.</li>
+      <li>Scorri velocemente: cerchi anomalie (peso impossibile, tempo strano, giudice sbagliato).</li>
+      <li>Se vedi un errore → vai in <em>Inserisci Risultato</em>, cerchi quell'atleta + evento → sovrascrivi col valore corretto.</li>
+      <li>Ripeti il check ogni 30 min durante la gara.</li>
+    </ol>
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      Sabato 11:30 fai il check audit. Vedi: "Anna Bianchi - E5 - 25:30 - Marco lane 1". Ma E5 ha cap 15'! Errore. Vai sulla scorecard cartacea di Anna → tempo vero 12:30. Correggi in admin.
+    </div>
+
+    <h3>6.10 🔒 Sincronizza atleti pubblici</h3>
+    <p><strong>Cosa fa:</strong> rigenera la collezione "pubblica" degli atleti, quella che alimenta la classifica live e il sito pubblico. La copia pubblica NON contiene email né telefono per privacy.</p>
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Strumenti → card <strong>Sincronizza atleti pubblici</strong>.</li>
+      <li>Clicca <em>Sincronizza</em>.</li>
+      <li>Aspetta il messaggio di conferma in <em>sync-pubblici-output</em> (es. "Sincronizzati 87 atleti").</li>
+      <li>Apri la classifica live e verifica che gli atleti aggiunti/modificati compaiano correttamente.</li>
+    </ol>
+    <div class="card tip">
+      <span class="tag">Quando usarlo</span>
+      Solo se hai modificato atleti <strong>direttamente da Firebase Console</strong> o fatto import massivi. L'app di solito sincronizza da sola dopo ogni approvazione/modifica.
+    </div>
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      Venerdì sera importi 15 atleti via Firebase Admin script. Sabato mattina la classifica live li mostra come "atleti sconosciuti" perché la copia pubblica non li ha. Strumenti → Sincronizza atleti pubblici → ora compaiono col nome corretto.
+    </div>
+
+    <h3>6.11 🛡️ Sincronizza risultati pubblici</h3>
+    <p><strong>Cosa fa:</strong> stessa logica del 6.10 ma per i risultati. La copia pubblica non contiene nome del giudice né storico correzioni — è la versione "pulita" che vede il pubblico in live/podio.</p>
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Strumenti → card <strong>Sincronizza risultati pubblici</strong>.</li>
+      <li>Clicca <em>Sincronizza risultati</em>.</li>
+      <li>Aspetta la conferma in <em>sync-risultati-pubblici-output</em>.</li>
+      <li>Apri <code>live.html</code> o <code>podio.html</code> e verifica che i punteggi siano allineati.</li>
+    </ol>
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      Hai appena fatto 6.2 Ricalcola EPI (perché hai corretto un benchmark). I valori in admin sono giusti ma il live pubblico mostra ancora i vecchi punti. → 6.11 Sincronizza risultati pubblici → live aggiornato.
+    </div>
+
+    <h3>6.12 🔢 Conteggi rapidi</h3>
+    <p><strong>Cosa fa:</strong> mostra statistiche al volo: atleti per categoria, risultati totali inseriti, eventi monitorati. È il tuo sanity-check a colpo d'occhio.</p>
+    <h4>Come si usa</h4>
+    <ol class="steps">
+      <li>Strumenti → card <strong>Conteggi rapidi</strong>.</li>
+      <li>Clicca <em>Mostra statistiche</em>.</li>
+      <li>Leggi in <em>stats-output</em>: es. "Atleti: 87 (Ult 12, Adv 18, Cha 22, Ess 10, Perf 15, Int 10) — Risultati: 412 — Eventi: 10".</li>
+      <li>Confronta col numero atteso: se 87 atleti × 10 WOD = 870 risultati attesi a fine gara, vedi quanti ne mancano.</li>
+    </ol>
+    <div class="card example">
+      <span class="tag">Esempio</span>
+      Domenica 17:00, "siamo alla fine?". Conteggi rapidi → "Risultati: 853". 870 attesi → mancano 17. Vai in Inserisci Risultato e cerchi per nome chi ancora non ha tutti i 10 risultati. Probabilmente 1-2 scorecard non ancora consegnate dalla pedana.
+    </div>
+
+    <div class="card tip">
+      <span class="tag">Pre-flight checklist sabato 8:00</span>
+      <ol style="margin: 4px 0 0;">
+        <li>6.3 Health-check → tutto verde</li>
+        <li>6.6 Lista atleti → stampa e check-in</li>
+        <li>6.12 Conteggi rapidi → numeri attesi</li>
+        <li>6.1 Link/QR → copia in WhatsApp gruppo giudici</li>
+        <li>(eventuale) 6.10 + 6.11 Sync se hai fatto modifiche da Firebase</li>
+      </ol>
+    </div>
+
+    <!-- ============ 7. EMERGENZE ============ -->
+    <h2 id="emergenze">7. Problemi durante la gara — playbook</h2>
+
+    <div class="emergency" id="prob-firebase">
+      <h3>🔥 Firebase non risponde / errore di salvataggio</h3>
+      <ol>
+        <li>Continua a usare le <strong>scorecard cartacee</strong>. Sono il backup ufficiale, non perdi nessun dato.</li>
+        <li>Apri <code>health.html</code> per capire se è connessione locale (wifi pedana) o Firebase.</li>
+        <li>Quando torna online, gli admin <strong>recuperano dalle scorecard</strong> entro la fine giornata. Mai a fine gara.</li>
+      </ol>
+    </div>
+
+    <div class="emergency" id="prob-sovrascrittura">
+      <h3>✏️ Ho sovrascritto un risultato sbagliato</h3>
+      <ol>
+        <li>Va' in <em>Strumenti → 🧾 Ultimi risultati inseriti</em>: il sistema NON salva lo storico vecchio di chi sovrascrive, quindi il valore precedente è perso.</li>
+        <li>Recupera il valore corretto <strong>dalla scorecard cartacea</strong> firmata dal giudice + atleta.</li>
+        <li>Inserisci il valore giusto in <em>Inserisci Risultato</em>, accetta la sovrascrittura.</li>
+      </ol>
+    </div>
+
+    <div class="emergency" id="prob-categoria">
+      <h3>🔄 Atleta cambia categoria all'ultimo</h3>
+      <ol>
+        <li>Tab Atleti → cerca l'atleta → modifica → cambia <em>Categoria</em> → Salva.</li>
+        <li>Se l'atleta aveva già risultati nella vecchia categoria: vanno <strong>cancellati e reinseriti</strong> (il benchmark cambia perché cambia categoria).</li>
+        <li>Strumenti → Ricalcola EPI per essere sicuri.</li>
+      </ol>
+    </div>
+
+    <div class="emergency" id="prob-doppio">
+      <h3>👯 Stesso atleta inserito due volte</h3>
+      <ol>
+        <li>Tab Atleti → cerca per nome → identifica il doppione.</li>
+        <li>Tieni quello che ha già risultati (se entrambi ne hanno, parla col responsabile gara prima).</li>
+        <li>Elimina l'altro. Strumenti → Pulizia storico eliminati per rimuovere risultati orfani.</li>
+      </ol>
+    </div>
+
+    <div class="emergency" id="prob-dnf">
+      <h3>⏱️ Non sono sicuro se è DNF o tempo</h3>
+      <ol>
+        <li>Cap superato = DNF. <strong>Sempre.</strong></li>
+        <li>Cap raggiunto esattamente al lavoro completato (es. 10:00 al chipper di E6) = tempo finito = scrivi 10:00.</li>
+        <li>In dubbio → guarda la scorecard: il giudice ha barrato DNF Sì/No.</li>
+      </ol>
+    </div>
+
+    <div class="emergency" id="prob-tiebreak" style="border-color: var(--accent); background: linear-gradient(90deg, var(--accent-soft), transparent 60%);">
+      <h3 style="color: var(--accent);">⚖️ Tie-break: ora si inserisce in admin</h3>
+      <ol>
+        <li><strong>Il T.B. ora si inserisce nell'app admin</strong>, nel campo "4. Tie-break (opzionale, mm:ss)" sotto al valore del risultato.</li>
+        <li>È il <strong>cronometro al checkpoint T.B. del WOD</strong> (es. E2 dopo l'ultima RC, E4 dopo i Thrusters, E5 fine row, E7 fine round 3, ecc.).</li>
+        <li>Il campo è <strong>opzionale</strong>: se non lo metti, l'atleta non ha T.B. su quell'evento.</li>
+        <li><strong>Regola di spareggio automatico nella classifica live e podio</strong>: quando due atleti hanno lo stesso EPI totale → vince chi ha la <strong>somma più bassa dei T.B.</strong> (in secondi) su tutti i suoi eventi.</li>
+        <li>Atleti senza nessun T.B. salvato vanno in fondo a parità di EPI (incentivo a scriverlo sempre).</li>
+        <li>Tieni comunque le scorecard cartacee in ordine: il T.B. cartaceo è la fonte di verità in caso di contestazione.</li>
+      </ol>
+    </div>
+
+    <!-- ============ 8. FLUSSO ============ -->
+    <h2 id="flow-pedana">8. Flusso scorecard → admin in 60 secondi</h2>
+    <ol class="steps">
+      <li><strong>Giudice di pedana</strong> compila la scorecard cartacea durante il WOD: pettorale, categoria (checkbox), reps/tempo, T.B. eventuale.</li>
+      <li>Atleta firma. Giudice firma. Ora consegna.</li>
+      <li>Scorecard arriva al <strong>tavolo admin</strong>.</li>
+      <li>Admin apre <em>Inserisci Risultato</em> → ricerca atleta (per nome, non per pettorale: l'app non gestisce numeri pettorale) → seleziona evento → inserisce <strong>SOLO il valore finale</strong> indicato sulla scorecard.</li>
+      <li>Verifica EPI in anteprima → Salva.</li>
+      <li>Scorecard cartacea va nel raccoglitore per categoria/evento. Non buttare mai una scorecard prima di fine gara.</li>
+    </ol>
+
+    <div class="card tip">
+      <span class="tag">Promemoria</span>
+      <strong>Il pettorale NON si inserisce nell'app admin.</strong> Serve solo al giudice in pedana per identificare l'atleta. L'admin cerca per nome.
+    </div>
+
+    <div class="card tip">
+      <span class="tag">Categoria sulla scorecard — punto 7</span>
+      Sulla scorecard cartacea c'è la riga "Categoria" con 6 checkbox (Ult/Adv/Cha/Ess/Perf/Int). Il giudice di pedana spunta quella dell'atleta come <strong>controllo visivo a colpo d'occhio</strong> (per verificare carico/box giusto, attrezzatura, modalità RX vs Scaled). L'app admin <strong>NON usa</strong> questa spunta: pesca la categoria automaticamente dal profilo atleta in database. Quindi: spuntala sempre per essere sicuro a pedana, ma non preoccuparti che venga trascritta in admin — è già lì.
+    </div>
+
+    <hr>
+    <p class="meta">Aggiornato il giorno della stampa · Stile design TUSK Protocol</p>
+
+  </main>
+</div>
+
+</body>
+</html>

@@ -99,11 +99,14 @@ function render() {
   // Aggrega risultati per atleta
   const aggregato = {};
   for (const a of atletiCategoria) {
-    aggregato[a.id] = { atleta: a, perEvento: {}, totale: 0 };
+    aggregato[a.id] = { atleta: a, perEvento: {}, perEventoTb: {}, totale: 0 };
   }
   for (const r of risultatiCache) {
     if (aggregato[r.atletaId]) {
       aggregato[r.atletaId].perEvento[r.eventoId] = r.puntiEpi;
+      if (typeof r.tieBreak === "number" && r.tieBreak > 0) {
+        aggregato[r.atletaId].perEventoTb[r.eventoId] = r.tieBreak;
+      }
     }
   }
   for (const id in aggregato) {
@@ -111,9 +114,12 @@ function render() {
     aggregato[id].totale = totaleEpiAtleta(punti);
   }
 
-  // Ordina per totale desc, poi per nome asc (stabile)
+  // Ordina: EPI totale desc → somma T.B. asc (lower wins) → nome asc (stabile)
   const classifica = Object.values(aggregato).sort((x, y) => {
     if (y.totale !== x.totale) return y.totale - x.totale;
+    const xTb = sommaTieBreak(x.perEventoTb);
+    const yTb = sommaTieBreak(y.perEventoTb);
+    if (xTb !== yTb) return xTb - yTb;
     return x.atleta.nome.localeCompare(y.atleta.nome, "it");
   });
 
@@ -162,6 +168,14 @@ function setStatus(text) {
 
 function formatEpi(n) {
   return Number(n || 0).toLocaleString("it-IT", { maximumFractionDigits: 1 });
+}
+
+// Tie-break: somma dei T.B. (secondi) presenti su tutti i risultati dell'atleta.
+// Minore = meglio. Atleti senza T.B. finiscono in fondo a parità di EPI.
+function sommaTieBreak(perEventoTb) {
+  const valori = Object.values(perEventoTb).filter((v) => typeof v === "number" && v > 0);
+  if (valori.length === 0) return Infinity;
+  return valori.reduce((acc, v) => acc + v, 0);
 }
 
 function escapeHtml(s) {

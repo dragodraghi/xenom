@@ -95,20 +95,21 @@ assertEqual(calcolaEpi(null, evSnatch, "ultimate"), 0, "Performance null -> 0");
 assertEqual(calcolaEpi(undefined, evSnatch, "ultimate"), 0, "Performance undefined -> 0");
 
 console.log("\n=== TEST: calcolaEpiDnf (DNF su time event con cap) ===");
+// E6 Ground Zero: cap reps = 91 (carry 15m = 2 reps, 1 ogni 7,5m)
 const evE6 = {
   scoringType: "time",
   scoringDirection: "lower",
   capSecondi: 600,
   benchmarks: { ultimate: 360, performance: 420 },
-  capRepsBenchmark: { ultimate: 87, performance: 87 }
+  capRepsBenchmark: { ultimate: 91, performance: 91 }
 };
 // Punti al cap (10:00 esatti) per Ultimate ≈ 723.8 — è il tetto DNF
 assertEqual(calcolaEpiDnf(0, evE6, "ultimate"), 0, "DNF 0 reps -> 0");
-assertEqual(calcolaEpiDnf(30, evE6, "ultimate"), 362.3, "DNF 30/87 reps -> ~362");
-assertEqual(calcolaEpiDnf(50, evE6, "ultimate"), 505.0, "DNF 50/87 reps -> ~505");
-assertEqual(calcolaEpiDnf(80, evE6, "ultimate"), 685.4, "DNF 80/87 reps -> ~685");
-assertEqual(calcolaEpiDnf(87, evE6, "ultimate"), 723.8, "DNF 87/87 (= bm) -> 723.8 (= punti al cap)");
-assertEqual(calcolaEpiDnf(100, evE6, "ultimate"), 723.8, "DNF 100 reps (sopra bm) -> capped a 723.8");
+assertEqual(calcolaEpiDnf(30, evE6, "ultimate"), 351.9, "DNF 30/91 reps -> ~352");
+assertEqual(calcolaEpiDnf(50, evE6, "ultimate"), 490.4, "DNF 50/91 reps -> ~490");
+assertEqual(calcolaEpiDnf(80, evE6, "ultimate"), 665.7, "DNF 80/91 reps -> ~666");
+assertEqual(calcolaEpiDnf(91, evE6, "ultimate"), 723.8, "DNF 91/91 (= cap reps) -> 723.8 (= punti al cap)");
+assertEqual(calcolaEpiDnf(100, evE6, "ultimate"), 723.8, "DNF 100 reps (sopra cap) -> capped a 723.8");
 // Verifica invariante: DNF max <= finisher al cap
 const finCap = calcolaEpi(600, evE6, "ultimate");
 const dnfMax = calcolaEpiDnf(100, evE6, "ultimate");
@@ -120,7 +121,7 @@ assertEqual(finSlow > dnfMax, true, "Invariante: finisher 9:00 (slow) > DNF perf
 console.log("\n=== TEST: calcolaEpiDnf (edge cases) ===");
 assertEqual(calcolaEpiDnf(50, null, "ultimate"), 0, "DNF evento null -> 0");
 assertEqual(calcolaEpiDnf(50, { scoringType: "time", benchmarks: { ultimate: 360 } }, "ultimate"), 0, "DNF evento senza capSecondi/capRepsBenchmark -> 0");
-assertEqual(calcolaEpiDnf(50, { scoringType: "reps", capSecondi: 600, capRepsBenchmark: { ultimate: 87 }, benchmarks: { ultimate: 60 } }, "ultimate"), 0, "DNF evento non-time -> 0 (fa lo standard reps invece)");
+assertEqual(calcolaEpiDnf(50, { scoringType: "reps", capSecondi: 600, capRepsBenchmark: { ultimate: 91 }, benchmarks: { ultimate: 60 } }, "ultimate"), 0, "DNF evento non-time -> 0 (fa lo standard reps invece)");
 assertEqual(calcolaEpiDnf(0, evE6, "ultimate"), 0, "DNF reps 0 -> 0");
 assertEqual(calcolaEpiDnf(-10, evE6, "ultimate"), 0, "DNF reps negative -> 0");
 assertEqual(calcolaEpiDnf(50, evE6, "categoria_inesistente"), 0, "DNF cat inesistente -> 0");

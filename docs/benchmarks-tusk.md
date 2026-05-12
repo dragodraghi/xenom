@@ -55,8 +55,8 @@ Legenda colonne:
 - Score = miglior alzata valida (kg)
 
 ### Evento 2 — Ascending Ladder (AMRAP 8')
-- RX (Ultimate M / Advanced M / Challenge M): 2 WW + 1 RC, poi 4+2, 6+3... (Rope Climb 15ft, any style touch target)
-- Scaled (Essential M / Performance F / Intermediate F): 2 Scaled WW + 4 BOL, poi 4+8, 6+12...
+- RX (Ultimate M / Advanced M / Challenge M / Performance F): 2 WW + 1 RC, poi 4+2, 6+3... (Rope Climb 15ft, any style touch target)
+- Scaled (Essential M / Intermediate F): 2 Scaled WW + 4 BOL, poi 4+8, 6+12...
 - T.B. RX: dopo l'ultima Rope Climb. T.B. Scaled: dopo i Burpees Over Line
 - Score = reps totali (ogni WW/RC/BOL = 1 rep)
 
@@ -84,16 +84,18 @@ Legenda colonne:
   - 9 Sandbag Over Bar
   - 15 Box Jump Over
   - 12 G2S
-  - 15m Carry
+  - Carry 15m = **2 reps** (7,5m + 7,5m)
   - 15 G2S
-  - 15m Carry
+  - Carry 15m = **2 reps** (7,5m + 7,5m)
   - 12 G2S
   - 15 BJO
   - 9 SOB
+- **Total reps = 91** (carry computati come 2 reps ciascuno, 1 ogni 7,5m)
+- **Regola carry (aggiornata)**: ogni 7,5m completati = 1 rep valida (NON no rep). Se cap a metà carry, conta la rep da 7,5m solo se completata
 - Sandbag (kg): M Ult-Adv 70 / M Cha-Ess 50 / F Perf 50 / F Int 30
 - Box: M Ult-Adv 24" / M Cha-Ess 20" / F 24"
 - T.B. dopo il primo blocco di Sandbag G2S
-- Score = tempo (lower) / reps al cap se DNF
+- Score = tempo (lower) / reps al cap se DNF (max 91)
 
 ### Evento 7 — Barbell Version (cap 7')
 - 3 round con schema reps **15 / 15 / 10** (R1=15 reps di ogni movimento, R2=15, R3=10), uguale per tutte le categorie

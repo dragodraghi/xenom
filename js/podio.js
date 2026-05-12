@@ -106,12 +106,22 @@ function render() {
     return;
   }
 
-  // Aggrega punti EPI per atleta
+  // Aggrega punti EPI per atleta (con somma T.B. per spareggi)
   const aggregato = atletiCategoria.map((a) => {
-    const punti = risultatiCache
-      .filter((r) => r.atletaId === a.id)
-      .map((r) => ({ puntiEpi: r.puntiEpi }));
-    return { atleta: a, totale: totaleEpiAtleta(punti), eventi: punti.length };
+    const risAtleta = risultatiCache.filter((r) => r.atletaId === a.id);
+    const punti = risAtleta.map((r) => ({ puntiEpi: r.puntiEpi }));
+    const tbValori = risAtleta
+      .map((r) => r.tieBreak)
+      .filter((v) => typeof v === "number" && v > 0);
+    const sommaTb = tbValori.length > 0
+      ? tbValori.reduce((acc, v) => acc + v, 0)
+      : Infinity;
+    return {
+      atleta: a,
+      totale: totaleEpiAtleta(punti),
+      eventi: punti.length,
+      sommaTb
+    };
   });
 
   // Tieni solo chi ha almeno un risultato
@@ -122,9 +132,10 @@ function render() {
     return;
   }
 
-  // Ordina desc, tie-breaker per nome
+  // Ordina: EPI desc → T.B. asc (lower wins) → nome asc
   classificati.sort((x, y) => {
     if (y.totale !== x.totale) return y.totale - x.totale;
+    if (x.sommaTb !== y.sommaTb) return x.sommaTb - y.sommaTb;
     return x.atleta.nome.localeCompare(y.atleta.nome, "it");
   });
 

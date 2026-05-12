@@ -548,7 +548,8 @@ function datiRisultatoPubblico(r) {
     atletaId: String(r.atletaId || "").trim(),
     eventoId: String(r.eventoId || "").trim(),
     categoriaId: String(r.categoriaId || "").trim(),
-    puntiEpi: Number(r.puntiEpi || 0)
+    puntiEpi: Number(r.puntiEpi || 0),
+    tieBreak: typeof r.tieBreak === "number" ? r.tieBreak : null
   };
 }
 
@@ -1172,6 +1173,20 @@ async function aggiornaFormDinamico() {
         </div>
       </div>`;
   }
+  // Tie-break (opzionale, sempre presente per ogni evento)
+  const tbExistente = risEsistenteCorrente && typeof risEsistenteCorrente.tieBreak === "number"
+    ? risEsistenteCorrente.tieBreak : null;
+  const tbMin = tbExistente !== null ? Math.floor(tbExistente / 60) : "";
+  const tbSec = tbExistente !== null ? (tbExistente % 60) : "";
+  html += `
+    <div class="form__field" id="ris-tb-block" style="border-top:1px dashed var(--border, #444); margin-top:1rem; padding-top:1rem;">
+      <label>4. Tie-break (opzionale, mm:ss)</label>
+      <div class="form-row">
+        <input type="number" id="ris-input-tb-min" min="0" step="1" placeholder="Minuti" value="${tbMin}" data-input inputmode="numeric">
+        <input type="number" id="ris-input-tb-sec" min="0" max="59" step="1" placeholder="Secondi" value="${tbSec}" data-input inputmode="numeric">
+      </div>
+      <span class="form__hint">Cronometro al checkpoint T.B. del WOD (es. dopo l'ultima RC, dopo i Thrusters, fine row). Usato per spareggi automatici quando due atleti hanno lo stesso EPI totale.</span>
+    </div>`;
   risFormDinamico.innerHTML = html;
   risFormDinamico.querySelectorAll("[data-input]").forEach((input) => {
     input.addEventListener("input", aggiornaAnteprima);
@@ -1296,6 +1311,17 @@ function interoNonNegativo(id, fallback = null) {
   if (!raw) return fallback;
   if (!/^\d+$/.test(raw)) return null;
   return Number(raw);
+}
+
+function leggiTieBreak() {
+  const mRaw = valoreInput("ris-input-tb-min");
+  const sRaw = valoreInput("ris-input-tb-sec");
+  if (!mRaw && !sRaw) return null;
+  const m = mRaw ? interoNonNegativo("ris-input-tb-min", 0) : 0;
+  const s = sRaw ? interoNonNegativo("ris-input-tb-sec", 0) : 0;
+  if (m === null || s === null || s > 59) return null;
+  const total = m * 60 + s;
+  return total > 0 ? total : null;
 }
 
 function leggiPerformance() {
@@ -1457,6 +1483,7 @@ risBtnSalva.addEventListener("click", async () => {
       }
 
       const previous = snap.exists() ? snap.data() : null;
+      const tieBreak = leggiTieBreak();
       const payload = {
         atletaId: atletaCorrente.id,
         eventoId: eventoCorrente.id,
@@ -1465,6 +1492,7 @@ risBtnSalva.addEventListener("click", async () => {
         valoreSecondario: valoreSecondario,
         dnf: isDnf,
         puntiEpi: puntiEpi,
+        tieBreak: tieBreak,
         aggiornatoIl: serverTimestamp(),
         aggiornatoDa: giudice
       };

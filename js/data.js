@@ -56,7 +56,7 @@ const XENOM_DATA = {
       formato: "AMRAP — Ladder ascendente (RX vs Scaled)",
       pesoRX_M: "Bodyweight",
       pesoRX_F: "Bodyweight",
-      descrizione: "AMRAP 8 minuti. RX (Ultimate / Advanced / Challenge M): 2 Wall Walk + 1 Rope Climb (15ft, any style touch target), poi 4+2, 6+3... Scaled (Essential M / Performance F / Intermediate F): 2 Scaled WW + 4 Burpee Over Line, poi 4+8, 6+12... T.B. dopo l'ultima Rope Climb (RX) o dopo i Burpee (Scaled).",
+      descrizione: "AMRAP 8 minuti. RX (Ultimate / Advanced / Challenge M / Performance F): 2 Wall Walk + 1 Rope Climb (15ft, any style touch target), poi 4+2, 6+3... Scaled (Essential M / Intermediate F): 2 Scaled WW + 4 Burpee Over Line, poi 4+8, 6+12... T.B. dopo l'ultima Rope Climb (RX) o dopo i Burpee (Scaled).",
       scoring: "Ripetizioni totali completate",
       giorno: 1,
       icona: "🧗"
@@ -116,7 +116,7 @@ const XENOM_DATA = {
       formato: "For Time — Sandbag Over Bar, Box Jump Over, G2S, Carry",
       pesoRX_M: "Sandbag 70/50 kg, Box 24\"/20\"",
       pesoRX_F: "Sandbag 50/30 kg, Box 24\"",
-      descrizione: "For Time, cap 10 minuti. Chipper: 9 SOB / 15 BJO / 12 G2S / 15m carry / 15 G2S / 15m carry / 12 G2S / 15 BJO / 9 SOB. Sandbag: M Ult-Adv 70 / M Cha-Ess 50 / F Perf 50 / F Int 30 kg. Box: M Ult-Adv 24\" / M Cha-Ess 20\" / F 24\". T.B. dopo il primo blocco di Sandbag G2S.",
+      descrizione: "For Time, cap 10 minuti. Chipper: 9 SOB / 15 BJO / 12 G2S / carry 2 reps (2×7,5m) / 15 G2S / carry 2 reps (2×7,5m) / 12 G2S / 15 BJO / 9 SOB. Carry: ogni 7,5m completato = 1 rep valida (totale 91 reps). Sandbag: M Ult-Adv 70 / M Cha-Ess 50 / F Perf 50 / F Int 30 kg. Box: M Ult-Adv 24\" / M Cha-Ess 20\" / F 24\". T.B. dopo il primo blocco di Sandbag G2S.",
       scoring: "Tempo di completamento (cap 10')",
       giorno: 2,
       icona: "💥"

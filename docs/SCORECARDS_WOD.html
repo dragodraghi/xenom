@@ -188,6 +188,25 @@
     font-size: 8.5pt;
   }
 
+  /* === No reps box === */
+  .no-reps {
+    border: 1px dashed #000;
+    background: #fff;
+    padding: 4px 8px;
+    margin-top: 6px;
+    font-size: 9pt;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .no-reps strong { text-transform: uppercase; letter-spacing: 0.3px; }
+  .no-reps .nr-line {
+    flex: 1;
+    border-bottom: 1px solid #000;
+    height: 16px;
+  }
+  .no-reps .small { font-size: 8pt; color: #555; }
+
   /* === Final score box (always at bottom of score area) === */
   .final {
     background: #fff3c0;
@@ -388,6 +407,7 @@
     <div class="sig">
       <div class="row"><span>Giudice:</span><span class="line"></span></div>
       <div class="row"><span>Firma:</span><span class="line"></span></div>
+      <div class="row"><span>Ora consegna:</span><span class="line"></span></div>
     </div>
     <div class="sig">
       <div class="row"><span>Atleta:</span><span class="line"></span></div>
@@ -421,8 +441,8 @@
     </div>
     <div class="cat-row">
       <strong>Modalità:</strong>
-      <label><input type="checkbox"> <strong>RX</strong> (Ult / Adv / Cha M)</label>
-      <label><input type="checkbox"> <strong>Scaled</strong> (Ess M / Perf F / Int F)</label>
+      <label><input type="checkbox"> <strong>RX</strong> (Ult / Adv / Cha M / Perf F)</label>
+      <label><input type="checkbox"> <strong>Scaled</strong> (Ess M / Int F)</label>
     </div>
   </div>
 
@@ -472,6 +492,7 @@
     <div class="sig">
       <div class="row"><span>Giudice:</span><span class="line"></span></div>
       <div class="row"><span>Firma:</span><span class="line"></span></div>
+      <div class="row"><span>Ora consegna:</span><span class="line"></span></div>
     </div>
     <div class="sig">
       <div class="row"><span>Atleta:</span><span class="line"></span></div>
@@ -524,27 +545,22 @@
     <table>
       <thead>
         <tr>
-          <th style="width:25%;">Tempo inizio sprint</th>
-          <th style="width:25%;">Tempo fine (60s dopo)</th>
+          <th style="width:22%;">Tempo inizio sprint</th>
+          <th style="width:22%;">Tempo fine (60s dopo)</th>
+          <th style="width:26%;">Calorie totali (display)</th>
           <th>Note giudice</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td class="input-cell" style="height:30px;"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr>
+          <td class="input-cell" style="height:36px;"></td>
+          <td class="input-cell"></td>
+          <td class="input-cell" style="font-size:18pt; background:#fff8c4;"></td>
+          <td class="input-cell"></td>
+        </tr>
       </tbody>
     </table>
-
-    <div style="margin-top:14px;">
-      <table>
-        <thead>
-          <tr><th colspan="3">Lettura display Assault Bike</th></tr>
-          <tr><th style="width:33%;">Calorie totali (display)</th><th style="width:33%;">Doppia lettura (controllo)</th><th>Differenza?</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="input-cell" style="height:32px; font-size:18pt;"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
-        </tbody>
-      </table>
-    </div>
+    <p class="small" style="margin:4px 0 0;">Reset monitor prima del GO. Lettura calorie al display al "STOP" 60s dopo. Niente piedi a terra durante lo sprint.</p>
 
     <div class="final">
       <div class="label">Score finale (cal totali)</div>
@@ -556,6 +572,7 @@
     <div class="sig">
       <div class="row"><span>Giudice:</span><span class="line"></span></div>
       <div class="row"><span>Firma:</span><span class="line"></span></div>
+      <div class="row"><span>Ora consegna:</span><span class="line"></span></div>
     </div>
     <div class="sig">
       <div class="row"><span>Atleta:</span><span class="line"></span></div>
@@ -641,6 +658,7 @@
     <div class="sig">
       <div class="row"><span>Giudice:</span><span class="line"></span></div>
       <div class="row"><span>Firma:</span><span class="line"></span></div>
+      <div class="row"><span>Ora consegna:</span><span class="line"></span></div>
     </div>
     <div class="sig">
       <div class="row"><span>Atleta:</span><span class="line"></span></div>
@@ -721,6 +739,7 @@
     <div class="sig">
       <div class="row"><span>Giudice:</span><span class="line"></span></div>
       <div class="row"><span>Firma:</span><span class="line"></span></div>
+      <div class="row"><span>Ora consegna:</span><span class="line"></span></div>
     </div>
     <div class="sig">
       <div class="row"><span>Atleta:</span><span class="line"></span></div>
@@ -765,30 +784,32 @@
 
   <div class="section standards">
     <h2>Format & Standard</h2>
-    <p><strong>For Time, cap 10'.</strong> Chipper: 9 SOB → 15 BJO → 12 G2S → 15m carry → 15 G2S → 15m carry → 12 G2S → 15 BJO → 9 SOB. <strong>Total: 87 movements + 30m carry</strong>. T.B. = dopo il primo blocco di Sandbag G2S.</p>
+    <p><strong>For Time, cap 10'.</strong> Chipper: 9 SOB → 15 BJO → 12 G2S → carry (2×7,5m) → 15 G2S → carry (2×7,5m) → 12 G2S → 15 BJO → 9 SOB. <strong>Total score: 91 reps</strong>. T.B. = dopo il primo blocco di Sandbag G2S.</p>
     <p class="small">Standard: SOB=Sandbag Over Bar (alto barra). BJO=Box Jump Over (atterra entrambi i piedi). G2S=Ground to Shoulder (spalla, qualsiasi tecnica). Carry=15m con sandbag in mano/spalla.</p>
+    <p class="small"><strong>Regola carry (NUOVA):</strong> il carry da 15m vale <strong>2 reps</strong>, una ogni <strong>7,5m</strong>. Ogni 7,5m completati = 1 rep valida (NON è una no rep). Se il cap arriva a metà carry, conti la rep da 7,5m solo se è stata effettivamente completata.</p>
   </div>
 
   <div class="score">
     <table>
       <thead>
-        <tr><th>Movimento</th><th>Reps target</th><th>Tick reps (1 box = 1 rep)</th></tr>
+        <tr><th style="width:14%;">#</th><th>Movimento</th><th style="width:22%;">Reps target</th><th style="width:24%;">Completate</th><th>Note / T.B.</th></tr>
       </thead>
       <tbody>
-        <tr><td>SOB</td><td>9</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
-        <tr><td>BJO</td><td>15</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
-        <tr><td>G2S</td><td>12</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
-        <tr><td>Carry</td><td>15m</td><td><div class="tally"><span class="b"></span> <strong style="margin:0 8px;">→ T.B. ufficiale dopo il blocco G2S precedente</strong></div></td></tr>
-        <tr><td>G2S</td><td>15</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
-        <tr><td>Carry</td><td>15m</td><td><div class="tally"><span class="b"></span></div></td></tr>
-        <tr><td>G2S</td><td>12</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
-        <tr><td>BJO</td><td>15</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
-        <tr><td>SOB</td><td>9</td><td><div class="tally"><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span></div></td></tr>
+        <tr><td>1</td><td>SOB</td><td>9</td><td class="input-cell"></td><td></td></tr>
+        <tr><td>2</td><td>BJO</td><td>15</td><td class="input-cell"></td><td></td></tr>
+        <tr><td>3</td><td>G2S</td><td>12</td><td class="input-cell"></td><td style="font-size:8.5pt;"><strong>T.B. fine blocco</strong></td></tr>
+        <tr><td>4</td><td>Carry</td><td>2 (7,5m + 7,5m)</td><td class="input-cell"></td><td style="font-size:8.5pt;">ogni 7,5m = 1 rep</td></tr>
+        <tr><td>5</td><td>G2S</td><td>15</td><td class="input-cell"></td><td></td></tr>
+        <tr><td>6</td><td>Carry</td><td>2 (7,5m + 7,5m)</td><td class="input-cell"></td><td style="font-size:8.5pt;">ogni 7,5m = 1 rep</td></tr>
+        <tr><td>7</td><td>G2S</td><td>12</td><td class="input-cell"></td><td></td></tr>
+        <tr><td>8</td><td>BJO</td><td>15</td><td class="input-cell"></td><td></td></tr>
+        <tr><td>9</td><td>SOB</td><td>9</td><td class="input-cell"></td><td></td></tr>
       </tbody>
     </table>
 
     <div class="dnf-block">
-      <strong>Tempo finale (se completato):</strong> ______ <span class="small">(cap 10:00)</span> &nbsp;|&nbsp; <strong>DNF?</strong> ☐ Sì → reps completate al cap: ____ / 87
+      <strong>Tempo finale (se completato):</strong> ______ <span class="small">(cap 10:00)</span> &nbsp;|&nbsp; <strong>DNF?</strong> ☐ Sì → reps valide completate al cap: ____ / 91<br>
+      <span class="small">Carry = 2 reps (1 ogni 7,5m). Esempio: cap arriva a metà del primo carry (7,5m completati, 7,5m no) → score DNF = 9+15+12+1 = 37 reps.</span>
     </div>
 
     <div class="final">
@@ -801,6 +822,7 @@
     <div class="sig">
       <div class="row"><span>Giudice:</span><span class="line"></span></div>
       <div class="row"><span>Firma:</span><span class="line"></span></div>
+      <div class="row"><span>Ora consegna:</span><span class="line"></span></div>
     </div>
     <div class="sig">
       <div class="row"><span>Atleta:</span><span class="line"></span></div>
@@ -877,7 +899,8 @@
         <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
         <span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span><span class="b"></span>
       </div>
-      <p class="small" style="margin:6px 0 0;">Conta solo queste reps. I 3 round non contano nel punteggio (solo per arrivare al final skill). Se l'atleta non chiude i 3 round entro il cap, score = 0.</p>
+      <p class="small" style="margin:6px 0 0;">Conta solo queste reps. I 3 round non contano nel punteggio (solo per arrivare al final skill).</p>
+      <p style="margin:6px 0 0; padding:4px 8px; background:#ffe0e0; border:1.5px solid #c00; font-weight:700; font-size:9.5pt; color:#900;">⚠️ Se l'atleta NON chiude i 3 round entro il cap → <strong>SCORE = 0</strong>. Il giudice scrive proprio <strong>"0"</strong> nello score finale, NON lascia vuoto.</p>
     </div>
 
     <div class="final">
@@ -890,6 +913,7 @@
     <div class="sig">
       <div class="row"><span>Giudice:</span><span class="line"></span></div>
       <div class="row"><span>Firma:</span><span class="line"></span></div>
+      <div class="row"><span>Ora consegna:</span><span class="line"></span></div>
     </div>
     <div class="sig">
       <div class="row"><span>Atleta:</span><span class="line"></span></div>
@@ -976,6 +1000,7 @@
     <div class="sig">
       <div class="row"><span>Giudice:</span><span class="line"></span></div>
       <div class="row"><span>Firma:</span><span class="line"></span></div>
+      <div class="row"><span>Ora consegna:</span><span class="line"></span></div>
     </div>
     <div class="sig">
       <div class="row"><span>Atleta:</span><span class="line"></span></div>
@@ -1062,6 +1087,7 @@
     <div class="sig">
       <div class="row"><span>Giudice:</span><span class="line"></span></div>
       <div class="row"><span>Firma:</span><span class="line"></span></div>
+      <div class="row"><span>Ora consegna:</span><span class="line"></span></div>
     </div>
     <div class="sig">
       <div class="row"><span>Atleta:</span><span class="line"></span></div>
@@ -1129,7 +1155,10 @@
         <tr><td>5</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
         <tr><td>6</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
         <tr><td>7</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
-        <tr><td>8+</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>8</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>9</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>10</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
+        <tr><td>11+</td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td><td class="input-cell"></td></tr>
       </tbody>
     </table>
 
@@ -1147,6 +1176,7 @@
     <div class="sig">
       <div class="row"><span>Giudice:</span><span class="line"></span></div>
       <div class="row"><span>Firma:</span><span class="line"></span></div>
+      <div class="row"><span>Ora consegna:</span><span class="line"></span></div>
     </div>
     <div class="sig">
       <div class="row"><span>Atleta:</span><span class="line"></span></div>
