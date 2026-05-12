@@ -430,7 +430,20 @@
       <li><strong>1. Cerca atleta</strong>: inizia a digitare il nome. Selezionalo dai suggerimenti. Compare la "pillola" col nome.</li>
       <li><strong>2. Seleziona evento</strong>: dal menu a tendina scegli l'evento da inserire (E1, E2, …, E10).</li>
       <li><strong>Form dinamico</strong>: i campi cambiano in base al tipo di evento (vedi sotto i 5 casi).</li>
-      <li><strong>Tie-break (campo 4, opzionale)</strong>: cronometro al checkpoint T.B. del WOD (es. dopo l'ultima Rope Climb di E2, dopo i Thrusters di E4, fine row di E5). In mm:ss. Lascialo vuoto se l'atleta non ha raggiunto il checkpoint o se l'evento non ha T.B. designato. Usato per spareggi automatici in classifica.</li>
+      <li><strong>Tie-break (campo 4, opzionale, sempre mm:ss)</strong>: cronometro al checkpoint T.B. del WOD. Lascialo vuoto se l'atleta non ha raggiunto il checkpoint o se l'evento non ha T.B. designato. Tabella checkpoint per WOD:
+        <ul style="margin: 4px 0 0;">
+          <li><strong>E1 Snatch</strong>: no T.B. (weight, parità rara)</li>
+          <li><strong>E2 Ascending Ladder</strong>: tempo dopo l'ultima RC (RX) o dopo l'ultimo BOL (Scaled)</li>
+          <li><strong>E3 Bike</strong>: no T.B.</li>
+          <li><strong>E4 Barbell Sprint</strong>: tempo a fine Thrusters dell'ultimo round completo</li>
+          <li><strong>E5 Engine Test</strong>: tempo end row</li>
+          <li><strong>E6 Ground Zero</strong>: tempo a fine primo blocco G2S (12 reps)</li>
+          <li><strong>E7 Barbell Version</strong>: tempo a fine round 3 (buy-in)</li>
+          <li><strong>E8 Engine Chaos</strong>: tempo a fine blocco 2 (= dopo Ski 2)</li>
+          <li><strong>E9 Heavy Clean Ladder</strong>: tempo a fine ultimo step ladder completato</li>
+          <li><strong>E10 The Finale</strong>: tempo a fine ultimo round completo</li>
+        </ul>
+      </li>
       <li><strong>Punteggio EPI calcolato</strong>: appare in tempo reale appena compili i campi. Se è strano → ricontrolla.</li>
       <li>Se il risultato esiste già → compare il warning <em>"Risultato già presente"</em>. Salvando, sovrascrivi.</li>
       <li><strong>Salva risultato</strong>: il bottone si abilita solo quando hai compilato tutto. Conferma → il risultato è in Firebase.</li>

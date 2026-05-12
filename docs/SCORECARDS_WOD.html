@@ -207,6 +207,27 @@
   }
   .no-reps .small { font-size: 8pt; color: #555; }
 
+  /* === T.B. field (uniform across all 10 WODs) === */
+  .tb-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    margin-top: 6px;
+    border: 1px dashed #555;
+    font-size: 9.5pt;
+    background: #fff;
+  }
+  .tb-field strong { letter-spacing: 0.3px; }
+  .tb-field .tb-cell {
+    display: inline-block;
+    width: 38px;
+    height: 18px;
+    border-bottom: 1.5px solid #000;
+  }
+  .tb-field .tb-sep { font-weight: 700; font-size: 11pt; }
+  .tb-field .tb-note { font-size: 8pt; color: #555; margin-left: auto; }
+
   /* === Final score box (always at bottom of score area) === */
   .final {
     background: #fff3c0;
@@ -397,6 +418,12 @@
       </tbody>
     </table>
 
+    <div class="tb-field">
+      <strong>T.B. (mm:ss):</strong>
+      <span class="tb-cell"></span><span class="tb-sep">:</span><span class="tb-cell"></span>
+      <span class="tb-note">cronometro al checkpoint T.B. indicato in "Format & Standard"</span>
+    </div>
+
     <div class="final">
       <div class="label">Score finale (miglior valida)</div>
       <div class="value"></div>
@@ -482,6 +509,12 @@
       <strong>Ultimo round completato:</strong> ______ &nbsp;&nbsp; <strong>Reps parziali round corrente:</strong> WW ____ + (RC|BOL) ____
     </div>
 
+    <div class="tb-field">
+      <strong>T.B. (mm:ss):</strong>
+      <span class="tb-cell"></span><span class="tb-sep">:</span><span class="tb-cell"></span>
+      <span class="tb-note">cronometro al checkpoint T.B. indicato in "Format & Standard"</span>
+    </div>
+
     <div class="final">
       <div class="label">Score finale (reps totali)</div>
       <div class="value"></div>
@@ -561,6 +594,12 @@
       </tbody>
     </table>
     <p class="small" style="margin:4px 0 0;">Reset monitor prima del GO. Lettura calorie al display al "STOP" 60s dopo. Niente piedi a terra durante lo sprint.</p>
+
+    <div class="tb-field">
+      <strong>T.B. (mm:ss):</strong>
+      <span class="tb-cell"></span><span class="tb-sep">:</span><span class="tb-cell"></span>
+      <span class="tb-note">cronometro al checkpoint T.B. indicato in "Format & Standard"</span>
+    </div>
 
     <div class="final">
       <div class="label">Score finale (cal totali)</div>
@@ -648,6 +687,12 @@
       <strong>Round completi:</strong> ____ &nbsp;×&nbsp; 30 reps = ____ &nbsp;&nbsp; <strong>Reps extra round corrente:</strong> ____ &nbsp;→&nbsp; <strong>TOTALE:</strong> ______ reps
     </div>
 
+    <div class="tb-field">
+      <strong>T.B. (mm:ss):</strong>
+      <span class="tb-cell"></span><span class="tb-sep">:</span><span class="tb-cell"></span>
+      <span class="tb-note">cronometro al checkpoint T.B. indicato in "Format & Standard"</span>
+    </div>
+
     <div class="final">
       <div class="label">Score finale (round + reps)</div>
       <div class="value"></div>
@@ -727,6 +772,12 @@
       <strong>DNF (oltre il cap di 15'):</strong>
       ☐ <strong>Sì</strong> → Metri completati al cap: ______ / <span style="font-size:8pt;">3000 RX (1000+2000) — 2250 Ess (750+1500)</span><br>
       <span class="small">N.B. in caso di DNF, sull'app spunta la checkbox <em>DNF</em> e inserisci i metri totali completati. NON inserire un tempo oltre il cap.</span>
+    </div>
+
+    <div class="tb-field">
+      <strong>T.B. (mm:ss):</strong>
+      <span class="tb-cell"></span><span class="tb-sep">:</span><span class="tb-cell"></span>
+      <span class="tb-note">cronometro al checkpoint T.B. indicato in "Format & Standard"</span>
     </div>
 
     <div class="final">
@@ -810,6 +861,12 @@
     <div class="dnf-block">
       <strong>Tempo finale (se completato):</strong> ______ <span class="small">(cap 10:00)</span> &nbsp;|&nbsp; <strong>DNF?</strong> ☐ Sì → reps valide completate al cap: ____ / 91<br>
       <span class="small">Carry = 2 reps (1 ogni 7,5m). Esempio: cap arriva a metà del primo carry (7,5m completati, 7,5m no) → score DNF = 9+15+12+1 = 37 reps.</span>
+    </div>
+
+    <div class="tb-field">
+      <strong>T.B. (mm:ss):</strong>
+      <span class="tb-cell"></span><span class="tb-sep">:</span><span class="tb-cell"></span>
+      <span class="tb-note">cronometro al checkpoint T.B. indicato in "Format & Standard"</span>
     </div>
 
     <div class="final">
@@ -903,6 +960,12 @@
       <p style="margin:6px 0 0; padding:4px 8px; background:#ffe0e0; border:1.5px solid #c00; font-weight:700; font-size:9.5pt; color:#900;">⚠️ Se l'atleta NON chiude i 3 round entro il cap → <strong>SCORE = 0</strong>. Il giudice scrive proprio <strong>"0"</strong> nello score finale, NON lascia vuoto.</p>
     </div>
 
+    <div class="tb-field">
+      <strong>T.B. (mm:ss):</strong>
+      <span class="tb-cell"></span><span class="tb-sep">:</span><span class="tb-cell"></span>
+      <span class="tb-note">cronometro al checkpoint T.B. indicato in "Format & Standard"</span>
+    </div>
+
     <div class="final">
       <div class="label">Score finale (reps skill finale)</div>
       <div class="value"></div>
@@ -990,6 +1053,12 @@
       <strong>Reps blocchi fissi: 60 BOL + ~108-120 cal ergo = ~168-180.</strong> Aggiungi i burpees → TOTALE: ______ reps
     </div>
 
+    <div class="tb-field">
+      <strong>T.B. (mm:ss):</strong>
+      <span class="tb-cell"></span><span class="tb-sep">:</span><span class="tb-cell"></span>
+      <span class="tb-note">cronometro al checkpoint T.B. indicato in "Format & Standard"</span>
+    </div>
+
     <div class="final">
       <div class="label">Score finale (reps totali)</div>
       <div class="value"></div>
@@ -1046,7 +1115,7 @@
   <div class="section standards">
     <h2>Format & Standard</h2>
     <p><strong>AMRAP 8'.</strong> Ladder: 10 → 8 → 6 → 4 → 2 cleans a carichi crescenti, poi AMRAP cleans al carico finale. <strong>Any clean</strong> (power / squat / split). Score = reps totali (es. 10+8+6+4+2+7 = 37).</p>
-    <p class="small">Standard: ogni clean parte da terra, finisce sul front rack con anche/ginocchia estese. T.B. (parità) = ultimo step clean completato interamente.</p>
+    <p class="small">Standard: ogni clean parte da terra, finisce sul front rack con anche/ginocchia estese. <strong>T.B. = tempo (mm:ss) all'ultimo step ladder completato interamente</strong> (es. step 4 chiuso a 6:42 → T.B. = 6:42).</p>
   </div>
 
   <div class="score">
@@ -1074,7 +1143,13 @@
     </table>
 
     <div class="dnf-block">
-      <strong>Ultimo step intero completato:</strong> ____ (T.B. parità) &nbsp;&nbsp; <strong>Cleans extra AMRAP:</strong> ____ &nbsp;&nbsp; <strong>TOTALE REPS:</strong> ______ <span class="small">(es. 10+8+6+4+2+7 = 37)</span>
+      <strong>Ultimo step intero completato:</strong> ____ &nbsp;&nbsp; <strong>Tempo a fine ultimo step (= T.B.):</strong> __:__ &nbsp;&nbsp; <strong>Cleans extra AMRAP:</strong> ____ &nbsp;&nbsp; <strong>TOTALE REPS:</strong> ______ <span class="small">(es. 10+8+6+4+2+7 = 37)</span>
+    </div>
+
+    <div class="tb-field">
+      <strong>T.B. (mm:ss):</strong>
+      <span class="tb-cell"></span><span class="tb-sep">:</span><span class="tb-cell"></span>
+      <span class="tb-note">cronometro al checkpoint T.B. indicato in "Format & Standard"</span>
     </div>
 
     <div class="final">
@@ -1164,6 +1239,12 @@
 
     <div class="dnf-block">
       <strong>Round completi:</strong> ____ × 26 = ____ &nbsp;&nbsp; <strong>Reps extra round corrente:</strong> ____ &nbsp;→&nbsp; <strong>TOTALE:</strong> ______ reps
+    </div>
+
+    <div class="tb-field">
+      <strong>T.B. (mm:ss):</strong>
+      <span class="tb-cell"></span><span class="tb-sep">:</span><span class="tb-cell"></span>
+      <span class="tb-note">cronometro al checkpoint T.B. indicato in "Format & Standard"</span>
     </div>
 
     <div class="final">

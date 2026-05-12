@@ -161,7 +161,7 @@ const XENOM_DATA = {
       formato: "AMRAP — Ladder 10/8/6/4/2 + AMRAP top weight",
       pesoRX_M: "Top: 110 / 100 / 90 / 70 kg (Ult/Adv/Cha/Ess)",
       pesoRX_F: "Top: 60 / 45 kg (Perf/Int)",
-      descrizione: "AMRAP 8 minuti. Ladder a carichi crescenti: 10 cleans, poi 8, 6, 4, 2 cleans (ogni step a peso più pesante), infine AMRAP cleans al carico finale per il tempo restante. Any clean allowed (power, squat o split). Carichi top M (Ult/Adv/Cha/Ess): 110/100/90/70 kg. Carichi top F (Perf/Int): 60/45 kg. Score = reps totali completate. T.B. (solo in caso di parità) = ultimo step clean completato interamente.",
+      descrizione: "AMRAP 8 minuti. Ladder a carichi crescenti: 10 cleans, poi 8, 6, 4, 2 cleans (ogni step a peso più pesante), infine AMRAP cleans al carico finale per il tempo restante. Any clean allowed (power, squat o split). Carichi top M (Ult/Adv/Cha/Ess): 110/100/90/70 kg. Carichi top F (Perf/Int): 60/45 kg. Score = reps totali completate. T.B. (in caso di parità EPI) = tempo (mm:ss) all'ultimo step ladder completato interamente.",
       scoring: "Ripetizioni totali (es. 10+8+6+4+2+7 = 37)",
       giorno: 2,
       icona: "⚡"

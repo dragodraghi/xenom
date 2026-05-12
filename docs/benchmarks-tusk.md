@@ -124,7 +124,7 @@ Legenda colonne:
 - AMRAP 8' con ladder a carichi crescenti: **10 → 8 → 6 → 4 → 2 cleans** (ogni step a peso più pesante), poi **AMRAP cleans** al carico finale per il tempo restante
 - Any clean allowed (power / squat / split)
 - Score = **reps totali** (es. 10+8+6+4+2+7 = 37)
-- T.B. (solo in caso di parità) = ultimo step clean completato interamente
+- T.B. (in caso di parità EPI) = **tempo (mm:ss) all'ultimo step ladder completato interamente** (es. step 4 chiuso a 6:42 → T.B. = 6:42). Coerente con app admin che vuole mm:ss.
 - Carichi (kg) — step: 10 / 8 / 6 / 4 / 2 / AMRAP top:
   - Ultimate M:     60 / 70 / 80 / 90 / 100 / 110
   - Advanced M:     50 / 60 / 70 / 80 / 90 / 100
