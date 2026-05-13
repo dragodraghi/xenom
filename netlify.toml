@@ -50,3 +50,50 @@
   from = "/tusk"
   to = "/invito.html"
   status = 200
+
+# === Hide sensitive files from public access ===
+# Block direct serving of source-control / dev artifacts. Status 404 makes
+# Netlify return its default not-found page (the `to` is required by schema
+# but ignored for 404 redirects).
+
+[[redirects]]
+  from = "/firestore.rules"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/firestore.indexes.json"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/firebase.json"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/tests/*"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/setup.html"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/docs/superpowers/*"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/.codex-deploy/*"
+  to = "/"
+  status = 404
+  force = true
