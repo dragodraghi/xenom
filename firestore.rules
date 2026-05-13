@@ -123,7 +123,7 @@ service cloud.firestore {
     }
 
     function isValidTuskRisultatoPubblico() {
-      return request.resource.data.keys().hasOnly(['atletaId', 'eventoId', 'categoriaId', 'puntiEpi'])
+      return request.resource.data.keys().hasOnly(['atletaId', 'eventoId', 'categoriaId', 'puntiEpi', 'tieBreak'])
         && request.resource.data.keys().hasAll(['atletaId', 'eventoId', 'categoriaId', 'puntiEpi'])
         && request.resource.data.atletaId is string
         && request.resource.data.atletaId.size() > 0
@@ -135,7 +135,16 @@ service cloud.firestore {
         && isValidTuskCategoria(request.resource.data.categoriaId)
         && request.resource.data.puntiEpi is number
         && request.resource.data.puntiEpi >= 0
-        && request.resource.data.puntiEpi <= 20000;
+        && request.resource.data.puntiEpi <= 20000
+        && (
+          !request.resource.data.keys().hasAny(['tieBreak'])
+          || request.resource.data.tieBreak == null
+          || (
+            request.resource.data.tieBreak is number
+            && request.resource.data.tieBreak >= 0
+            && request.resource.data.tieBreak <= 3600
+          )
+        );
     }
 
     match /games/{gameId} {

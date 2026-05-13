@@ -553,6 +553,15 @@ function datiRisultatoPubblico(r) {
   };
 }
 
+function tieBreakSecondi(r) {
+  return typeof r?.tieBreak === "number" && r.tieBreak > 0 ? r.tieBreak : null;
+}
+
+function formatTieBreak(r) {
+  const tb = tieBreakSecondi(r);
+  return tb === null ? "" : `T.B. ${secondiATempo(tb)}`;
+}
+
 function normalizzaChiaveDuplicati(value) {
   return String(value || "")
     .normalize("NFD")
@@ -620,13 +629,14 @@ function atletaPubblicoUguale(esistente, prossimo) {
 }
 
 function risultatoPubblicoUguale(esistente, prossimo) {
-  const chiaviConsentite = new Set(["atletaId", "eventoId", "categoriaId", "puntiEpi"]);
+  const chiaviConsentite = new Set(["atletaId", "eventoId", "categoriaId", "puntiEpi", "tieBreak"]);
   return esistente
     && Object.keys(esistente).every((k) => chiaviConsentite.has(k))
     && esistente.atletaId === prossimo.atletaId
     && esistente.eventoId === prossimo.eventoId
     && esistente.categoriaId === prossimo.categoriaId
-    && Number(esistente.puntiEpi || 0) === Number(prossimo.puntiEpi || 0);
+    && Number(esistente.puntiEpi || 0) === Number(prossimo.puntiEpi || 0)
+    && tieBreakSecondi(esistente) === tieBreakSecondi(prossimo);
 }
 
 function programmaSyncAtletiPubblici() {
@@ -1400,7 +1410,8 @@ function formatAutoreRisultato(r) {
 }
 
 function formatDettaglioRisultato(r, evento) {
-  return `${formatValoreEsistente(r, evento)} -> ${r.puntiEpi} punti EPI (${formatAutoreRisultato(r)})`;
+  const tb = formatTieBreak(r);
+  return `${formatValoreEsistente(r, evento)}${tb ? " - " + tb : ""} -> ${r.puntiEpi} punti EPI (${formatAutoreRisultato(r)})`;
 }
 
 function timestampKey(ts) {
@@ -1416,6 +1427,7 @@ function firmaRisultato(r) {
     valoreSecondario: r?.valoreSecondario ?? null,
     dnf: isDnfRisultato(r),
     puntiEpi: r?.puntiEpi ?? null,
+    tieBreak: tieBreakSecondi(r),
     aggiornatoDa: r?.aggiornatoDa || r?.inseritoDa || "",
     aggiornatoIl: timestampKey(r?.aggiornatoIl || r?.inseritoIl)
   });
@@ -1444,6 +1456,7 @@ risBtnSalva.addEventListener("click", async () => {
   const puntiEpi = isDnf
     ? calcolaEpiDnf(valore, eventoCorrente, atletaCorrente.categoriaId)
     : calcolaEpi(valore, eventoCorrente, atletaCorrente.categoriaId);
+  const tieBreak = leggiTieBreak();
   const risId = `${atletaCorrente.id}_${eventoCorrente.id}`;
   const risultatoRef = doc(db, COL.risultati, risId);
   const risultatoPubblicoRef = doc(db, COL.risultatiPubblici, risId);
@@ -1463,7 +1476,8 @@ risBtnSalva.addEventListener("click", async () => {
     if (currentSnap.exists()) {
       const current = currentSnap.data();
       overwriteSignature = firmaRisultato(current);
-      if (!confirm(`Sovrascrivere il risultato esistente per ${atletaCorrente.nome} su E${eventoCorrente.numero} ${eventoCorrente.nome}?\n\nPrecedente: ${formatDettaglioRisultato(current, eventoCorrente)}\nNuovo: ${puntiEpi} pt\nGiudice: ${giudice}`)) return;
+      const nuovoTb = formatTieBreak({ tieBreak });
+      if (!confirm(`Sovrascrivere il risultato esistente per ${atletaCorrente.nome} su E${eventoCorrente.numero} ${eventoCorrente.nome}?\n\nPrecedente: ${formatDettaglioRisultato(current, eventoCorrente)}\nNuovo: ${puntiEpi} pt${nuovoTb ? " - " + nuovoTb : " - T.B. vuoto"}\nGiudice: ${giudice}`)) return;
       overwriteConfirmed = true;
     }
 
@@ -1483,7 +1497,6 @@ risBtnSalva.addEventListener("click", async () => {
       }
 
       const previous = snap.exists() ? snap.data() : null;
-      const tieBreak = leggiTieBreak();
       const payload = {
         atletaId: atletaCorrente.id,
         eventoId: eventoCorrente.id,
@@ -1642,6 +1655,7 @@ function renderAuditRisultati(outputEl, dati) {
     const categoria = NOMI_CATEGORIE[r.categoriaId] || r.categoriaId || "-";
     const eventoLabel = evento ? `E${evento.numero} - ${evento.nome}` : `Evento ${r.eventoId}`;
     const giudice = r.aggiornatoDa || r.inseritoDa || "giudice non indicato";
+    const tb = formatTieBreak(r);
     return `
       <div class="audit-row">
         <div class="audit-row__main">
@@ -1649,7 +1663,7 @@ function renderAuditRisultati(outputEl, dati) {
           <div class="audit-row__event">${escapeHtml(categoria)} · ${escapeHtml(atleta?.box || "-")}</div>
         </div>
         <div class="audit-row__meta">
-          <div class="audit-row__event">${escapeHtml(eventoLabel)} · ${escapeHtml(formatValoreRisultato(r, evento))}</div>
+          <div class="audit-row__event">${escapeHtml(eventoLabel)} · ${escapeHtml(formatValoreRisultato(r, evento))}${tb ? " - " + escapeHtml(tb) : ""}</div>
           <div class="audit-row__judge">${escapeHtml(giudice)} · ${escapeHtml(formatDateTime(r.aggiornatoIl || r.inseritoIl) || "ora n.d.")}</div>
         </div>
         <div class="audit-row__score">
@@ -2077,6 +2091,8 @@ function initTabStrumenti() {
           "DNF",
           "Valore raw",
           "Valore secondario",
+          "T.B. mm:ss",
+          "T.B. secondi",
           "Punti EPI",
           "Giudice ultimo update",
           "Giudice primo inserimento",
@@ -2088,6 +2104,7 @@ function initTabStrumenti() {
         ordered.forEach((r) => {
           const atleta = dati.atletiMap.get(r.atletaId);
           const evento = dati.eventiMap.get(r.eventoId);
+          const tb = tieBreakSecondi(r);
           const cells = [
             formatDateTime(r.aggiornatoIl || r.inseritoIl),
             evento ? `E${evento.numero} ${evento.nome}` : `Evento ${r.eventoId}`,
@@ -2101,6 +2118,8 @@ function initTabStrumenti() {
             isDnfRisultato(r) ? "SI" : "",
             r.valore ?? "",
             r.valoreSecondario ?? "",
+            tb === null ? "" : secondiATempo(tb),
+            tb === null ? "" : tb,
             Number(r.puntiEpi || 0).toFixed(1),
             r.aggiornatoDa || "",
             r.inseritoDa || "",
