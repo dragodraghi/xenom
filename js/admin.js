@@ -65,7 +65,9 @@ let slotConfigLoaded = false;
 let atletiLoaded = false;
 let iscrizioniLoaded = false;
 let iscrizioniPrevCount = -1; // -1 = primo render, niente beep
+let iscrizioniPrevIds = new Set();
 const NOTIFY_AUDIO_KEY = "tuskNotifyAudio";
+const NOTIFY_BROWSER_KEY = "tuskBrowserNotifications";
 let audioCtx = null;
 
 function isNotifyAudioOn() {
@@ -99,6 +101,64 @@ function beepNuovaIscrizione() {
       osc.stop(start + dur + 0.02);
     });
   } catch (e) { /* audio non disponibile */ }
+}
+
+function browserNotificationsSupported() {
+  return "Notification" in window && window.isSecureContext;
+}
+
+function isBrowserNotifyOn() {
+  try {
+    return browserNotificationsSupported()
+      && localStorage.getItem(NOTIFY_BROWSER_KEY) === "on"
+      && Notification.permission === "granted";
+  } catch (e) {
+    return false;
+  }
+}
+
+function setBrowserNotifyStored(on) {
+  try { localStorage.setItem(NOTIFY_BROWSER_KEY, on ? "on" : "off"); } catch (e) {}
+}
+
+async function enableBrowserNotifications() {
+  if (!browserNotificationsSupported()) {
+    showToast("Notifiche browser non disponibili su questo dispositivo", "err");
+    return false;
+  }
+  if (Notification.permission === "denied") {
+    setBrowserNotifyStored(false);
+    showToast("Notifiche bloccate: abilitarle dalle impostazioni del browser", "err");
+    return false;
+  }
+  const permission = Notification.permission === "granted"
+    ? "granted"
+    : await Notification.requestPermission();
+  const enabled = permission === "granted";
+  setBrowserNotifyStored(enabled);
+  if (!enabled) showToast("Notifiche non autorizzate", "err");
+  return enabled;
+}
+
+function notificaNuovaIscrizione(data) {
+  if (!isBrowserNotifyOn()) return;
+  try {
+    const categoria = NOMI_CATEGORIE[data?.categoriaId] || data?.categoriaId || "Categoria non indicata";
+    const body = `${data?.nome || "Nuovo atleta"} - ${categoria}${data?.box ? ` - ${data.box}` : ""}`;
+    const notification = new Notification("Nuova iscrizione TUSK", {
+      body,
+      icon: "/assets/icons/tusk-icon-192.png",
+      badge: "/assets/icons/tusk-icon-192.png",
+      tag: `tusk-iscrizione-${data?.nome || Date.now()}`,
+      requireInteraction: true
+    });
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+    };
+  } catch (e) {
+    console.warn("Notifica nuova iscrizione:", e.message || e);
+  }
 }
 
 // === Auth ===
@@ -175,6 +235,8 @@ function cleanupListeners() {
   unsubscribers = [];
   clearTimeout(syncPubbliciTimer);
   clearTimeout(syncIscrizioniStatoTimer);
+  iscrizioniPrevCount = -1;
+  iscrizioniPrevIds = new Set();
 }
 
 // =====================================================
@@ -216,6 +278,7 @@ function initShareControls() {
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
   });
   initAudioToggle();
+  initBrowserNotificationToggle();
   updateShareText();
 }
 
@@ -240,6 +303,53 @@ function initAudioToggle() {
     sync();
     if (next) beepNuovaIscrizione(); // beep di test quando si riattiva
   });
+  sync();
+  target.appendChild(btn);
+}
+
+function initBrowserNotificationToggle() {
+  const target = document.querySelector(".slot-dashboard__header");
+  if (!target || target.querySelector("[data-browser-notify-toggle]")) return;
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.dataset.browserNotifyToggle = "1";
+  btn.className = "btn btn--ghost btn--small";
+  btn.style.marginLeft = "0.4rem";
+
+  const sync = () => {
+    if (!browserNotificationsSupported()) {
+      btn.textContent = "Notifiche N/D";
+      btn.title = "Notifiche browser non disponibili su questo dispositivo o dominio.";
+      btn.disabled = true;
+      return;
+    }
+    const storedOn = (() => {
+      try { return localStorage.getItem(NOTIFY_BROWSER_KEY) === "on"; } catch (e) { return false; }
+    })();
+    const on = storedOn && Notification.permission === "granted";
+    btn.textContent = on ? "Notifiche ON" : "Notifiche OFF";
+    btn.title = on
+      ? "Notifica browser alla nuova iscrizione attiva. Click per disattivare."
+      : "Click per autorizzare le notifiche browser alla nuova iscrizione.";
+    btn.disabled = false;
+  };
+
+  btn.addEventListener("click", async () => {
+    if (isBrowserNotifyOn()) {
+      setBrowserNotifyStored(false);
+      sync();
+      showToast("Notifiche disattivate");
+      return;
+    }
+    if (await enableBrowserNotifications()) {
+      sync();
+      showToast("Notifiche attivate");
+      notificaNuovaIscrizione({ nome: "Test notifica", categoriaId: "ultimate", box: "TUSK Protocol" });
+    } else {
+      sync();
+    }
+  });
+
   sync();
   target.appendChild(btn);
 }
@@ -424,11 +534,16 @@ function renderIscrizioni(snap) {
   iscrizioniCache = docs.map((d) => ({ id: d.id, ...d.data() }));
   iscrizioniLoaded = true;
   renderSlotDashboard();
-  // Beep se sono arrivate nuove iscrizioni (skip primo render)
+  const newDocs = iscrizioniPrevCount >= 0
+    ? docs.filter((d) => !iscrizioniPrevIds.has(d.id))
+    : [];
+  // Beep/notifica se sono arrivate nuove iscrizioni (skip primo render)
   if (iscrizioniPrevCount >= 0 && docs.length > iscrizioniPrevCount) {
     beepNuovaIscrizione();
+    newDocs.forEach((d) => notificaNuovaIscrizione(d.data()));
   }
   iscrizioniPrevCount = docs.length;
+  iscrizioniPrevIds = new Set(docs.map((d) => d.id));
   if (docs.length === 0) {
     listaIscrizioni.innerHTML = `<p class="admin-empty">Nessuna iscrizione in attesa.</p>`;
     badgeIscrizioni.hidden = true;

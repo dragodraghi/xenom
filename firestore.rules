@@ -7,6 +7,7 @@ service cloud.firestore {
 
     function isGameAdmin(gameId) {
       return isSignedIn()
+        && exists(/databases/$(database)/documents/games/$(gameId))
         && request.auth.uid in get(/databases/$(database)/documents/games/$(gameId)).data.admins;
     }
 
@@ -15,63 +16,14 @@ service cloud.firestore {
         && request.auth.token.firebase.sign_in_provider == 'anonymous';
     }
 
-    function isValidScheduleStatus(status) {
-      return status in ['bozza', 'inviata', 'accettata', 'rifiutata'];
-    }
-
-    function isValidPlayerCreate(playerId) {
-      return request.auth.uid == playerId
-        && request.resource.data.keys().hasOnly([
-          'name',
-          'joinedAt',
-          'predictions',
-          'topScorerPick',
-          'winnerPick',
-          'points',
-          'paid',
-          'scheduleStatus'
-        ])
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 30
-        && request.resource.data.joinedAt == request.time
-        && request.resource.data.predictions is map
-        && request.resource.data.predictions.keys().size() == 0
-        && request.resource.data.topScorerPick == ''
-        && request.resource.data.winnerPick == ''
-        && request.resource.data.points == 0
-        && request.resource.data.paid == false
-        && request.resource.data.scheduleStatus == 'bozza';
-    }
-
-    function isValidPlayerPicks() {
-      return request.resource.data.predictions is map
-        && request.resource.data.predictions.keys().size() <= 150
-        && request.resource.data.topScorerPick is string
-        && request.resource.data.topScorerPick.size() <= 40
-        && request.resource.data.winnerPick is string
-        && request.resource.data.winnerPick.size() <= 40;
-    }
-
     function isPlayerReadMarkerUpdate() {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastAnnouncementReadAt'])
         && request.resource.data.lastAnnouncementReadAt == request.time;
     }
 
-    function isPlayerSchedinaUpdate() {
-      return resource.data.scheduleStatus in ['bozza', 'rifiutata']
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'predictions',
-          'topScorerPick',
-          'winnerPick',
-          'scheduleStatus'
-        ])
-        && isValidPlayerPicks()
-        && isValidScheduleStatus(request.resource.data.scheduleStatus)
-        && (
-          request.resource.data.scheduleStatus == resource.data.scheduleStatus
-          || request.resource.data.scheduleStatus == 'inviata'
-        );
+    function threadCanReceiveMessage(gameId, playerUid) {
+      return !exists(/databases/$(database)/documents/games/$(gameId)/threads/$(playerUid))
+        || request.time > get(/databases/$(database)/documents/games/$(gameId)/threads/$(playerUid)).data.lastMessageAt + duration.value(5, 's');
     }
 
     function isTuskAdmin() {
@@ -149,6 +101,7 @@ service cloud.firestore {
 
     match /games/{gameId} {
       allow read: if isSignedIn();
+      // Existing admins can change any field.
       allow write: if isSignedIn()
         && request.auth.uid in resource.data.admins;
 
@@ -158,13 +111,27 @@ service cloud.firestore {
       }
 
       match /players/{playerId} {
-        allow read: if isSignedIn();
-        allow create: if isAnonymousUser()
-          && isValidPlayerCreate(playerId);
+        allow read: if isSignedIn() && (
+          request.auth.uid == playerId
+          || isGameAdmin(gameId)
+        );
+        // Player creation and schedina writes go through Cloud Functions:
+        // joinGame validates the access code, saveSchedule validates locks.
+        allow create: if false;
         allow update: if isAnonymousUser()
           && request.auth.uid == playerId
-          && (isPlayerReadMarkerUpdate() || isPlayerSchedinaUpdate());
+          && isPlayerReadMarkerUpdate();
+        // Admins can update/delete any player
         allow update, delete: if isGameAdmin(gameId);
+      }
+
+      match /publicPlayers/{playerId} {
+        allow read: if isSignedIn();
+        allow write: if false;
+      }
+
+      match /playerNames/{nameKey} {
+        allow read, write: if false;
       }
 
       match /announcements/{announcementId} {
@@ -203,6 +170,7 @@ service cloud.firestore {
           request.auth.uid == playerUid
           || isGameAdmin(gameId)
         );
+        // Maintained only by Cloud Functions and the markThreadRead callable.
         allow write: if false;
 
         match /messages/{messageId} {
@@ -211,22 +179,24 @@ service cloud.firestore {
             || isGameAdmin(gameId)
           );
           allow create: if isSignedIn()
+            && request.resource.data.keys().hasOnly(['text', 'from', 'senderUid', 'createdAt'])
             && request.resource.data.text is string
             && request.resource.data.text.size() > 0
             && request.resource.data.text.size() <= 1000
             && request.resource.data.senderUid == request.auth.uid
+            && request.resource.data.createdAt == request.time
             && (
+              // Player in own thread with per-thread rate limit.
               (
                 request.auth.uid == playerUid
                 && request.resource.data.from == 'player'
-                && (
-                  !exists(/databases/$(database)/documents/games/$(gameId)/threads/$(playerUid))
-                  || request.time > get(/databases/$(database)/documents/games/$(gameId)/threads/$(playerUid)).data.lastMessageAt + duration.value(2, 's')
-                )
+                && threadCanReceiveMessage(gameId, playerUid)
               )
+              // Admin to any thread, with the same per-thread rate limit.
               || (
                 isGameAdmin(gameId)
                 && request.resource.data.from == 'committee'
+                && threadCanReceiveMessage(gameId, playerUid)
               )
             );
           allow update, delete: if false;
