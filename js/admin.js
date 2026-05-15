@@ -198,8 +198,13 @@ async function pushSubscriptionDocId(endpoint) {
 
 async function getPushRegistration() {
   const existing = await navigator.serviceWorker.getRegistration("/");
-  if (existing) return existing;
-  return navigator.serviceWorker.register("/sw.js");
+  if (existing) {
+    try { await existing.update(); } catch (e) {}
+    return existing;
+  }
+  const registration = await navigator.serviceWorker.register("/sw.js");
+  try { await registration.update(); } catch (e) {}
+  return registration;
 }
 
 async function saveAdminPushSubscription(subscription) {
