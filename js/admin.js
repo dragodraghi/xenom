@@ -15,6 +15,7 @@ import {
   orderBy,
   onSnapshot,
   doc,
+  addDoc,
   setDoc,
   deleteDoc,
   getDoc,
@@ -417,10 +418,17 @@ function initBrowserNotificationToggle() {
   const target = document.querySelector(".slot-dashboard__header");
   if (!target || target.querySelector("[data-browser-notify-toggle]")) return;
   const btn = document.createElement("button");
+  const testBtn = document.createElement("button");
   btn.type = "button";
   btn.dataset.browserNotifyToggle = "1";
   btn.className = "btn btn--ghost btn--small";
   btn.style.marginLeft = "0.4rem";
+  testBtn.type = "button";
+  testBtn.dataset.serverPushTest = "1";
+  testBtn.className = "btn btn--ghost btn--small";
+  testBtn.style.marginLeft = "0.4rem";
+  testBtn.textContent = "Test push server";
+  testBtn.title = "Invia una push passando dalla Cloud Function, non dalla notifica locale.";
 
   const sync = () => {
     if (!browserNotificationsSupported()) {
@@ -438,6 +446,7 @@ function initBrowserNotificationToggle() {
       ? "Notifiche nuova iscrizione attive. Click per disattivare."
       : "Click per autorizzare notifiche e push alla nuova iscrizione.";
     btn.disabled = false;
+    testBtn.disabled = !on || !pushMode;
   };
 
   btn.addEventListener("click", async () => {
@@ -463,8 +472,25 @@ function initBrowserNotificationToggle() {
     }
   });
 
+  testBtn.addEventListener("click", async () => {
+    testBtn.disabled = true;
+    try {
+      await addDoc(collection(db, COL.pushTests), {
+        createdAt: serverTimestamp(),
+        userAgent: navigator.userAgent.slice(0, 300)
+      });
+      showToast("Test push server inviato");
+    } catch (err) {
+      console.error("Test push server:", err);
+      showToast(`Test push non inviato: ${err.code || err.message}`, "err");
+    } finally {
+      sync();
+    }
+  });
+
   sync();
   target.appendChild(btn);
+  target.appendChild(testBtn);
 }
 
 function slotStatsCategoria(categoriaId) {

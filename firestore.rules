@@ -297,5 +297,22 @@ service cloud.firestore {
       allow read, delete: if isTuskAdmin();
       allow create, update: if isTuskAdmin() && isValidTuskPushSubscription();
     }
+
+    match /tusk_push_tests/{doc} {
+      allow read, delete: if isTuskAdmin();
+      allow create: if isTuskAdmin()
+        && request.resource.data.keys().hasOnly(['createdAt', 'userAgent'])
+        && request.resource.data.createdAt == request.time
+        && (
+          !request.resource.data.keys().hasAny(['userAgent'])
+          || (request.resource.data.userAgent is string && request.resource.data.userAgent.size() <= 300)
+        );
+      allow update: if false;
+    }
+
+    match /tusk_push_audit/{doc} {
+      allow read, delete: if isTuskAdmin();
+      allow write: if false;
+    }
   }
 }
