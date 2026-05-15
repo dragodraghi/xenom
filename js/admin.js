@@ -3,6 +3,7 @@
 
 import {
   db,
+  auth,
   loginAdmin,
   logoutAdmin,
   onAdminAuthChange,
@@ -13,6 +14,7 @@ import {
   collection,
   query,
   orderBy,
+  limit,
   onSnapshot,
   doc,
   addDoc,
@@ -312,6 +314,22 @@ formLogin.addEventListener("submit", async (e) => {
 
 btnLogout.addEventListener("click", () => logoutAdmin());
 
+function auditAdminAction(action, details = {}) {
+  try {
+    return addDoc(collection(db, COL.adminAudit), {
+      action,
+      details,
+      adminEmail: auth.currentUser?.email || "",
+      adminUid: auth.currentUser?.uid || "",
+      userAgent: navigator.userAgent.slice(0, 300),
+      createdAt: serverTimestamp()
+    }).catch((err) => console.warn("Audit admin:", err.code || err.message));
+  } catch (err) {
+    console.warn("Audit admin:", err.message || err);
+    return Promise.resolve();
+  }
+}
+
 // === Tab nav ===
 const tabs = document.querySelectorAll(".admin-tab");
 const panels = document.querySelectorAll(".admin-panel");
@@ -596,6 +614,7 @@ async function salvaCapCategoria(categoriaId, value) {
       caps,
       updatedAt: serverTimestamp()
     }, { merge: true });
+    auditAdminAction("slot_cap_update", { categoriaId, value: Number.isFinite(parsed) && parsed > 0 ? parsed : null });
     showToast("Slot aggiornati");
   } catch (err) {
     console.error("Errore salvataggio slot:", err);
@@ -767,6 +786,12 @@ async function approvaIscrizione(idPending, dati) {
       transaction.set(doc(db, COL.atletiPubblici, atletaId), datiAtletaPubblici(atleta));
       transaction.delete(pendingRef);
     });
+    auditAdminAction("iscrizione_approvata", {
+      pendingId: idPending,
+      atletaNome,
+      categoriaId: dati.categoriaId,
+      box: dati.box || ""
+    });
     showToast(`✅ ${atletaNome} approvato`);
   } catch (err) {
     console.error(err);
@@ -782,6 +807,7 @@ async function rifiutaIscrizione(idPending, nome) {
   if (!confirm(`Rifiutare l'iscrizione di ${nome}? Operazione irreversibile.`)) return;
   try {
     await deleteDoc(doc(db, COL.iscrizioni, idPending));
+    auditAdminAction("iscrizione_rifiutata", { pendingId: idPending, nome });
     showToast(`✕ ${nome} rifiutato`, "err");
   } catch (err) {
     console.error(err);
@@ -1107,6 +1133,11 @@ async function togglePresenza(a) {
       batch.delete(doc(db, COL.atletiPubblici, a.id));
     }
     await batch.commit();
+    auditAdminAction("atleta_presenza_update", {
+      atletaId: a.id,
+      nome: a.nome,
+      presente: nextPresente
+    });
     showToast(`${a.nome} marcato ${nextPresente ? "presente ✅" : "assente ⚠️"}`, nextPresente ? "ok" : "err");
   } catch (err) {
     console.error(err);
@@ -1169,6 +1200,7 @@ formAtleta.addEventListener("submit", async (e) => {
         batch.delete(doc(db, COL.atletiPubblici, id));
       }
       await batch.commit();
+      auditAdminAction("atleta_update", { atletaId: id, nome, categoriaId, box });
       showToast(`✅ ${nome} aggiornato`);
     } else {
       const newId = crypto.randomUUID();
@@ -1176,6 +1208,7 @@ formAtleta.addEventListener("submit", async (e) => {
       batch.set(doc(db, COL.atleti, newId), nuovoAtleta);
       batch.set(doc(db, COL.atletiPubblici, newId), datiAtletaPubblici(nuovoAtleta));
       await batch.commit();
+      auditAdminAction("atleta_create", { atletaId: newId, nome, categoriaId, box });
       showToast(`✅ ${nome} aggiunto`);
     }
     modalAtleta.hidden = true;
@@ -1192,6 +1225,12 @@ async function eliminaAtleta(a) {
     batch.delete(doc(db, COL.atleti, a.id));
     batch.delete(doc(db, COL.atletiPubblici, a.id));
     await batch.commit();
+    auditAdminAction("atleta_delete", {
+      atletaId: a.id,
+      nome: a.nome,
+      categoriaId: a.categoriaId,
+      box: a.box || ""
+    });
     showToast(`✕ ${a.nome} eliminato`, "err");
   } catch (err) {
     console.error(err);
@@ -1785,6 +1824,17 @@ risBtnSalva.addEventListener("click", async () => {
       transaction.set(risultatoRef, payload, { merge: true });
       transaction.set(risultatoPubblicoRef, datiRisultatoPubblico(payload));
     });
+    auditAdminAction("risultato_save", {
+      risultatoId: risId,
+      atletaId: atletaCorrente.id,
+      atletaNome: atletaCorrente.nome,
+      eventoId: eventoCorrente.id,
+      eventoNumero: eventoCorrente.numero,
+      categoriaId: atletaCorrente.categoriaId,
+      giudice,
+      puntiEpi,
+      overwrite: overwriteConfirmed
+    });
     showToast(`✅ Salvato: ${puntiEpi} pt EPI per ${atletaCorrente.nome}`);
     // Reset form
     risFormDinamico.innerHTML = "";
@@ -2100,9 +2150,98 @@ function initTabStrumenti() {
   const syncRisultatiPubbliciOutput = document.getElementById("sync-risultati-pubblici-output");
   const btnStats = document.getElementById("btn-stats");
   const statsOutput = document.getElementById("stats-output");
+  const btnRefreshPushAudit = document.getElementById("btn-refresh-push-audit");
+  const pushAuditOutput = document.getElementById("push-audit-output");
+  const btnRefreshAdminAudit = document.getElementById("btn-refresh-admin-audit");
+  const adminAuditList = document.getElementById("admin-audit-list");
 
   if (!btnRicalcola) return;
   initOfficialLinks();
+
+  async function aggiornaPushAudit() {
+    if (!pushAuditOutput) return;
+    pushAuditOutput.classList.add("is-visible");
+    pushAuditOutput.textContent = "Caricamento stato push...";
+    try {
+      const [auditSnap, subsSnap] = await Promise.all([
+        getDocs(query(collection(db, COL.pushAudit), orderBy("createdAt", "desc"), limit(8))),
+        getDocs(collection(db, COL.adminPushSubscriptions))
+      ]);
+      const lines = [
+        `Subscription push attive: ${subsSnap.size}`,
+        ""
+      ];
+      if (auditSnap.empty) {
+        lines.push("Nessun invio push registrato.");
+      } else {
+        auditSnap.docs.forEach((d) => {
+          const a = d.data();
+          const esito = `${a.sent || 0} inviati, ${a.failed || 0} errori, ${a.deleted || 0} rimossi`;
+          const errors = Array.isArray(a.errors) && a.errors.length ? ` - ${a.errors.join(", ")}` : "";
+          lines.push(`${formatDateTime(a.createdAt) || "data n/d"} - ${a.source || "push"} - ${esito}${errors}`);
+          if (a.body) lines.push(`  ${a.body}`);
+        });
+      }
+      pushAuditOutput.textContent = lines.join("\n");
+    } catch (err) {
+      pushAuditOutput.textContent = "Errore audit push: " + (err.code || err.message);
+    }
+  }
+
+  function auditActionLabel(action) {
+    const labels = {
+      slot_cap_update: "Slot aggiornati",
+      iscrizione_approvata: "Iscrizione approvata",
+      iscrizione_rifiutata: "Iscrizione rifiutata",
+      atleta_presenza_update: "Presenza atleta",
+      atleta_update: "Atleta modificato",
+      atleta_create: "Atleta aggiunto",
+      atleta_delete: "Atleta eliminato",
+      risultato_save: "Risultato salvato"
+    };
+    return labels[action] || action || "Azione admin";
+  }
+
+  function auditDetailsText(details) {
+    if (!details || typeof details !== "object") return "";
+    const compact = { ...details };
+    return JSON.stringify(compact).slice(0, 220);
+  }
+
+  async function aggiornaAdminAudit() {
+    if (!adminAuditList) return;
+    adminAuditList.innerHTML = `<p class="admin-empty">Caricamento audit...</p>`;
+    try {
+      const snap = await getDocs(query(collection(db, COL.adminAudit), orderBy("createdAt", "desc"), limit(12)));
+      if (snap.empty) {
+        adminAuditList.innerHTML = `<p class="admin-empty">Nessuna azione admin registrata.</p>`;
+        return;
+      }
+      adminAuditList.innerHTML = "";
+      snap.docs.forEach((d) => {
+        const a = d.data();
+        const card = document.createElement("div");
+        card.className = "admin-card";
+        card.innerHTML = `
+          <div class="admin-card__info">
+            <div class="admin-card__title">${escapeHtml(auditActionLabel(a.action))}</div>
+            <div class="admin-card__meta">
+              ${escapeHtml(formatDateTime(a.createdAt) || "data n/d")} · ${escapeHtml(a.adminEmail || "admin")}
+              <br><span style="opacity:0.8;">${escapeHtml(auditDetailsText(a.details))}</span>
+            </div>
+          </div>
+        `;
+        adminAuditList.appendChild(card);
+      });
+    } catch (err) {
+      adminAuditList.innerHTML = `<p class="admin-empty">Errore audit admin: ${escapeHtml(err.code || err.message)}</p>`;
+    }
+  }
+
+  btnRefreshPushAudit?.addEventListener("click", aggiornaPushAudit);
+  btnRefreshAdminAudit?.addEventListener("click", aggiornaAdminAudit);
+  aggiornaPushAudit();
+  aggiornaAdminAudit();
 
   async function aggiornaAuditRisultati() {
     if (!auditRisultati) return;

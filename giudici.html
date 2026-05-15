@@ -246,6 +246,17 @@
               <a class="btn btn--primary btn--small" href="health.html" target="_blank" rel="noopener noreferrer">Apri controllo</a>
             </div>
 
+            <div class="tool-card tool-card--wide">
+              <h3>Push e audit admin</h3>
+              <p>Controllo rapido degli ultimi invii push server e delle azioni admin critiche.</p>
+              <button class="btn btn--ghost btn--small" id="btn-refresh-push-audit">Aggiorna push</button>
+              <button class="btn btn--ghost btn--small" id="btn-refresh-admin-audit">Aggiorna audit</button>
+              <div class="tool-output is-visible" id="push-audit-output">Caricamento push...</div>
+              <div class="audit-list" id="admin-audit-list">
+                <p class="admin-empty">Caricamento audit...</p>
+              </div>
+            </div>
+
             <div class="tool-card">
               <h3>📊 Esporta classifica CSV</h3>
               <p>Esporta in CSV la classifica completa di una categoria. Utile per cerimonia premiazione e archivio.</p>

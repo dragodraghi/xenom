@@ -33,6 +33,8 @@ export const COL = {
   iscrizioniStatoPubblico: "tusk_iscrizioni_stato",
   adminPushSubscriptions: "tusk_admin_push_subscriptions",
   pushTests: "tusk_push_tests",
+  pushAudit: "tusk_push_audit",
+  adminAudit: "tusk_admin_audit",
   risultati: "tusk_risultati",
   risultatiPubblici: "tusk_risultati_pubblici"
 };

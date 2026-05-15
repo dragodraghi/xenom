@@ -28,7 +28,10 @@ service cloud.firestore {
 
     function isTuskAdmin() {
       return request.auth != null
-        && request.auth.token.email == "admin@tusk-badboars.com";
+        && (
+          request.auth.token.tuskAdmin == true
+          || request.auth.token.email == "admin@tusk-badboars.com"
+        );
     }
 
     function isValidTuskCategoria(categoriaId) {
@@ -134,6 +137,38 @@ service cloud.firestore {
         && (
           !request.resource.data.keys().hasAny(['lastError'])
           || (request.resource.data.lastError is string && request.resource.data.lastError.size() <= 80)
+        );
+    }
+
+    function isValidTuskAdminAudit() {
+      return request.resource.data.keys().hasOnly([
+          'action',
+          'details',
+          'adminEmail',
+          'adminUid',
+          'userAgent',
+          'createdAt'
+        ])
+        && request.resource.data.keys().hasAll(['action', 'createdAt'])
+        && request.resource.data.action is string
+        && request.resource.data.action.size() > 0
+        && request.resource.data.action.size() <= 80
+        && request.resource.data.createdAt == request.time
+        && (
+          !request.resource.data.keys().hasAny(['details'])
+          || request.resource.data.details is map
+        )
+        && (
+          !request.resource.data.keys().hasAny(['adminEmail'])
+          || (request.resource.data.adminEmail is string && request.resource.data.adminEmail.size() <= 120)
+        )
+        && (
+          !request.resource.data.keys().hasAny(['adminUid'])
+          || (request.resource.data.adminUid is string && request.resource.data.adminUid.size() <= 80)
+        )
+        && (
+          !request.resource.data.keys().hasAny(['userAgent'])
+          || (request.resource.data.userAgent is string && request.resource.data.userAgent.size() <= 300)
         );
     }
 
@@ -313,6 +348,12 @@ service cloud.firestore {
     match /tusk_push_audit/{doc} {
       allow read, delete: if isTuskAdmin();
       allow write: if false;
+    }
+
+    match /tusk_admin_audit/{doc} {
+      allow read, delete: if isTuskAdmin();
+      allow create: if isTuskAdmin() && isValidTuskAdminAudit();
+      allow update: if false;
     }
   }
 }
