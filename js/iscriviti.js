@@ -1,11 +1,13 @@
-// iscriviti.js — Validazione form iscrizione + scrittura su tusk_iscrizioni_pending
-import { db, COL } from "./firebase-config.js";
+// iscriviti.js — Validazione form iscrizione + invio protetto via Cloud Function
+import { app, db, COL } from "./firebase-config.js";
+import {
+  getFunctions,
+  httpsCallable
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-functions.js";
 import {
   collection,
-  addDoc,
   doc,
-  onSnapshot,
-  serverTimestamp
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const form = document.getElementById("form-iscrizione");
@@ -18,6 +20,8 @@ const formStatus = document.getElementById("form-status");
 const categoryStatusGrid = document.getElementById("category-status-grid");
 const categoryStatusUpdated = document.getElementById("category-status-updated");
 const categoriaSelect = form.elements.categoriaId;
+const functions = getFunctions(app, "europe-west1");
+const submitTuskIscrizione = httpsCallable(functions, "submitTuskIscrizione");
 
 const CATEGORIE = [
   ["ultimate", "Ultimate (M)"],
@@ -32,13 +36,21 @@ const VALID_CATEGORIE = new Set(CATEGORIE.map(([id]) => id));
 const FIELD_NAMES = ["nome", "categoriaId", "box", "contatto", "note"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 const PHONE_RE = /^[+()\d\s.-]+$/;
+const MIN_SUBMIT_MS = 3500;
+const LOCAL_THROTTLE_MS = 45 * 1000;
+const LAST_SUBMIT_KEY = "tuskLastIscrizioneSubmitAt";
 let isSubmitting = false;
+const formStartedAt = Date.now();
 let publicStatus = null;
 let fallbackStatus = null;
 let fallbackCaps = {};
 let fallbackAtleti = [];
 let fallbackCapsLoaded = false;
 let fallbackAtletiLoaded = false;
+
+if (form.elements.formStartedAt) {
+  form.elements.formStartedAt.value = String(formStartedAt);
+}
 
 // === Validazione ===
 function normalizeText(value) {
@@ -270,6 +282,21 @@ function setSubmitting(submitting) {
   setStatus(submitting ? "Invio iscrizione in corso." : "");
 }
 
+function lastSubmitAt() {
+  try { return Number(localStorage.getItem(LAST_SUBMIT_KEY) || 0); } catch (e) { return 0; }
+}
+
+function setLastSubmitAt(value) {
+  try { localStorage.setItem(LAST_SUBMIT_KEY, String(value)); } catch (e) {}
+}
+
+function throttleMessage() {
+  const elapsed = Date.now() - lastSubmitAt();
+  if (elapsed >= LOCAL_THROTTLE_MS) return "";
+  const seconds = Math.ceil((LOCAL_THROTTLE_MS - elapsed) / 1000);
+  return `Hai appena inviato una richiesta. Riprova tra ${seconds} secondi.`;
+}
+
 function showResult(panel) {
   form.hidden = true;
   panel.hidden = false;
@@ -310,6 +337,22 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
+  const startedAt = Number(formData.get("formStartedAt") || formStartedAt);
+  if (!Number.isFinite(startedAt) || Date.now() - startedAt < MIN_SUBMIT_MS) {
+    setStatus("Attendi qualche secondo e ricontrolla i dati prima di inviare.");
+    btnSubmit.disabled = true;
+    setTimeout(() => {
+      if (!isSubmitting) btnSubmit.disabled = false;
+    }, Math.max(800, MIN_SUBMIT_MS - (Date.now() - formStartedAt)));
+    return;
+  }
+
+  const throttle = throttleMessage();
+  if (throttle) {
+    setStatus(throttle);
+    return;
+  }
+
   const firstError = validateAll(formData);
   if (firstError) {
     setStatus("Controlla i campi evidenziati prima di inviare.");
@@ -325,20 +368,23 @@ form.addEventListener("submit", async (e) => {
       categoriaId: normalizeText(formData.get("categoriaId")),
       box: normalizeText(formData.get("box")),
       contatto: normalizeText(formData.get("contatto")),
-      note: normalizeText(formData.get("note")).slice(0, 300),
-      createdAt: serverTimestamp()
+      note: normalizeText(formData.get("note")).slice(0, 300)
     };
 
-    await addDoc(collection(db, COL.iscrizioni), data);
+    await submitTuskIscrizione(data);
+    setLastSubmitAt(Date.now());
 
     setStatus("Iscrizione ricevuta.");
     showResult(successBox);
   } catch (err) {
     console.error("Errore iscrizione:", err);
+    const code = String(err.code || "");
     const userMsg =
-      err.code === "permission-denied"
+      code.includes("resource-exhausted")
+        ? "Hai gia' inviato una richiesta da poco. Riprova tra qualche minuto."
+        : code.includes("invalid-argument") || code.includes("failed-precondition") || code.includes("permission-denied")
         ? "I dati non sono stati accettati dal server. Controlla i campi e riprova."
-        : err.code === "unavailable"
+        : code.includes("unavailable")
         ? "Connessione assente. Verifica internet e riprova."
         : "Errore di rete. Riprova tra qualche secondo.";
     errorMsg.textContent = userMsg;

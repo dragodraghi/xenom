@@ -317,10 +317,14 @@ service cloud.firestore {
     }
 
     match /tusk_iscrizioni_pending/{doc} {
-      allow create: if isValidTuskIscrizione();
+      allow create: if isTuskAdmin() && isValidTuskIscrizione();
       allow read: if isTuskAdmin();
       allow delete: if isTuskAdmin();
       allow update: if false;
+    }
+
+    match /tusk_rate_limits/{doc} {
+      allow read, write: if false;
     }
 
     match /tusk_iscrizioni_stato/{doc} {
