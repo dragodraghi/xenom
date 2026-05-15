@@ -31,6 +31,7 @@ export const COL = {
   atletiPubblici: "tusk_atleti_pubblici",
   iscrizioni: "tusk_iscrizioni_pending",
   iscrizioniStatoPubblico: "tusk_iscrizioni_stato",
+  adminPushSubscriptions: "tusk_admin_push_subscriptions",
   risultati: "tusk_risultati",
   risultatiPubblici: "tusk_risultati_pubblici"
 };

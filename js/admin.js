@@ -68,6 +68,8 @@ let iscrizioniPrevCount = -1; // -1 = primo render, niente beep
 let iscrizioniPrevIds = new Set();
 const NOTIFY_AUDIO_KEY = "tuskNotifyAudio";
 const NOTIFY_BROWSER_KEY = "tuskBrowserNotifications";
+const WEB_PUSH_KEY = "tuskWebPush";
+const TUSK_WEB_PUSH_PUBLIC_KEY = "BBx-O2KO8XLZ-iNZENDaWT-nsUqsXnuKKFuuqS659lcqoLLTv-fWqE71l35OafSd3xmgFnjgX8MvqDpyWdzYxFc";
 let audioCtx = null;
 
 function isNotifyAudioOn() {
@@ -107,6 +109,14 @@ function browserNotificationsSupported() {
   return "Notification" in window && window.isSecureContext;
 }
 
+function webPushSupported() {
+  return browserNotificationsSupported()
+    && "serviceWorker" in navigator
+    && "PushManager" in window
+    && "crypto" in window
+    && "subtle" in crypto;
+}
+
 function isBrowserNotifyOn() {
   try {
     return browserNotificationsSupported()
@@ -119,6 +129,14 @@ function isBrowserNotifyOn() {
 
 function setBrowserNotifyStored(on) {
   try { localStorage.setItem(NOTIFY_BROWSER_KEY, on ? "on" : "off"); } catch (e) {}
+}
+
+function isWebPushStoredOn() {
+  try { return localStorage.getItem(WEB_PUSH_KEY) === "on"; } catch (e) { return false; }
+}
+
+function setWebPushStored(on) {
+  try { localStorage.setItem(WEB_PUSH_KEY, on ? "on" : "off"); } catch (e) {}
 }
 
 async function enableBrowserNotifications() {
@@ -159,6 +177,89 @@ function notificaNuovaIscrizione(data) {
   } catch (e) {
     console.warn("Notifica nuova iscrizione:", e.message || e);
   }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+async function pushSubscriptionDocId(endpoint) {
+  const bytes = new TextEncoder().encode(endpoint);
+  const hash = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function getPushRegistration() {
+  const existing = await navigator.serviceWorker.getRegistration("/");
+  if (existing) return existing;
+  return navigator.serviceWorker.register("/sw.js");
+}
+
+async function saveAdminPushSubscription(subscription) {
+  const json = subscription.toJSON();
+  const endpoint = json.endpoint || subscription.endpoint;
+  const p256dh = json.keys?.p256dh;
+  const auth = json.keys?.auth;
+  if (!endpoint || !p256dh || !auth) throw new Error("Subscription push incompleta.");
+  const id = await pushSubscriptionDocId(endpoint);
+  await setDoc(doc(db, COL.adminPushSubscriptions, id), {
+    endpoint,
+    p256dh,
+    auth,
+    expirationTime: json.expirationTime ?? null,
+    userAgent: navigator.userAgent.slice(0, 300),
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+}
+
+async function enableWebPushSubscription() {
+  if (!webPushSupported()) {
+    setWebPushStored(false);
+    showToast("Push non disponibile: apri l'app installata o usa un browser compatibile", "err");
+    return false;
+  }
+  try {
+    const registration = await getPushRegistration();
+    const readyRegistration = await navigator.serviceWorker.ready;
+    const pushRegistration = readyRegistration || registration;
+    let subscription = await pushRegistration.pushManager.getSubscription();
+    if (!subscription) {
+      subscription = await pushRegistration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(TUSK_WEB_PUSH_PUBLIC_KEY)
+      });
+    }
+    await saveAdminPushSubscription(subscription);
+    setWebPushStored(true);
+    return true;
+  } catch (err) {
+    console.warn("Push TUSK non attivata:", err);
+    setWebPushStored(false);
+    showToast("Push non attivata: controlla permessi notifiche/browser", "err");
+    return false;
+  }
+}
+
+async function disableWebPushSubscription() {
+  if (!("serviceWorker" in navigator)) {
+    setWebPushStored(false);
+    return;
+  }
+  const registration = await navigator.serviceWorker.getRegistration("/");
+  const subscription = await registration?.pushManager.getSubscription();
+  if (subscription?.endpoint) {
+    const id = await pushSubscriptionDocId(subscription.endpoint);
+    try { await deleteDoc(doc(db, COL.adminPushSubscriptions, id)); } catch (e) {}
+    try { await subscription.unsubscribe(); } catch (e) {}
+  }
+  setWebPushStored(false);
 }
 
 // === Auth ===
@@ -323,27 +424,34 @@ function initBrowserNotificationToggle() {
       btn.disabled = true;
       return;
     }
-    const storedOn = (() => {
-      try { return localStorage.getItem(NOTIFY_BROWSER_KEY) === "on"; } catch (e) { return false; }
-    })();
-    const on = storedOn && Notification.permission === "granted";
-    btn.textContent = on ? "Notifiche ON" : "Notifiche OFF";
+    const pushMode = webPushSupported();
+    const on = isBrowserNotifyOn() && (!pushMode || isWebPushStoredOn());
+    btn.textContent = pushMode
+      ? (on ? "Push ON" : "Push OFF")
+      : (on ? "Notifiche ON" : "Notifiche OFF");
     btn.title = on
-      ? "Notifica browser alla nuova iscrizione attiva. Click per disattivare."
-      : "Click per autorizzare le notifiche browser alla nuova iscrizione.";
+      ? "Notifiche nuova iscrizione attive. Click per disattivare."
+      : "Click per autorizzare notifiche e push alla nuova iscrizione.";
     btn.disabled = false;
   };
 
   btn.addEventListener("click", async () => {
-    if (isBrowserNotifyOn()) {
+    const pushMode = webPushSupported();
+    const on = isBrowserNotifyOn() && (!pushMode || isWebPushStoredOn());
+    if (on) {
       setBrowserNotifyStored(false);
+      if (pushMode) await disableWebPushSubscription();
       sync();
       showToast("Notifiche disattivate");
       return;
     }
     if (await enableBrowserNotifications()) {
+      if (pushMode && !(await enableWebPushSubscription())) {
+        sync();
+        return;
+      }
       sync();
-      showToast("Notifiche attivate");
+      showToast(pushMode ? "Push attive" : "Notifiche attivate");
       notificaNuovaIscrizione({ nome: "Test notifica", categoriaId: "ultimate", box: "TUSK Protocol" });
     } else {
       sync();
