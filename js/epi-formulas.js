@@ -32,9 +32,10 @@ const EPI_CURVE_PARAMS = {
  */
 export function calcolaEpi(performance, evento, categoriaId) {
   if (!evento || !evento.benchmarks) return 0;
-  const benchmark = evento.benchmarks[categoriaId];
-  if (!benchmark || benchmark <= 0) return 0;
-  if (!performance || performance <= 0) return 0;
+  const benchmark = Number(evento.benchmarks[categoriaId]);
+  if (!Number.isFinite(benchmark) || benchmark <= 0) return 0;
+  const perf = Number(performance);
+  if (!Number.isFinite(perf) || perf <= 0) return 0;
   if (!["higher", "lower"].includes(evento.scoringDirection)) return 0;
 
   const params = EPI_CURVE_PARAMS[evento.scoringType] || EPI_CURVE_PARAMS.reps;
@@ -43,19 +44,20 @@ export function calcolaEpi(performance, evento, categoriaId) {
   let gain, normalizer;
   if (evento.scoringDirection === "higher") {
     const B = benchmark * (params.thresholdRatio || 0);
-    if (performance <= B) return 0;
-    gain = performance - B;
+    if (perf <= B) return 0;
+    gain = perf - B;
     normalizer = benchmark - B;
   } else {
     // time / lower-is-better: B = tetto temporale; oltre B = 0 punti (DNF di fatto)
     const B = benchmark * (params.ceilingRatio || 2.5);
-    if (performance >= B) return 0;
-    gain = B - performance;
+    if (perf >= B) return 0;
+    gain = B - perf;
     normalizer = B - benchmark;
   }
 
   if (normalizer <= 0) return 0;
   const punti = 1000 * Math.pow(gain / normalizer, C);
+  if (!Number.isFinite(punti)) return 0;
   return Math.round(punti * 10) / 10;
 }
 
@@ -80,18 +82,20 @@ export function calcolaEpiDnf(repsCompletate, evento, categoriaId) {
   if (evento.scoringType !== "time") return 0;
   if (!evento.capSecondi || evento.capSecondi <= 0) return 0;
   if (!evento.capRepsBenchmark) return 0;
-  const repsBm = evento.capRepsBenchmark[categoriaId];
-  if (!repsBm || repsBm <= 0) return 0;
-  if (!repsCompletate || repsCompletate <= 0) return 0;
+  const repsBm = Number(evento.capRepsBenchmark[categoriaId]);
+  if (!Number.isFinite(repsBm) || repsBm <= 0) return 0;
+  const reps = Number(repsCompletate);
+  if (!Number.isFinite(reps) || reps <= 0) return 0;
 
   // Tetto: punti che otterrebbe un atleta che chiude esattamente al cap (formula time standard)
   const puntiAlCap = calcolaEpi(evento.capSecondi, evento, categoriaId);
   if (puntiAlCap <= 0) return 0;
 
   // Scala il tetto con la frazione di reps completate, usando la stessa curva dei reps events
-  const ratio = Math.min(1, repsCompletate / repsBm);
+  const ratio = Math.min(1, reps / repsBm);
   const C = EPI_CURVE_PARAMS.reps.exponent;
   const punti = puntiAlCap * Math.pow(ratio, C);
+  if (!Number.isFinite(punti)) return 0;
   return Math.round(punti * 10) / 10;
 }
 
@@ -140,6 +144,9 @@ export function roundsRepsAReps(round, repsExtra, repsPerRound) {
  */
 export function totaleEpiAtleta(risultatiAtleta) {
   if (!Array.isArray(risultatiAtleta)) return 0;
-  const totale = risultatiAtleta.reduce((acc, r) => acc + (r.puntiEpi || 0), 0);
+  const totale = risultatiAtleta.reduce((acc, r) => {
+    const p = Number(r && r.puntiEpi);
+    return acc + (Number.isFinite(p) ? p : 0);
+  }, 0);
   return Math.round(totale * 10) / 10;
 }

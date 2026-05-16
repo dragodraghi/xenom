@@ -94,6 +94,14 @@ assertEqual(calcolaEpi(100, { scoringType: "weight", scoringDirection: "invalid"
 assertEqual(calcolaEpi(null, evSnatch, "ultimate"), 0, "Performance null -> 0");
 assertEqual(calcolaEpi(undefined, evSnatch, "ultimate"), 0, "Performance undefined -> 0");
 
+console.log("\n=== TEST: calcolaEpi (cintura sicurezza Infinity/NaN/stringhe sporche) ===");
+assertEqual(calcolaEpi(Infinity, evSnatch, "ultimate"), 0, "Infinity -> 0 (no atleta vincente con +inf)");
+assertEqual(calcolaEpi("100kg", evSnatch, "ultimate"), 0, "Stringa '100kg' (coerce NaN) -> 0");
+assertEqual(calcolaEpi("130", evSnatch, "ultimate"), 1000.0, "Stringa numerica '130' -> coerce OK -> 1000");
+assertEqual(calcolaEpi(100, { ...evSnatch, benchmarks: { ultimate: "130" } }, "ultimate"), 829.3, "Benchmark stringa '130' -> coerce OK -> 829");
+assertEqual(calcolaEpi(100, { ...evSnatch, benchmarks: { ultimate: Infinity } }, "ultimate"), 0, "Benchmark Infinity -> 0");
+assertEqual(calcolaEpi(100, { ...evSnatch, benchmarks: { ultimate: "abc" } }, "ultimate"), 0, "Benchmark 'abc' -> 0");
+
 console.log("\n=== TEST: calcolaEpiDnf (DNF su time event con cap) ===");
 // E6 Ground Zero: cap reps = 91 (carry 15m = 2 reps, 1 ogni 7,5m)
 const evE6 = {
@@ -156,6 +164,10 @@ assertEqual(totaleEpiAtleta([{ puntiEpi: 829.4 }, { puntiEpi: 958.5 }, { puntiEp
 assertEqual(totaleEpiAtleta([]), 0, "Array vuoto -> 0");
 assertEqual(totaleEpiAtleta(null), 0, "null -> 0");
 assertEqual(totaleEpiAtleta([{ puntiEpi: 100 }, { puntiEpi: undefined }, { puntiEpi: 200 }]), 300.0, "Risultati con puntiEpi undefined trattati come 0");
+assertEqual(totaleEpiAtleta([{ puntiEpi: "500" }, { puntiEpi: "300" }]), 800.0, "Stringhe numeriche -> somma 800 (NO concatenazione)");
+assertEqual(totaleEpiAtleta([{ puntiEpi: Infinity }, { puntiEpi: 500 }]), 500.0, "Infinity ignorato -> 500 (no classifica corrotta)");
+assertEqual(totaleEpiAtleta([{ puntiEpi: NaN }, { puntiEpi: 500 }]), 500.0, "NaN ignorato -> 500");
+assertEqual(totaleEpiAtleta([null, { puntiEpi: 500 }]), 500.0, "Elemento null nell'array -> 500 (no crash)");
 
 console.log("\n=== RIEPILOGO ===");
 console.log(`Test passati: ${passed}`);
